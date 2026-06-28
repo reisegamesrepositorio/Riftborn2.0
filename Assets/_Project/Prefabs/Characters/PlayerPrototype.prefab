@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3663597496395134592}
   - component: {fileID: 4904280368288883184}
-  - component: {fileID: 4695905333367036886}
   - component: {fileID: 8506108390407300051}
   - component: {fileID: 2281615465710092261}
   - component: {fileID: 6604531942955212434}
@@ -27,6 +26,8 @@ GameObject:
   - component: {fileID: 8257133655481181366}
   - component: {fileID: 5988655777141119307}
   - component: {fileID: 9011792555958853589}
+  - component: {fileID: 6313602526230252437}
+  - component: {fileID: 6857519660239745908}
   m_Layer: 0
   m_Name: PlayerPrototype
   m_TagString: Untagged
@@ -57,29 +58,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4074078876241814105}
   m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
---- !u!136 &4695905333367036886
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4074078876241814105}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &8506108390407300051
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -201,8 +179,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7cb9aafeb4d6f5f439db239dc1ddc2ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Movement.MovementController
+  movementMode: 0
   moveSpeed: 5
-  actionState: {fileID: 0}
+  dexSpeedBonus: 0.02
+  rotationSpeed: 14
+  gravity: -25
+  groundedStickForce: -2
+  actionState: {fileID: 610748765822053143}
+  stats: {fileID: 2281615465710092261}
+  characterController: {fileID: 6313602526230252437}
+  cameraTransform: {fileID: 0}
 --- !u!114 &8034311973197143687
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -357,3 +343,44 @@ MonoBehaviour:
   runes: {fileID: 8047990418751001050}
   animationController: {fileID: 8257133655481181366}
   characterEvents: {fileID: 5988655777141119307}
+--- !u!143 &6313602526230252437
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4074078876241814105}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 2
+  m_Radius: 0.45
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0
+  m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &6857519660239745908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4074078876241814105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1850840c7c1d0ca4092cc8b44ea528d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Input.PlayerInputReader
+  inputActions: {fileID: -944628639613478452, guid: 43a424e0969bb084687a09a74abecda4, type: 3}
+  actionMapName: Player
+  moveActionName: Move
+  movementController: {fileID: 6510277856365807136}

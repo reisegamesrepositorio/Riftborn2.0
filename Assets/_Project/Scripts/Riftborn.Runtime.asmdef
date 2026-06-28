@@ -1,7 +1,9 @@
-﻿{
+{
     "name": "Riftborn.Runtime",
     "rootNamespace": "Riftborn",
-    "references": [],
+    "references": [
+        "Unity.InputSystem"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
