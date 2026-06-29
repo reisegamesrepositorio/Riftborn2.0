@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6a11d019c0109748b90716b976611ff, type: 3}
+  m_Name: TG_Magic_Attack
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Abilities.TargetedDamageAbility
+  abilityId: Test_magic_attack
+  cooldown: 2
+  resourceCost: 10
+  castRange: 8
+  baseDamage: 20
+  damageType: 1
+  usesAttributeScaling: 1
+  scalingAttribute: 2
+  damagePerAttributePoint: 1
+  canCrit: 1
+  criticalChance: 0.05
+  criticalMultiplier: 1.5
+  percentPenetration: 1
+  flatPenetration: 0
