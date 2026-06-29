@@ -23,6 +23,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 71b5423d112747e48a2a649a37db3c73, type: 2}
   - {fileID: 11400000, guid: 5ee432a68b709044dacfc22ec1721576, type: 2}
   - {fileID: 11400000, guid: c8ece5c69f219684c9d81a238a4585ab, type: 2}
+  - {fileID: 11400000, guid: e816508ee99de2e48bbfa1f5a6aa6dab, type: 2}
   suffixPool:
   - {fileID: 11400000, guid: 03b42e7f14fa41e4fa9d034d9c7e30c2, type: 2}
   - {fileID: 11400000, guid: 93d0b85ad35f81548b18c264bed82502, type: 2}

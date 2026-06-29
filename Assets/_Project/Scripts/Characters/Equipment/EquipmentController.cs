@@ -4,6 +4,7 @@ using Riftborn.Characters.Abilities;
 using Riftborn.Characters.Combat;
 using Riftborn.Characters.Defense;
 using Riftborn.Characters.Health;
+using Riftborn.Characters.Movement;
 using Riftborn.Characters.Resources;
 using Riftborn.Characters.Stats;
 using Riftborn.Items;
@@ -32,6 +33,9 @@ namespace Riftborn.Characters.Equipment
         [SerializeField]
         private AbilityController abilities;
 
+        [SerializeField]
+        private MovementController movement;
+
         private readonly Dictionary<EquipmentSlot, ItemInstance>
             equipped = new();
 
@@ -52,7 +56,8 @@ namespace Riftborn.Characters.Equipment
             CacheReferences();
         }
 
-        public bool Equip(ItemInstance itemInstance)
+        public bool Equip(
+            ItemInstance itemInstance)
         {
             CacheReferences();
 
@@ -70,7 +75,8 @@ namespace Riftborn.Characters.Equipment
             {
                 Debug.LogWarning(
                     $"[EQUIPMENT] O item " +
-                    $"'{itemInstance.DisplayName}' não é equipável.",
+                    $"'{itemInstance.DisplayName}' " +
+                    "não é equipável.",
                     this);
 
                 return false;
@@ -80,7 +86,8 @@ namespace Riftborn.Characters.Equipment
                 equipmentData.Slot;
 
             ItemInstance previousInstance =
-                GetEquippedInstance(slot);
+                GetEquippedInstance(
+                    slot);
 
             if (ReferenceEquals(
                     previousInstance,
@@ -94,7 +101,8 @@ namespace Riftborn.Characters.Equipment
                 RemoveAppliedModifiers(
                     previousInstance);
 
-                equipped.Remove(slot);
+                equipped.Remove(
+                    slot);
             }
 
             if (!TryApplyItemModifiers(
@@ -112,8 +120,8 @@ namespace Riftborn.Characters.Equipment
                 if (!previousRestored)
                 {
                     Debug.LogError(
-                        $"[EQUIPMENT] Falha ao restaurar o item " +
-                        $"anterior do slot {slot}.",
+                        $"[EQUIPMENT] Falha ao restaurar " +
+                        $"o item anterior do slot {slot}.",
                         this);
                 }
 
@@ -142,7 +150,8 @@ namespace Riftborn.Characters.Equipment
             return true;
         }
 
-        public bool Equip(EquipmentItemData item)
+        public bool Equip(
+            EquipmentItemData item)
         {
             if (item == null)
             {
@@ -159,7 +168,8 @@ namespace Riftborn.Characters.Equipment
                 temporaryInstance);
         }
 
-        public bool Unequip(EquipmentSlot slot)
+        public bool Unequip(
+            EquipmentSlot slot)
         {
             if (!equipped.TryGetValue(
                     slot,
@@ -171,7 +181,8 @@ namespace Riftborn.Characters.Equipment
             RemoveAppliedModifiers(
                 itemInstance);
 
-            equipped.Remove(slot);
+            equipped.Remove(
+                slot);
 
             NotifyEquipmentChanged(
                 slot,
@@ -198,7 +209,8 @@ namespace Riftborn.Characters.Equipment
             EquipmentSlot slot)
         {
             ItemInstance itemInstance =
-                GetEquippedInstance(slot);
+                GetEquippedInstance(
+                    slot);
 
             return itemInstance?.Item
                 as EquipmentItemData;
@@ -207,7 +219,8 @@ namespace Riftborn.Characters.Equipment
         public bool IsSlotOccupied(
             EquipmentSlot slot)
         {
-            return equipped.ContainsKey(slot);
+            return equipped.ContainsKey(
+                slot);
         }
 
         private bool TryApplyItemModifiers(
@@ -263,7 +276,8 @@ namespace Riftborn.Characters.Equipment
             }
 
             for (int index = 0;
-                 index < equipmentData.StatModifiers.Count;
+                 index <
+                 equipmentData.StatModifiers.Count;
                  index++)
             {
                 StatModifierDefinition definition =
@@ -493,6 +507,12 @@ namespace Riftborn.Characters.Equipment
                         modifierId,
                         AbilityModifierType.AbilityDamage);
 
+                case ItemAffixEffectType.MovementSpeed:
+                    return ApplyMovementAffix(
+                        itemInstance,
+                        roll,
+                        modifierId);
+
                 default:
                     Debug.LogWarning(
                         $"[EQUIPMENT] O efeito " +
@@ -594,9 +614,12 @@ namespace Riftborn.Characters.Equipment
                 new CombatModifier(
                     id: modifierId,
                     source: itemInstance,
-                    modifierType: modifierType,
-                    flatValue: flatValue,
-                    additivePercent: additivePercent,
+                    modifierType:
+                        modifierType,
+                    flatValue:
+                        flatValue,
+                    additivePercent:
+                        additivePercent,
                     multiplicativePercent:
                         multiplicativePercent);
 
@@ -624,8 +647,10 @@ namespace Riftborn.Characters.Equipment
                 new HealthModifier(
                     id: modifierId,
                     source: itemInstance,
-                    flatValue: flatValue,
-                    additivePercent: additivePercent,
+                    flatValue:
+                        flatValue,
+                    additivePercent:
+                        additivePercent,
                     multiplicativePercent:
                         multiplicativePercent);
 
@@ -654,9 +679,12 @@ namespace Riftborn.Characters.Equipment
                 new ResourceModifier(
                     id: modifierId,
                     source: itemInstance,
-                    modifierType: modifierType,
-                    flatValue: flatValue,
-                    additivePercent: additivePercent,
+                    modifierType:
+                        modifierType,
+                    flatValue:
+                        flatValue,
+                    additivePercent:
+                        additivePercent,
                     multiplicativePercent:
                         multiplicativePercent);
 
@@ -685,13 +713,47 @@ namespace Riftborn.Characters.Equipment
                 new AbilityModifier(
                     id: modifierId,
                     source: itemInstance,
-                    modifierType: modifierType,
-                    flatValue: flatValue,
-                    additivePercent: additivePercent,
+                    modifierType:
+                        modifierType,
+                    flatValue:
+                        flatValue,
+                    additivePercent:
+                        additivePercent,
                     multiplicativePercent:
                         multiplicativePercent);
 
             return abilities.AddModifier(
+                modifier);
+        }
+
+        private bool ApplyMovementAffix(
+            ItemInstance itemInstance,
+            ItemAffixRoll roll,
+            string modifierId)
+        {
+            if (movement == null)
+            {
+                return false;
+            }
+
+            ConvertAffixValue(
+                roll,
+                out float flatValue,
+                out float additivePercent,
+                out float multiplicativePercent);
+
+            MovementModifier modifier =
+                new MovementModifier(
+                    id: modifierId,
+                    source: itemInstance,
+                    flatValue:
+                        flatValue,
+                    additivePercent:
+                        additivePercent,
+                    multiplicativePercent:
+                        multiplicativePercent);
+
+            return movement.AddModifier(
                 modifier);
         }
 
@@ -753,6 +815,9 @@ namespace Riftborn.Characters.Equipment
                 itemInstance);
 
             abilities?.RemoveModifiersFromSource(
+                itemInstance);
+
+            movement?.RemoveModifiersFromSource(
                 itemInstance);
         }
 
@@ -826,6 +891,9 @@ namespace Riftborn.Characters.Equipment
 
             abilities ??=
                 GetComponent<AbilityController>();
+
+            movement ??=
+                GetComponent<MovementController>();
         }
 
         private void ValidateReferences()
@@ -875,6 +943,14 @@ namespace Riftborn.Characters.Equipment
                 Debug.LogError(
                     $"{nameof(EquipmentController)} requires an " +
                     $"{nameof(AbilityController)}.",
+                    this);
+            }
+
+            if (movement == null)
+            {
+                Debug.LogError(
+                    $"{nameof(EquipmentController)} requires a " +
+                    $"{nameof(MovementController)}.",
                     this);
             }
         }

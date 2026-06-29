@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Riftborn.Characters.ActionStates;
 using UnityEngine;
 
@@ -8,7 +9,8 @@ namespace Riftborn.Characters.Movement
     {
         [Header("Movement")]
         [SerializeField]
-        private MovementMode movementMode = MovementMode.WASD;
+        private MovementMode movementMode =
+            MovementMode.WASD;
 
         [SerializeField, Min(0f)]
         private float moveSpeed = 5f;
@@ -36,15 +38,30 @@ namespace Riftborn.Characters.Movement
         private readonly Dictionary<object, float>
             slowsBySource = new();
 
+        private readonly List<MovementModifier>
+            movementModifiers = new();
+
+        private readonly Dictionary<string, MovementModifier>
+            modifiersById =
+                new(StringComparer.Ordinal);
+
         private Vector2 moveInput;
         private float verticalVelocity;
         private float strongestSlow;
+
+        public event Action MovementValuesChanged;
 
         public MovementMode MovementMode =>
             movementMode;
 
         public float MoveSpeed =>
             moveSpeed;
+
+        public float BaseMoveSpeed =>
+            moveSpeed;
+
+        public float ModifiedMoveSpeed =>
+            GetModifiedMoveSpeed();
 
         public float CurrentMoveSpeed =>
             GetCurrentMoveSpeed();
@@ -66,13 +83,30 @@ namespace Riftborn.Characters.Movement
 
         private void Update()
         {
-            TickMovement(Time.deltaTime);
+            TickMovement(
+                Time.deltaTime);
         }
 
-        public void SetMoveInput(Vector2 input)
+        private void OnValidate()
+        {
+            moveSpeed =
+                Mathf.Max(
+                    0f,
+                    moveSpeed);
+
+            rotationSpeed =
+                Mathf.Max(
+                    0f,
+                    rotationSpeed);
+        }
+
+        public void SetMoveInput(
+            Vector2 input)
         {
             moveInput =
-                Vector2.ClampMagnitude(input, 1f);
+                Vector2.ClampMagnitude(
+                    input,
+                    1f);
         }
 
         public void Move(
@@ -86,35 +120,48 @@ namespace Riftborn.Characters.Movement
                 deltaTime);
         }
 
-        public void Teleport(Vector3 position)
+        public void Teleport(
+            Vector3 position)
         {
             if (characterController != null)
             {
-                characterController.enabled = false;
-                transform.position = position;
-                characterController.enabled = true;
+                characterController.enabled =
+                    false;
+
+                transform.position =
+                    position;
+
+                characterController.enabled =
+                    true;
 
                 verticalVelocity = 0f;
                 return;
             }
 
-            transform.position = position;
+            transform.position =
+                position;
+
             verticalVelocity = 0f;
         }
 
-        public void TickMovement(float deltaTime)
+        public void TickMovement(
+            float deltaTime)
         {
             CacheReferences();
 
-            if (movementMode != MovementMode.WASD)
+            if (movementMode !=
+                MovementMode.WASD)
             {
-                ApplyGravityOnly(deltaTime);
+                ApplyGravityOnly(
+                    deltaTime);
+
                 return;
             }
 
             Vector3 direction =
                 CanMove
-                    ? GetCameraRelativeDirection(moveInput)
+                    ? GetCameraRelativeDirection(
+                        moveInput)
                     : Vector3.zero;
 
             MoveWorldDirection(
@@ -126,9 +173,12 @@ namespace Riftborn.Characters.Movement
             Vector2 input)
         {
             Vector2 clampedInput =
-                Vector2.ClampMagnitude(input, 1f);
+                Vector2.ClampMagnitude(
+                    input,
+                    1f);
 
-            if (clampedInput.sqrMagnitude <= 0.0001f)
+            if (clampedInput.sqrMagnitude <=
+                0.0001f)
             {
                 return Vector3.zero;
             }
@@ -164,12 +214,131 @@ namespace Riftborn.Characters.Movement
                     : Vector3.right;
 
             Vector3 direction =
-                forward * clampedInput.y +
-                right * clampedInput.x;
+                forward *
+                clampedInput.y +
+                right *
+                clampedInput.x;
 
             return direction.sqrMagnitude > 1f
                 ? direction.normalized
                 : direction;
+        }
+
+        public bool AddModifier(
+            MovementModifier modifier)
+        {
+            if (modifier == null)
+            {
+                return false;
+            }
+
+            if (modifiersById.ContainsKey(
+                    modifier.Id))
+            {
+                Debug.LogWarning(
+                    $"[MOVEMENT] Já existe um modificador " +
+                    $"com o ID '{modifier.Id}'.",
+                    this);
+
+                return false;
+            }
+
+            movementModifiers.Add(
+                modifier);
+
+            modifiersById.Add(
+                modifier.Id,
+                modifier);
+
+            MovementValuesChanged?.Invoke();
+
+            return true;
+        }
+
+        public bool RemoveModifier(
+            string modifierId)
+        {
+            if (string.IsNullOrWhiteSpace(
+                    modifierId))
+            {
+                return false;
+            }
+
+            if (!modifiersById.TryGetValue(
+                    modifierId,
+                    out MovementModifier modifier))
+            {
+                return false;
+            }
+
+            modifiersById.Remove(
+                modifierId);
+
+            bool removed =
+                movementModifiers.Remove(
+                    modifier);
+
+            if (removed)
+            {
+                MovementValuesChanged?.Invoke();
+            }
+
+            return removed;
+        }
+
+        public int RemoveModifiersFromSource(
+            object source)
+        {
+            if (source == null)
+            {
+                return 0;
+            }
+
+            int totalRemoved = 0;
+
+            for (int index =
+                     movementModifiers.Count - 1;
+                 index >= 0;
+                 index--)
+            {
+                MovementModifier modifier =
+                    movementModifiers[index];
+
+                if (!Equals(
+                        modifier.Source,
+                        source))
+                {
+                    continue;
+                }
+
+                movementModifiers.RemoveAt(
+                    index);
+
+                modifiersById.Remove(
+                    modifier.Id);
+
+                totalRemoved++;
+            }
+
+            if (totalRemoved > 0)
+            {
+                MovementValuesChanged?.Invoke();
+            }
+
+            return totalRemoved;
+        }
+
+        public bool HasModifier(
+            string modifierId)
+        {
+            if (string.IsNullOrWhiteSpace(
+                    modifierId))
+            {
+                return false;
+            }
+
+            return modifiersById.ContainsKey(
+                modifierId);
         }
 
         public bool AddOrUpdateSlow(
@@ -189,7 +358,8 @@ namespace Riftborn.Characters.Movement
 
             if (safeSlow <= 0f)
             {
-                return RemoveSlow(source);
+                return RemoveSlow(
+                    source);
             }
 
             if (slowsBySource.TryGetValue(
@@ -202,21 +372,24 @@ namespace Riftborn.Characters.Movement
                 return false;
             }
 
-            slowsBySource[source] = safeSlow;
+            slowsBySource[source] =
+                safeSlow;
 
             RecalculateStrongestSlow();
 
             return true;
         }
 
-        public bool RemoveSlow(object source)
+        public bool RemoveSlow(
+            object source)
         {
             if (source == null)
             {
                 return false;
             }
 
-            if (!slowsBySource.Remove(source))
+            if (!slowsBySource.Remove(
+                    source))
             {
                 return false;
             }
@@ -226,13 +399,16 @@ namespace Riftborn.Characters.Movement
             return true;
         }
 
-        public bool HasSlowFromSource(object source)
+        public bool HasSlowFromSource(
+            object source)
         {
             return source != null &&
-                   slowsBySource.ContainsKey(source);
+                   slowsBySource.ContainsKey(
+                       source);
         }
 
-        public float GetSlowFromSource(object source)
+        public float GetSlowFromSource(
+            object source)
         {
             if (source == null)
             {
@@ -254,7 +430,45 @@ namespace Riftborn.Characters.Movement
             }
 
             slowsBySource.Clear();
+
+            float oldStrongestSlow =
+                strongestSlow;
+
             strongestSlow = 0f;
+
+            if (!Mathf.Approximately(
+                    oldStrongestSlow,
+                    strongestSlow))
+            {
+                MovementValuesChanged?.Invoke();
+            }
+        }
+
+        [ContextMenu("Log Current Movement Values")]
+        public void LogCurrentMovementValues()
+        {
+            GetModifierTotals(
+                out float flatValue,
+                out float additivePercent,
+                out float multiplicativeFactor);
+
+            Debug.Log(
+                $"[MOVEMENT VALUES] " +
+                $"Velocidade-base: " +
+                $"{moveSpeed:0.##} | " +
+                $"Bônus fixo: " +
+                $"{flatValue:0.##} | " +
+                $"Bônus aditivo: " +
+                $"{additivePercent * 100f:0.##}% | " +
+                $"Multiplicador: " +
+                $"{multiplicativeFactor:0.##}x | " +
+                $"Velocidade modificada: " +
+                $"{GetModifiedMoveSpeed():0.##} | " +
+                $"Slow mais forte: " +
+                $"{strongestSlow * 100f:0.##}% | " +
+                $"Velocidade atual: " +
+                $"{GetCurrentMoveSpeed():0.##}",
+                this);
         }
 
         private void MoveWorldDirection(
@@ -273,28 +487,34 @@ namespace Riftborn.Characters.Movement
 
             Vector3 horizontalMotion =
                 CanMove
-                    ? direction * currentSpeed
+                    ? direction *
+                      currentSpeed
                     : Vector3.zero;
 
             Vector3 verticalMotion =
-                GetGravityMotion(deltaTime);
+                GetGravityMotion(
+                    deltaTime);
 
             Vector3 motion =
-                (horizontalMotion + verticalMotion) *
+                (horizontalMotion +
+                 verticalMotion) *
                 deltaTime;
 
             if (characterController != null &&
                 characterController.enabled)
             {
-                characterController.Move(motion);
+                characterController.Move(
+                    motion);
             }
             else
             {
-                transform.position += motion;
+                transform.position +=
+                    motion;
             }
 
             if (CanMove &&
-                direction.sqrMagnitude > 0.0001f)
+                direction.sqrMagnitude >
+                0.0001f)
             {
                 RotateTowards(
                     direction,
@@ -302,7 +522,8 @@ namespace Riftborn.Characters.Movement
             }
         }
 
-        private void ApplyGravityOnly(float deltaTime)
+        private void ApplyGravityOnly(
+            float deltaTime)
         {
             MoveWorldDirection(
                 Vector3.zero,
@@ -322,29 +543,93 @@ namespace Riftborn.Characters.Movement
             else
             {
                 verticalVelocity +=
-                    gravity * deltaTime;
+                    gravity *
+                    deltaTime;
             }
 
-            return Vector3.up * verticalVelocity;
+            return Vector3.up *
+                   verticalVelocity;
+        }
+
+        private float GetModifiedMoveSpeed()
+        {
+            GetModifierTotals(
+                out float flatValue,
+                out float additivePercent,
+                out float multiplicativeFactor);
+
+            float modifiedSpeed =
+                moveSpeed +
+                flatValue;
+
+            modifiedSpeed *=
+                1f +
+                additivePercent;
+
+            modifiedSpeed *=
+                multiplicativeFactor;
+
+            return Mathf.Max(
+                0f,
+                modifiedSpeed);
         }
 
         private float GetCurrentMoveSpeed()
         {
+            float modifiedSpeed =
+                GetModifiedMoveSpeed();
+
             float currentSpeed =
-                moveSpeed * (1f - strongestSlow);
+                modifiedSpeed *
+                (1f - strongestSlow);
 
             return Mathf.Max(
                 0f,
                 currentSpeed);
         }
 
+        private void GetModifierTotals(
+            out float flatValue,
+            out float additivePercent,
+            out float multiplicativeFactor)
+        {
+            flatValue = 0f;
+            additivePercent = 0f;
+            multiplicativeFactor = 1f;
+
+            for (int index = 0;
+                 index <
+                 movementModifiers.Count;
+                 index++)
+            {
+                MovementModifier modifier =
+                    movementModifiers[index];
+
+                flatValue +=
+                    modifier.FlatValue;
+
+                additivePercent +=
+                    modifier.AdditivePercent;
+
+                multiplicativeFactor *=
+                    1f +
+                    modifier.MultiplicativePercent;
+            }
+        }
+
         private void RecalculateStrongestSlow()
         {
+            float oldStrongestSlow =
+                strongestSlow;
+
             float newStrongestSlow = 0f;
 
-            foreach (float slowPercent in slowsBySource.Values)
+            foreach (
+                float slowPercent
+                in slowsBySource.Values)
             {
-                if (slowPercent > newStrongestSlow)
+                if (slowPercent >
+                    newStrongestSlow)
                 {
                     newStrongestSlow =
                         slowPercent;
@@ -356,6 +641,13 @@ namespace Riftborn.Characters.Movement
                     newStrongestSlow,
                     0f,
                     0.95f);
+
+            if (!Mathf.Approximately(
+                    oldStrongestSlow,
+                    strongestSlow))
+            {
+                MovementValuesChanged?.Invoke();
+            }
         }
 
         private void RotateTowards(
@@ -372,7 +664,8 @@ namespace Riftborn.Characters.Movement
                     transform.rotation,
                     targetRotation,
                     Mathf.Clamp01(
-                        rotationSpeed * deltaTime));
+                        rotationSpeed *
+                        deltaTime));
         }
 
         private void CacheReferences()
