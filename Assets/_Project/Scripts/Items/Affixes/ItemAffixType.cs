@@ -20,6 +20,8 @@ namespace Riftborn.Items
         ResourceRegeneration = 9,
         AbilityDamage = 10,
         MovementSpeed = 11,
+        CooldownReduction = 12,
+
         Custom = 100
     }
 

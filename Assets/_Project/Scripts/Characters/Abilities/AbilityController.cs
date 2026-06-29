@@ -9,6 +9,9 @@ namespace Riftborn.Characters.Abilities
 {
     public sealed class AbilityController : MonoBehaviour
     {
+        private const float MaximumAdditiveCooldownReduction =
+            0.90f;
+
         [Header("Abilities")]
         [SerializeField]
         private AbilityBase[] equippedAbilities =
@@ -83,7 +86,8 @@ namespace Riftborn.Characters.Abilities
                     return false;
                 }
 
-                if (!resources.Consume(resourceCost))
+                if (!resources.Consume(
+                        resourceCost))
                 {
                     return false;
                 }
@@ -126,14 +130,16 @@ namespace Riftborn.Characters.Abilities
                 return false;
             }
 
-            StartCooldown(ability);
+            StartCooldown(
+                ability);
 
             AbilityUsed?.Invoke(
                 slot,
                 ability);
 
             context?.Events?.
-                RaiseAbilityUsed(ability);
+                RaiseAbilityUsed(
+                    ability);
 
             return true;
         }
@@ -168,7 +174,8 @@ namespace Riftborn.Characters.Abilities
                 return false;
             }
 
-            if (IsOnCooldown(ability))
+            if (IsOnCooldown(
+                    ability))
             {
                 return false;
             }
@@ -196,7 +203,8 @@ namespace Riftborn.Characters.Abilities
                 target);
         }
 
-        public AbilityBase GetAbility(int slot)
+        public AbilityBase GetAbility(
+            int slot)
         {
             return IsValidSlot(slot)
                 ? equippedAbilities[slot]
@@ -225,22 +233,26 @@ namespace Riftborn.Characters.Abilities
             return true;
         }
 
-        public bool ClearAbility(int slot)
+        public bool ClearAbility(
+            int slot)
         {
             return SetAbility(
                 slot,
                 null);
         }
 
-        public bool IsOnCooldown(int slot)
+        public bool IsOnCooldown(
+            int slot)
         {
             return TryGetAbility(
                        slot,
                        out AbilityBase ability) &&
-                   IsOnCooldown(ability);
+                   IsOnCooldown(
+                       ability);
         }
 
-        public float GetRemainingCooldown(int slot)
+        public float GetRemainingCooldown(
+            int slot)
         {
             if (!TryGetAbility(
                     slot,
@@ -253,6 +265,63 @@ namespace Riftborn.Characters.Abilities
                 ability);
         }
 
+        public float GetModifiedCooldown(
+            int slot)
+        {
+            if (!TryGetAbility(
+                    slot,
+                    out AbilityBase ability))
+            {
+                return 0f;
+            }
+
+            return GetModifiedCooldown(
+                ability.Cooldown);
+        }
+
+        public float GetModifiedCooldown(
+            float baseCooldown)
+        {
+            float safeBaseCooldown =
+                Mathf.Max(
+                    0f,
+                    baseCooldown);
+
+            if (safeBaseCooldown <= 0f)
+            {
+                return 0f;
+            }
+
+            GetCooldownReductionTotals(
+                out float flatReduction,
+                out float additiveReduction,
+                out float multiplicativeFactor);
+
+            float cooldownAfterFlat =
+                Mathf.Max(
+                    0f,
+                    safeBaseCooldown -
+                    flatReduction);
+
+            float safeAdditiveReduction =
+                Mathf.Clamp(
+                    additiveReduction,
+                    0f,
+                    MaximumAdditiveCooldownReduction);
+
+            float cooldownAfterAdditive =
+                cooldownAfterFlat *
+                (1f - safeAdditiveReduction);
+
+            float finalCooldown =
+                cooldownAfterAdditive *
+                multiplicativeFactor;
+
+            return Mathf.Max(
+                0f,
+                finalCooldown);
+        }
+
         public float ApplyDamageModifiers(
             float baseDamage)
         {
@@ -262,8 +331,7 @@ namespace Riftborn.Characters.Abilities
                     baseDamage);
 
             float finalDamage =
-                ApplyModifiers(
-                    AbilityModifierType.AbilityDamage,
+                ApplyDamageModifierValues(
                     safeBaseDamage);
 
             return Mathf.Max(
@@ -294,7 +362,8 @@ namespace Riftborn.Characters.Abilities
 
             modifiersByType[
                     modifier.ModifierType]
-                .Add(modifier);
+                .Add(
+                    modifier);
 
             modifiersById.Add(
                 modifier.Id,
@@ -329,7 +398,8 @@ namespace Riftborn.Characters.Abilities
             bool removed =
                 modifiersByType[
                         modifier.ModifierType]
-                    .Remove(modifier);
+                    .Remove(
+                        modifier);
 
             if (removed)
             {
@@ -375,7 +445,8 @@ namespace Riftborn.Characters.Abilities
                         continue;
                     }
 
-                    modifiers.RemoveAt(index);
+                    modifiers.RemoveAt(
+                        index);
 
                     modifiersById.Remove(
                         modifier.Id);
@@ -412,19 +483,32 @@ namespace Riftborn.Characters.Abilities
         {
             GetModifierTotals(
                 AbilityModifierType.AbilityDamage,
-                out float flatValue,
-                out float additivePercent,
-                out float multiplicativeFactor);
+                out float damageFlat,
+                out float damageAdditive,
+                out float damageMultiplicative);
+
+            GetCooldownReductionTotals(
+                out float cooldownFlat,
+                out float cooldownAdditive,
+                out float cooldownMultiplicative);
 
             Debug.Log(
                 $"[ABILITY VALUES] " +
-                $"Dano fixo: {flatValue:0.##} | " +
+                $"Dano fixo: {damageFlat:0.##} | " +
                 $"Dano aditivo: " +
-                $"{additivePercent * 100f:0.##}% | " +
-                $"Multiplicador: " +
-                $"{multiplicativeFactor:0.##}x | " +
-                $"Exemplo sobre 25: " +
-                $"{ApplyDamageModifiers(25f):0.##}",
+                $"{damageAdditive * 100f:0.##}% | " +
+                $"Multiplicador de dano: " +
+                $"{damageMultiplicative:0.##}x | " +
+                $"Dano de exemplo sobre 25: " +
+                $"{ApplyDamageModifiers(25f):0.##} | " +
+                $"Redução fixa de cooldown: " +
+                $"{cooldownFlat:0.##}s | " +
+                $"Redução aditiva de cooldown: " +
+                $"{cooldownAdditive * 100f:0.##}% | " +
+                $"Multiplicador restante de cooldown: " +
+                $"{cooldownMultiplicative:0.##}x | " +
+                $"Cooldown de exemplo sobre 3s: " +
+                $"{GetModifiedCooldown(3f):0.##}s",
                 this);
         }
 
@@ -492,22 +576,40 @@ namespace Riftborn.Characters.Abilities
                 return;
             }
 
-            float cooldownDuration =
+            float baseCooldown =
                 Mathf.Max(
                     0f,
                     ability.Cooldown);
 
-            if (cooldownDuration <= 0f)
+            float modifiedCooldown =
+                GetModifiedCooldown(
+                    baseCooldown);
+
+            if (modifiedCooldown <= 0f)
             {
                 cooldownEnds.Remove(
                     ability);
+
+                Debug.Log(
+                    $"[ABILITY COOLDOWN] " +
+                    $"{ability.AbilityId} | " +
+                    $"Base: {baseCooldown:0.##}s | " +
+                    "Final: 0s",
+                    this);
 
                 return;
             }
 
             cooldownEnds[ability] =
                 Time.time +
-                cooldownDuration;
+                modifiedCooldown;
+
+            Debug.Log(
+                $"[ABILITY COOLDOWN] " +
+                $"{ability.AbilityId} | " +
+                $"Base: {baseCooldown:0.##}s | " +
+                $"Final: {modifiedCooldown:0.##}s",
+                this);
         }
 
         private bool TryGetAbility(
@@ -516,7 +618,8 @@ namespace Riftborn.Characters.Abilities
         {
             ability = null;
 
-            if (!IsValidSlot(slot))
+            if (!IsValidSlot(
+                    slot))
             {
                 return false;
             }
@@ -527,7 +630,8 @@ namespace Riftborn.Characters.Abilities
             return ability != null;
         }
 
-        private bool IsValidSlot(int slot)
+        private bool IsValidSlot(
+            int slot)
         {
             return equippedAbilities != null &&
                    slot >= 0 &&
@@ -535,12 +639,11 @@ namespace Riftborn.Characters.Abilities
                    equippedAbilities.Length;
         }
 
-        private float ApplyModifiers(
-            AbilityModifierType modifierType,
+        private float ApplyDamageModifierValues(
             float baseValue)
         {
             GetModifierTotals(
-                modifierType,
+                AbilityModifierType.AbilityDamage,
                 out float flatValue,
                 out float additivePercent,
                 out float multiplicativeFactor);
@@ -591,6 +694,50 @@ namespace Riftborn.Characters.Abilities
                 multiplicativeFactor *=
                     1f +
                     modifier.MultiplicativePercent;
+            }
+        }
+
+        private void GetCooldownReductionTotals(
+            out float flatReduction,
+            out float additiveReduction,
+            out float multiplicativeFactor)
+        {
+            EnsureModifiersInitialized();
+
+            flatReduction = 0f;
+            additiveReduction = 0f;
+            multiplicativeFactor = 1f;
+
+            List<AbilityModifier> modifiers =
+                modifiersByType[
+                    AbilityModifierType.CooldownReduction];
+
+            for (int index = 0;
+                 index < modifiers.Count;
+                 index++)
+            {
+                AbilityModifier modifier =
+                    modifiers[index];
+
+                flatReduction +=
+                    Mathf.Max(
+                        0f,
+                        modifier.FlatValue);
+
+                additiveReduction +=
+                    Mathf.Max(
+                        0f,
+                        modifier.AdditivePercent);
+
+                float multiplicativeReduction =
+                    Mathf.Clamp(
+                        modifier.MultiplicativePercent,
+                        0f,
+                        0.95f);
+
+                multiplicativeFactor *=
+                    1f -
+                    multiplicativeReduction;
             }
         }
 
