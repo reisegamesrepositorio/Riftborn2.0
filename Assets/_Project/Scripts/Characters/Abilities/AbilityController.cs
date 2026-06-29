@@ -12,6 +12,9 @@ namespace Riftborn.Characters.Abilities
         private const float MaximumAdditiveCooldownReduction =
             0.90f;
 
+        private const float MaximumAdditiveResourceCostReduction =
+            0.90f;
+
         [Header("Abilities")]
         [SerializeField]
         private AbilityBase[] equippedAbilities =
@@ -72,14 +75,18 @@ namespace Riftborn.Characters.Abilities
             ResourceController resources =
                 context?.Resources;
 
-            float resourceCost =
+            float baseResourceCost =
                 Mathf.Max(
                     0f,
                     ability.ResourceCost);
 
+            float finalResourceCost =
+                GetModifiedResourceCost(
+                    baseResourceCost);
+
             bool resourceConsumed = false;
 
-            if (resourceCost > 0f)
+            if (finalResourceCost > 0f)
             {
                 if (resources == null)
                 {
@@ -87,7 +94,7 @@ namespace Riftborn.Characters.Abilities
                 }
 
                 if (!resources.Consume(
-                        resourceCost))
+                        finalResourceCost))
                 {
                     return false;
                 }
@@ -109,7 +116,7 @@ namespace Riftborn.Characters.Abilities
                 if (resourceConsumed)
                 {
                     resources.Restore(
-                        resourceCost);
+                        finalResourceCost);
                 }
 
                 Debug.LogException(
@@ -124,7 +131,7 @@ namespace Riftborn.Characters.Abilities
                 if (resourceConsumed)
                 {
                     resources.Restore(
-                        resourceCost);
+                        finalResourceCost);
                 }
 
                 return false;
@@ -132,6 +139,18 @@ namespace Riftborn.Characters.Abilities
 
             StartCooldown(
                 ability);
+
+            if (baseResourceCost > 0f)
+            {
+                Debug.Log(
+                    $"[ABILITY RESOURCE] " +
+                    $"{ability.AbilityId} | " +
+                    $"Custo-base: " +
+                    $"{baseResourceCost:0.##} | " +
+                    $"Custo final: " +
+                    $"{finalResourceCost:0.##}",
+                    this);
+            }
 
             AbilityUsed?.Invoke(
                 slot,
@@ -181,8 +200,7 @@ namespace Riftborn.Characters.Abilities
             }
 
             float resourceCost =
-                Mathf.Max(
-                    0f,
+                GetModifiedResourceCost(
                     ability.ResourceCost);
 
             if (resourceCost > 0f)
@@ -320,6 +338,63 @@ namespace Riftborn.Characters.Abilities
             return Mathf.Max(
                 0f,
                 finalCooldown);
+        }
+
+        public float GetModifiedResourceCost(
+            int slot)
+        {
+            if (!TryGetAbility(
+                    slot,
+                    out AbilityBase ability))
+            {
+                return 0f;
+            }
+
+            return GetModifiedResourceCost(
+                ability.ResourceCost);
+        }
+
+        public float GetModifiedResourceCost(
+            float baseResourceCost)
+        {
+            float safeBaseResourceCost =
+                Mathf.Max(
+                    0f,
+                    baseResourceCost);
+
+            if (safeBaseResourceCost <= 0f)
+            {
+                return 0f;
+            }
+
+            GetResourceCostReductionTotals(
+                out float flatReduction,
+                out float additiveReduction,
+                out float multiplicativeFactor);
+
+            float costAfterFlat =
+                Mathf.Max(
+                    0f,
+                    safeBaseResourceCost -
+                    flatReduction);
+
+            float safeAdditiveReduction =
+                Mathf.Clamp(
+                    additiveReduction,
+                    0f,
+                    MaximumAdditiveResourceCostReduction);
+
+            float costAfterAdditive =
+                costAfterFlat *
+                (1f - safeAdditiveReduction);
+
+            float finalResourceCost =
+                costAfterAdditive *
+                multiplicativeFactor;
+
+            return Mathf.Max(
+                0f,
+                finalResourceCost);
         }
 
         public float ApplyDamageModifiers(
@@ -492,6 +567,11 @@ namespace Riftborn.Characters.Abilities
                 out float cooldownAdditive,
                 out float cooldownMultiplicative);
 
+            GetResourceCostReductionTotals(
+                out float costFlat,
+                out float costAdditive,
+                out float costMultiplicative);
+
             Debug.Log(
                 $"[ABILITY VALUES] " +
                 $"Dano fixo: {damageFlat:0.##} | " +
@@ -508,7 +588,15 @@ namespace Riftborn.Characters.Abilities
                 $"Multiplicador restante de cooldown: " +
                 $"{cooldownMultiplicative:0.##}x | " +
                 $"Cooldown de exemplo sobre 3s: " +
-                $"{GetModifiedCooldown(3f):0.##}s",
+                $"{GetModifiedCooldown(3f):0.##}s | " +
+                $"Redução fixa de custo: " +
+                $"{costFlat:0.##} | " +
+                $"Redução aditiva de custo: " +
+                $"{costAdditive * 100f:0.##}% | " +
+                $"Multiplicador restante de custo: " +
+                $"{costMultiplicative:0.##}x | " +
+                $"Custo de exemplo sobre 50: " +
+                $"{GetModifiedResourceCost(50f):0.##}",
                 this);
         }
 
@@ -711,6 +799,50 @@ namespace Riftborn.Characters.Abilities
             List<AbilityModifier> modifiers =
                 modifiersByType[
                     AbilityModifierType.CooldownReduction];
+
+            for (int index = 0;
+                 index < modifiers.Count;
+                 index++)
+            {
+                AbilityModifier modifier =
+                    modifiers[index];
+
+                flatReduction +=
+                    Mathf.Max(
+                        0f,
+                        modifier.FlatValue);
+
+                additiveReduction +=
+                    Mathf.Max(
+                        0f,
+                        modifier.AdditivePercent);
+
+                float multiplicativeReduction =
+                    Mathf.Clamp(
+                        modifier.MultiplicativePercent,
+                        0f,
+                        0.95f);
+
+                multiplicativeFactor *=
+                    1f -
+                    multiplicativeReduction;
+            }
+        }
+
+        private void GetResourceCostReductionTotals(
+            out float flatReduction,
+            out float additiveReduction,
+            out float multiplicativeFactor)
+        {
+            EnsureModifiersInitialized();
+
+            flatReduction = 0f;
+            additiveReduction = 0f;
+            multiplicativeFactor = 1f;
+
+            List<AbilityModifier> modifiers =
+                modifiersByType[
+                    AbilityModifierType.ResourceCostReduction];
 
             for (int index = 0;
                  index < modifiers.Count;

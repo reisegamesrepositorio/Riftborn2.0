@@ -520,6 +520,13 @@ namespace Riftborn.Characters.Equipment
                         modifierId,
                         AbilityModifierType.CooldownReduction);
 
+                case ItemAffixEffectType.ResourceCostReduction:
+                    return ApplyAbilityAffix(
+                        itemInstance,
+                        roll,
+                        modifierId,
+                        AbilityModifierType.ResourceCostReduction);
+
                 default:
                     Debug.LogWarning(
                         $"[EQUIPMENT] O efeito " +

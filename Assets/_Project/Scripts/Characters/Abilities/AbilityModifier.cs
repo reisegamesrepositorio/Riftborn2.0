@@ -5,7 +5,8 @@ namespace Riftborn.Characters.Abilities
     public enum AbilityModifierType
     {
         AbilityDamage = 0,
-        CooldownReduction = 1
+        CooldownReduction = 1,
+        ResourceCostReduction = 2
     }
 
     public sealed class AbilityModifier
