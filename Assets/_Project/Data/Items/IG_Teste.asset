@@ -12,14 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57e5d62eca74b5b44bf632daaebe2cbb, type: 3}
   m_Name: IG_Teste
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Items.ItemGenerationProfile
-  item: {fileID: 11400000, guid: 5397165cec1475e4f93787c509268c83, type: 2}
+  item: {fileID: 11400000, guid: 42e972ba606355242a2139e247adf4f1, type: 2}
   minimumQuantity: 1
   maximumQuantity: 1
   rarities:
   - rarity: {fileID: 11400000, guid: b72e50ae169d978449edf9f218789271, type: 2}
     weight: 1
   prefixPool:
-  - {fileID: 11400000, guid: 6bf1b32bca013474890df8b15e46406e, type: 2}
+  - {fileID: 11400000, guid: 35cd969846f9df547b2c8f3b8ad1b8c8, type: 2}
   suffixPool:
   - {fileID: 11400000, guid: 77f7181fa06e7134d94b1b19c094c652, type: 2}
   fillAllAffixSlots: 1

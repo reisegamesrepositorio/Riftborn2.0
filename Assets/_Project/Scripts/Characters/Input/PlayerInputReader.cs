@@ -1,4 +1,5 @@
 using Riftborn.Characters.Abilities;
+using Riftborn.Characters.Combat;
 using Riftborn.Characters.Core;
 using Riftborn.Characters.Movement;
 using Riftborn.Characters.Targeting;
@@ -24,6 +25,9 @@ namespace Riftborn.Characters.Input
         private string selectTargetActionName = "SelectTarget";
 
         [SerializeField]
+        private string basicAttackActionName = "BasicAttack";
+
+        [SerializeField]
         private string ability1ActionName = "Ability1";
 
         [Header("Target Selection")]
@@ -41,6 +45,9 @@ namespace Riftborn.Characters.Input
         private MovementController movementController;
 
         [SerializeField]
+        private CombatController combatController;
+
+        [SerializeField]
         private AbilityController abilityController;
 
         [SerializeField]
@@ -48,10 +55,12 @@ namespace Riftborn.Characters.Input
 
         private InputAction moveAction;
         private InputAction selectTargetAction;
+        private InputAction basicAttackAction;
         private InputAction ability1Action;
 
         private bool ownsMoveAction;
         private bool ownsSelectTargetAction;
+        private bool ownsBasicAttackAction;
         private bool ownsAbility1Action;
 
         private void Awake()
@@ -67,6 +76,7 @@ namespace Riftborn.Characters.Input
 
             moveAction?.Enable();
             selectTargetAction?.Enable();
+            basicAttackAction?.Enable();
             ability1Action?.Enable();
         }
 
@@ -74,9 +84,11 @@ namespace Riftborn.Characters.Input
         {
             moveAction?.Disable();
             selectTargetAction?.Disable();
+            basicAttackAction?.Disable();
             ability1Action?.Disable();
 
-            movementController?.SetMoveInput(Vector2.zero);
+            movementController?.SetMoveInput(
+                Vector2.zero);
         }
 
         private void OnDestroy()
@@ -91,6 +103,11 @@ namespace Riftborn.Characters.Input
                 selectTargetAction?.Dispose();
             }
 
+            if (ownsBasicAttackAction)
+            {
+                basicAttackAction?.Dispose();
+            }
+
             if (ownsAbility1Action)
             {
                 ability1Action?.Dispose();
@@ -102,11 +119,11 @@ namespace Riftborn.Characters.Input
             ReadMovement();
 
             /*
-             * A seleção é processada antes das habilidades.
-             * Assim, selecionar e usar uma habilidade no mesmo
-             * frame continua utilizando o alvo mais recente.
+             * A seleção acontece antes dos ataques e habilidades,
+             * garantindo que ambos utilizem o alvo mais recente.
              */
             ReadTargetSelection();
+            ReadBasicAttack();
             ReadAbilities();
         }
 
@@ -126,10 +143,6 @@ namespace Riftborn.Characters.Input
                 selectTargetAction != null &&
                 selectTargetAction.WasPressedThisFrame();
 
-            /*
-             * Fallback direto, caso não exista uma action
-             * SelectTarget configurada no InputActionAsset.
-             */
             if (Mouse.current != null &&
                 Mouse.current.leftButton.wasPressedThisFrame)
             {
@@ -141,10 +154,6 @@ namespace Riftborn.Characters.Input
                 return;
             }
 
-            /*
-             * Evita selecionar objetos atrás de uma interface.
-             * Não interfere enquanto ainda não houver HUD.
-             */
             if (EventSystem.current != null &&
                 EventSystem.current.IsPointerOverGameObject())
             {
@@ -172,7 +181,8 @@ namespace Riftborn.Characters.Input
                 Mouse.current.position.ReadValue();
 
             Ray ray =
-                cameraToUse.ScreenPointToRay(mousePosition);
+                cameraToUse.ScreenPointToRay(
+                    mousePosition);
 
             bool hitSomething =
                 Physics.Raycast(
@@ -194,7 +204,8 @@ namespace Riftborn.Characters.Input
             }
 
             CharacterContext clickedCharacter =
-                hit.collider.GetComponentInParent<CharacterContext>();
+                hit.collider
+                    .GetComponentInParent<CharacterContext>();
 
             if (clickedCharacter == null)
             {
@@ -209,7 +220,8 @@ namespace Riftborn.Characters.Input
             }
 
             bool targetSelected =
-                targetingController.SetTarget(clickedCharacter);
+                targetingController.SetTarget(
+                    clickedCharacter);
 
             if (targetSelected)
             {
@@ -221,11 +233,8 @@ namespace Riftborn.Characters.Input
                 return;
             }
 
-            /*
-             * O TargetingController rejeita o próprio personagem,
-             * personagens mortos ou outros alvos inválidos.
-             */
-            if (!targetingController.IsValidTarget(clickedCharacter))
+            if (!targetingController.IsValidTarget(
+                    clickedCharacter))
             {
                 targetingController.ClearTarget();
 
@@ -234,6 +243,49 @@ namespace Riftborn.Characters.Input
                     "não é um alvo válido.",
                     clickedCharacter);
             }
+        }
+
+        private void ReadBasicAttack()
+        {
+            bool attackPressed =
+                basicAttackAction != null &&
+                basicAttackAction.WasPressedThisFrame();
+
+            /*
+             * Fallback provisório:
+             * F executa o ataque básico mesmo que a action
+             * BasicAttack ainda não exista no InputActionAsset.
+             */
+            if (Keyboard.current != null &&
+                Keyboard.current.fKey.wasPressedThisFrame)
+            {
+                attackPressed = true;
+            }
+
+            if (!attackPressed)
+            {
+                return;
+            }
+
+            CharacterContext target =
+                targetingController?.CurrentTarget;
+
+            Debug.Log(
+                $"[BASIC ATTACK TEST] F pressionado. " +
+                $"CombatController: " +
+                $"{(combatController != null ? "OK" : "NULL")} | " +
+                $"Target: " +
+                $"{(target != null ? target.name : "NULL")}",
+                this);
+
+            bool succeeded =
+                combatController != null &&
+                combatController.TryBasicAttack(target);
+
+            Debug.Log(
+                $"[BASIC ATTACK TEST] Resultado: " +
+                $"{(succeeded ? "SUCESSO" : "FALHOU")}",
+                this);
         }
 
         private void ReadAbilities()
@@ -320,6 +372,22 @@ namespace Riftborn.Characters.Input
                 }
             }
 
+            if (basicAttackAction == null)
+            {
+                basicAttackAction =
+                    actionMap?.FindAction(
+                        basicAttackActionName,
+                        throwIfNotFound: false);
+
+                if (basicAttackAction == null)
+                {
+                    basicAttackAction =
+                        CreateFallbackBasicAttackAction();
+
+                    ownsBasicAttackAction = true;
+                }
+            }
+
             if (ability1Action == null)
             {
                 ability1Action =
@@ -342,6 +410,9 @@ namespace Riftborn.Characters.Input
             movementController ??=
                 GetComponent<MovementController>();
 
+            combatController ??=
+                GetComponent<CombatController>();
+
             abilityController ??=
                 GetComponent<AbilityController>();
 
@@ -350,7 +421,8 @@ namespace Riftborn.Characters.Input
 
             if (selectionCamera == null)
             {
-                selectionCamera = Camera.main;
+                selectionCamera =
+                    Camera.main;
             }
         }
 
@@ -372,7 +444,8 @@ namespace Riftborn.Characters.Input
                 .With("Right", "<Keyboard>/d")
                 .With("Right", "<Keyboard>/rightArrow");
 
-            action.AddBinding("<Gamepad>/leftStick");
+            action.AddBinding(
+                "<Gamepad>/leftStick");
 
             return action;
         }
@@ -385,7 +458,22 @@ namespace Riftborn.Characters.Input
                     name: "SelectTarget",
                     type: InputActionType.Button);
 
-            action.AddBinding("<Mouse>/leftButton");
+            action.AddBinding(
+                "<Mouse>/leftButton");
+
+            return action;
+        }
+
+        private static InputAction
+            CreateFallbackBasicAttackAction()
+        {
+            InputAction action =
+                new InputAction(
+                    name: "BasicAttack",
+                    type: InputActionType.Button);
+
+            action.AddBinding(
+                "<Keyboard>/f");
 
             return action;
         }
@@ -398,8 +486,11 @@ namespace Riftborn.Characters.Input
                     name: "Ability1",
                     type: InputActionType.Button);
 
-            action.AddBinding("<Keyboard>/q");
-            action.AddBinding("<Gamepad>/buttonWest");
+            action.AddBinding(
+                "<Keyboard>/q");
+
+            action.AddBinding(
+                "<Gamepad>/buttonWest");
 
             return action;
         }

@@ -17,4 +17,4 @@ MonoBehaviour:
   sortOrder: 4
   maxPrefixes: 2
   maxSuffixes: 2
-  baseValueMultiplier: 1
+  baseValueMultiplier: 2

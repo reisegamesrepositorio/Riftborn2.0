@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Riftborn.Characters.Combat;
 using Riftborn.Characters.Defense;
 using Riftborn.Characters.Stats;
 using Riftborn.Items;
@@ -15,6 +16,9 @@ namespace Riftborn.Characters.Equipment
 
         [SerializeField]
         private DefenseController defense;
+
+        [SerializeField]
+        private CombatController combat;
 
         private readonly Dictionary<EquipmentSlot, ItemInstance>
             equipped = new();
@@ -417,6 +421,34 @@ namespace Riftborn.Characters.Equipment
                         modifierId,
                         DefenseType.Magical);
 
+                case ItemAffixEffectType.BasicAttackDamage:
+                    return ApplyCombatAffix(
+                        itemInstance,
+                        roll,
+                        modifierId,
+                        CombatModifierType.BasicAttackDamage);
+
+                case ItemAffixEffectType.AttackSpeed:
+                    return ApplyCombatAffix(
+                        itemInstance,
+                        roll,
+                        modifierId,
+                        CombatModifierType.AttackSpeed);
+
+                case ItemAffixEffectType.CriticalChance:
+                    return ApplyCombatAffix(
+                        itemInstance,
+                        roll,
+                        modifierId,
+                        CombatModifierType.CriticalChance);
+
+                case ItemAffixEffectType.CriticalMultiplier:
+                    return ApplyCombatAffix(
+                        itemInstance,
+                        roll,
+                        modifierId,
+                        CombatModifierType.CriticalMultiplier);
+
                 default:
                     Debug.LogWarning(
                         $"[EQUIPMENT] O efeito " +
@@ -495,6 +527,36 @@ namespace Riftborn.Characters.Equipment
             return defense.AddModifier(modifier);
         }
 
+        private bool ApplyCombatAffix(
+            ItemInstance itemInstance,
+            ItemAffixRoll roll,
+            string modifierId,
+            CombatModifierType modifierType)
+        {
+            if (combat == null)
+            {
+                return false;
+            }
+
+            ConvertAffixValue(
+                roll,
+                out float flatValue,
+                out float additivePercent,
+                out float multiplicativePercent);
+
+            CombatModifier modifier =
+                new CombatModifier(
+                    id: modifierId,
+                    source: itemInstance,
+                    modifierType: modifierType,
+                    flatValue: flatValue,
+                    additivePercent: additivePercent,
+                    multiplicativePercent:
+                        multiplicativePercent);
+
+            return combat.AddModifier(modifier);
+        }
+
         private static void ConvertAffixValue(
             ItemAffixRoll roll,
             out float flatValue,
@@ -541,6 +603,9 @@ namespace Riftborn.Characters.Equipment
                 itemInstance);
 
             defense?.RemoveModifiersFromSource(
+                itemInstance);
+
+            combat?.RemoveModifiersFromSource(
                 itemInstance);
         }
 
@@ -602,6 +667,9 @@ namespace Riftborn.Characters.Equipment
 
             defense ??=
                 GetComponent<DefenseController>();
+
+            combat ??=
+                GetComponent<CombatController>();
         }
 
         private void ValidateReferences()
@@ -619,6 +687,14 @@ namespace Riftborn.Characters.Equipment
                 Debug.LogError(
                     $"{nameof(EquipmentController)} requires a " +
                     $"{nameof(DefenseController)}.",
+                    this);
+            }
+
+            if (combat == null)
+            {
+                Debug.LogError(
+                    $"{nameof(EquipmentController)} requires a " +
+                    $"{nameof(CombatController)}.",
                     this);
             }
         }

@@ -76,7 +76,7 @@ namespace Riftborn.Characters.Equipment
     [CreateAssetMenu(
         fileName = "NewEquipmentItem",
         menuName = "Riftborn/Items/Equipment Item")]
-    public sealed class EquipmentItemData : ItemData
+    public class EquipmentItemData : ItemData
     {
         [Header("Equipment")]
         [SerializeField]
