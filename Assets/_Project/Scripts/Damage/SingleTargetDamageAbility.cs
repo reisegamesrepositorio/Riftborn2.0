@@ -24,6 +24,20 @@ namespace Riftborn.Characters.Abilities
         [SerializeField, Min(0f)]
         private float range = 8f;
 
+        [Header("Projectile")]
+        [SerializeField]
+        private SingleTargetDamageProjectile projectilePrefab;
+
+        [Tooltip(
+            "Altura em que o projétil nasce em relação ao personagem.")]
+        [SerializeField, Min(0f)]
+        private float projectileSpawnHeight = 0.7f;
+
+        [Tooltip(
+            "Distância em que o projétil nasce na direção do alvo.")]
+        [SerializeField, Min(0f)]
+        private float projectileForwardOffset = 0.5f;
+
         [Header("Critical")]
         [SerializeField]
         private bool canCrit;
@@ -60,12 +74,22 @@ namespace Riftborn.Characters.Abilities
                 return false;
             }
 
+            if (!target.gameObject.activeInHierarchy)
+            {
+                return false;
+            }
+
             if (target.Health == null)
             {
                 return false;
             }
 
             if (target.Health.IsDead)
+            {
+                return false;
+            }
+
+            if (projectilePrefab == null)
             {
                 return false;
             }
@@ -84,57 +108,111 @@ namespace Riftborn.Characters.Abilities
         {
             if (!CanExecute(caster, target))
             {
-                return false;
-            }
-
-            DamageRequest request =
-                new DamageRequest
+                if (projectilePrefab == null)
                 {
-                    Source = caster,
-                    Target = target,
+                    Debug.LogError(
+                        $"[ABILITY] A habilidade '{AbilityId}' " +
+                        "não possui Projectile Prefab configurado.",
+                        caster);
+                }
 
-                    BaseValue = baseDamage,
-                    Scaling = scaling,
-
-                    Type = damageType,
-                    Tags = BuildDamageTags(),
-
-                    CanCrit = canCrit,
-                    CriticalChance = criticalChance,
-                    CriticalMultiplier =
-                        criticalMultiplier,
-
-                    PercentPenetration =
-                        percentPenetration,
-
-                    FlatPenetration =
-                        flatPenetration,
-
-                    Origin = DamageOrigin.Ability,
-                    OriginObject = this
-                };
-
-            DamageResult result =
-                DamageCalculator.Calculate(request);
-
-            var application =
-                target.Health.ApplyDamage(result);
-
-            if (application == null)
-            {
                 return false;
             }
 
-            Debug.Log(
-                $"[ABILITY] {AbilityId} atingiu " +
-                $"{target.name} por " +
-                $"{result.FinalAmount:0.##} de dano. " +
-                $"Vida restante: " +
-                $"{target.Health.CurrentHealth:0.##}/" +
-                $"{target.Health.MaxHealth:0.##}",
+            DamageRequest damageRequest =
+                CreateDamageRequest(
+                    caster,
+                    target);
+
+            Vector3 directionToTarget =
+                target.transform.position -
+                caster.transform.position;
+
+            directionToTarget.y = 0f;
+
+            if (directionToTarget.sqrMagnitude <=
+                Mathf.Epsilon)
+            {
+                directionToTarget =
+                    caster.transform.forward;
+            }
+
+            directionToTarget.Normalize();
+
+            Vector3 spawnPosition =
+                caster.transform.position +
+                Vector3.up *
+                projectileSpawnHeight +
+                directionToTarget *
+                projectileForwardOffset;
+
+            Quaternion spawnRotation =
+                Quaternion.LookRotation(
+                    directionToTarget,
+                    Vector3.up);
+
+            SingleTargetDamageProjectile projectile =
+                Instantiate(
+                    projectilePrefab,
+                    spawnPosition,
+                    spawnRotation);
+
+            if (projectile == null)
+            {
+                Debug.LogError(
+                    $"[ABILITY] Não foi possível criar o projétil " +
+                    $"da habilidade '{AbilityId}'.",
+                    caster);
+
+                return false;
+            }
+
+            projectile.Initialize(
+                damageRequest,
                 target);
 
+            caster.AnimationController?.
+                PlayAbility();
+
+            Debug.Log(
+                $"[ABILITY] {AbilityId} lançado contra " +
+                $"{target.name}.",
+                caster);
+
             return true;
+        }
+
+        private DamageRequest CreateDamageRequest(
+            CharacterContext caster,
+            CharacterContext target)
+        {
+            return new DamageRequest
+            {
+                Source = caster,
+                Target = target,
+
+                BaseValue = baseDamage,
+                Scaling = scaling,
+
+                Type = damageType,
+                Tags = BuildDamageTags(),
+
+                CanCrit = canCrit,
+                CriticalChance = criticalChance,
+                CriticalMultiplier =
+                    criticalMultiplier,
+
+                PercentPenetration =
+                    percentPenetration,
+
+                FlatPenetration =
+                    flatPenetration,
+
+                Origin =
+                    DamageOrigin.Ability,
+
+                OriginObject = this
+            };
         }
 
         private DamageTag BuildDamageTags()
@@ -163,16 +241,33 @@ namespace Riftborn.Characters.Abilities
             base.OnValidate();
 
             baseDamage =
-                Mathf.Max(0f, baseDamage);
+                Mathf.Max(
+                    0f,
+                    baseDamage);
 
             scaling =
-                Mathf.Max(0f, scaling);
+                Mathf.Max(
+                    0f,
+                    scaling);
 
             range =
-                Mathf.Max(0f, range);
+                Mathf.Max(
+                    0f,
+                    range);
+
+            projectileSpawnHeight =
+                Mathf.Max(
+                    0f,
+                    projectileSpawnHeight);
+
+            projectileForwardOffset =
+                Mathf.Max(
+                    0f,
+                    projectileForwardOffset);
 
             criticalChance =
-                Mathf.Clamp01(criticalChance);
+                Mathf.Clamp01(
+                    criticalChance);
 
             criticalMultiplier =
                 Mathf.Max(

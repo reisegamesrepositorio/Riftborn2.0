@@ -19,6 +19,9 @@ MonoBehaviour:
   scaling: 1
   damageType: 1
   range: 8
+  projectilePrefab: {fileID: 470505499939365613, guid: c7873ef7d5ef2e04aa5c9d18e483aedb, type: 3}
+  projectileSpawnHeight: 0.7
+  projectileForwardOffset: 0.5
   canCrit: 0
   criticalChance: 0
   criticalMultiplier: 1.5
