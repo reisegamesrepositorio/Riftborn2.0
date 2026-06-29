@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: FireBall_Test
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Abilities.SingleTargetDamageAbility
   abilityId: fireball_test
-  cooldown: 3
+  cooldown: 1
   resourceCost: 0
   baseDamage: 25
   scaling: 1
