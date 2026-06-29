@@ -23,6 +23,23 @@ namespace Riftborn.Items
         [SerializeField, Min(0f)]
         private float rollWeight = 1f;
 
+        public ItemAffixTierDefinition()
+        {
+        }
+
+        public ItemAffixTierDefinition(
+            int tier,
+            float minimumValue,
+            float maximumValue,
+            float rollWeight)
+        {
+            Configure(
+                tier,
+                minimumValue,
+                maximumValue,
+                rollWeight);
+        }
+
         public int Tier =>
             Mathf.Clamp(
                 tier,
@@ -58,6 +75,34 @@ namespace Riftborn.Items
                 MaximumValue);
         }
 
+        public void Configure(
+            int newTier,
+            float newMinimumValue,
+            float newMaximumValue,
+            float newRollWeight)
+        {
+            tier =
+                Mathf.Clamp(
+                    newTier,
+                    1,
+                    10);
+
+            minimumValue =
+                Mathf.Min(
+                    newMinimumValue,
+                    newMaximumValue);
+
+            maximumValue =
+                Mathf.Max(
+                    newMinimumValue,
+                    newMaximumValue);
+
+            rollWeight =
+                Mathf.Max(
+                    0f,
+                    newRollWeight);
+        }
+
         public void Validate()
         {
             tier =
@@ -71,13 +116,20 @@ namespace Riftborn.Items
                     0f,
                     rollWeight);
 
-            if (minimumValue <= maximumValue)
+            if (minimumValue <=
+                maximumValue)
             {
                 return;
             }
 
-            (minimumValue, maximumValue) =
-                (maximumValue, minimumValue);
+            (
+                minimumValue,
+                maximumValue
+            ) =
+            (
+                maximumValue,
+                minimumValue
+            );
         }
     }
 
@@ -109,6 +161,14 @@ namespace Riftborn.Items
         [SerializeField]
         private CharacterStat characterStat;
 
+        [Header("Tier Generation")]
+        [Tooltip(
+            "Perfil opcional utilizado para gerar " +
+            "automaticamente os Tiers 1 até 10.")]
+        [SerializeField]
+        private ItemAffixTierProgressionData
+            progressionProfile;
+
         [Header("Tiers")]
         [Tooltip(
             "Tier 1 é o mais forte. " +
@@ -137,8 +197,63 @@ namespace Riftborn.Items
         public CharacterStat CharacterStat =>
             characterStat;
 
+        public ItemAffixTierProgressionData
+            ProgressionProfile =>
+                progressionProfile;
+
         public IReadOnlyList<ItemAffixTierDefinition> Tiers =>
             tiers;
+
+        public bool GenerateTiersFromProgression()
+        {
+            if (progressionProfile == null)
+            {
+                return false;
+            }
+
+            IReadOnlyList<ItemAffixTierDefinition>
+                generatedDefinitions =
+                    progressionProfile
+                        .GenerateTierDefinitions();
+
+            if (generatedDefinitions == null ||
+                generatedDefinitions.Count == 0)
+            {
+                return false;
+            }
+
+            tiers =
+                new List<ItemAffixTierDefinition>(
+                    generatedDefinitions.Count);
+
+            for (int index = 0;
+                 index <
+                 generatedDefinitions.Count;
+                 index++)
+            {
+                ItemAffixTierDefinition source =
+                    generatedDefinitions[index];
+
+                if (source == null)
+                {
+                    continue;
+                }
+
+                ItemAffixTierDefinition copy =
+                    new ItemAffixTierDefinition(
+                        source.Tier,
+                        source.MinimumValue,
+                        source.MaximumValue,
+                        source.RollWeight);
+
+                tiers.Add(
+                    copy);
+            }
+
+            ValidateTiers();
+
+            return tiers.Count > 0;
+        }
 
         public bool TryGetTier(
             int requestedTier,
@@ -164,7 +279,9 @@ namespace Riftborn.Items
                     continue;
                 }
 
-                definition = candidate;
+                definition =
+                    candidate;
+
                 return true;
             }
 
@@ -186,6 +303,10 @@ namespace Riftborn.Items
 
             rolledValue =
                 definition.RollValue();
+
+            rolledValue =
+                ApplyProgressionRounding(
+                    rolledValue);
 
             return true;
         }
@@ -246,7 +367,8 @@ namespace Riftborn.Items
                 accumulatedWeight +=
                     tierDefinition.RollWeight;
 
-                if (roll > accumulatedWeight)
+                if (roll >
+                    accumulatedWeight)
                 {
                     continue;
                 }
@@ -271,16 +393,41 @@ namespace Riftborn.Items
                 return false;
             }
 
+            float rolledValue =
+                selectedTier.RollValue();
+
+            rolledValue =
+                ApplyProgressionRounding(
+                    rolledValue);
+
             affixRoll =
                 new ItemAffixRoll(
                     this,
                     selectedTier.Tier,
-                    selectedTier.RollValue());
+                    rolledValue);
 
             return true;
         }
 
+        private float ApplyProgressionRounding(
+            float value)
+        {
+            if (progressionProfile == null)
+            {
+                return value;
+            }
+
+            return progressionProfile
+                .RoundGeneratedValue(
+                    value);
+        }
+
         private void OnValidate()
+        {
+            ValidateTiers();
+        }
+
+        private void ValidateTiers()
         {
             tiers ??=
                 new List<ItemAffixTierDefinition>();
@@ -288,7 +435,8 @@ namespace Riftborn.Items
             HashSet<int> usedTiers =
                 new();
 
-            for (int index = tiers.Count - 1;
+            for (int index =
+                     tiers.Count - 1;
                  index >= 0;
                  index--)
             {
@@ -297,24 +445,29 @@ namespace Riftborn.Items
 
                 if (definition == null)
                 {
-                    tiers.RemoveAt(index);
+                    tiers.RemoveAt(
+                        index);
+
                     continue;
                 }
 
                 definition.Validate();
 
-                if (!usedTiers.Add(definition.Tier))
+                if (!usedTiers.Add(
+                        definition.Tier))
                 {
                     Debug.LogWarning(
                         $"O afixo '{name}' possui mais de uma " +
-                        $"definição para o Tier {definition.Tier}.",
+                        $"definição para o Tier " +
+                        $"{definition.Tier}.",
                         this);
                 }
             }
 
             tiers.Sort(
                 (left, right) =>
-                    left.Tier.CompareTo(right.Tier));
+                    left.Tier.CompareTo(
+                        right.Tier));
         }
     }
 }

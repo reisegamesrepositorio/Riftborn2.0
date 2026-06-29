@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using Riftborn.Characters.Defense;
 using Riftborn.Characters.Equipment;
@@ -9,6 +10,16 @@ namespace Riftborn.Items
 {
     public sealed class EquipmentSystemTester : MonoBehaviour
     {
+        private static readonly CharacterStat[]
+            ObservedStats =
+            {
+                CharacterStat.STR,
+                CharacterStat.DEX,
+                CharacterStat.WIS,
+                CharacterStat.ISP,
+                CharacterStat.FORT
+            };
+
         [Header("Generation")]
         [SerializeField]
         private ItemGenerationProfile profile;
@@ -26,11 +37,7 @@ namespace Riftborn.Items
         [SerializeField]
         private DefenseController defense;
 
-        [Header("Values To Observe")]
-        [SerializeField]
-        private CharacterStat observedStat =
-            CharacterStat.STR;
-
+        [Header("Defense To Observe")]
         [SerializeField]
         private DefenseType observedDefense =
             DefenseType.Physical;
@@ -98,9 +105,9 @@ namespace Riftborn.Items
             slotToUnequip =
                 equipmentData.Slot;
 
-            float statBefore =
-                stats.GetFinalValue(
-                    observedStat);
+            Dictionary<CharacterStat, float>
+                statsBefore =
+                    CaptureCurrentStats();
 
             float defenseBefore =
                 defense.GetFinalValue(
@@ -179,9 +186,9 @@ namespace Riftborn.Items
                 return;
             }
 
-            float statAfter =
-                stats.GetFinalValue(
-                    observedStat);
+            Dictionary<CharacterStat, float>
+                statsAfter =
+                    CaptureCurrentStats();
 
             float defenseAfter =
                 defense.GetFinalValue(
@@ -214,13 +221,25 @@ namespace Riftborn.Items
                 $"Mesma instância retirada: " +
                 $"{(sameTakenInstance ? "SIM" : "NÃO")}");
 
-            result.AppendLine(
-                $"{observedStat}: " +
-                $"{statBefore:0.##} → {statAfter:0.##}");
+            result.AppendLine();
+
+            AppendStatComparison(
+                result,
+                statsBefore,
+                statsAfter);
 
             result.AppendLine(
                 $"{observedDefense}: " +
-                $"{defenseBefore:0.##} → {defenseAfter:0.##}");
+                $"{defenseBefore:0.##} → " +
+                $"{defenseAfter:0.##}");
+
+            result.AppendLine();
+
+            AppendAffixes(
+                result,
+                takenInstance);
+
+            result.AppendLine();
 
             result.AppendLine(
                 $"Prefixos aplicáveis: " +
@@ -278,9 +297,9 @@ namespace Riftborn.Items
                 return;
             }
 
-            float statBefore =
-                stats.GetFinalValue(
-                    observedStat);
+            Dictionary<CharacterStat, float>
+                statsBefore =
+                    CaptureCurrentStats();
 
             float defenseBefore =
                 defense.GetFinalValue(
@@ -314,9 +333,9 @@ namespace Riftborn.Items
                 return;
             }
 
-            float statAfter =
-                stats.GetFinalValue(
-                    observedStat);
+            Dictionary<CharacterStat, float>
+                statsAfter =
+                    CaptureCurrentStats();
 
             float defenseAfter =
                 defense.GetFinalValue(
@@ -339,18 +358,28 @@ namespace Riftborn.Items
                 $"Instance ID: {equippedInstance.InstanceId}");
 
             result.AppendLine(
-                $"Retornou ao inventário: SIM");
+                "Retornou ao inventário: SIM");
 
             result.AppendLine(
                 $"Slot do inventário: {inventorySlot}");
 
-            result.AppendLine(
-                $"{observedStat}: " +
-                $"{statBefore:0.##} → {statAfter:0.##}");
+            result.AppendLine();
+
+            AppendStatComparison(
+                result,
+                statsBefore,
+                statsAfter);
 
             result.AppendLine(
                 $"{observedDefense}: " +
-                $"{defenseBefore:0.##} → {defenseAfter:0.##}");
+                $"{defenseBefore:0.##} → " +
+                $"{defenseAfter:0.##}");
+
+            result.AppendLine();
+
+            AppendAffixes(
+                result,
+                equippedInstance);
 
             Debug.Log(
                 result.ToString(),
@@ -387,13 +416,25 @@ namespace Riftborn.Items
                 $"Equipado: " +
                 $"{equippedInstance?.DisplayName ?? "Nada"}");
 
-            result.AppendLine(
-                $"{observedStat}: " +
-                $"{stats.GetFinalValue(observedStat):0.##}");
+            result.AppendLine();
+
+            AppendCurrentStats(
+                result);
 
             result.AppendLine(
                 $"{observedDefense}: " +
                 $"{defense.GetFinalValue(observedDefense):0.##}");
+
+            if (equippedInstance != null)
+            {
+                result.AppendLine();
+
+                AppendAffixes(
+                    result,
+                    equippedInstance);
+            }
+
+            result.AppendLine();
 
             result.AppendLine(
                 $"Inventário: " +
@@ -405,32 +446,248 @@ namespace Riftborn.Items
                 this);
         }
 
+        private Dictionary<CharacterStat, float>
+            CaptureCurrentStats()
+        {
+            Dictionary<CharacterStat, float> values =
+                new Dictionary<CharacterStat, float>(
+                    ObservedStats.Length);
+
+            for (int index = 0;
+                 index < ObservedStats.Length;
+                 index++)
+            {
+                CharacterStat stat =
+                    ObservedStats[index];
+
+                values[stat] =
+                    stats.GetFinalValue(
+                        stat);
+            }
+
+            return values;
+        }
+
+        private static void AppendStatComparison(
+            StringBuilder result,
+            IReadOnlyDictionary<CharacterStat, float> before,
+            IReadOnlyDictionary<CharacterStat, float> after)
+        {
+            result.AppendLine(
+                "Atributos:");
+
+            for (int index = 0;
+                 index < ObservedStats.Length;
+                 index++)
+            {
+                CharacterStat stat =
+                    ObservedStats[index];
+
+                float beforeValue =
+                    before.TryGetValue(
+                        stat,
+                        out float storedBefore)
+                            ? storedBefore
+                            : 0f;
+
+                float afterValue =
+                    after.TryGetValue(
+                        stat,
+                        out float storedAfter)
+                            ? storedAfter
+                            : 0f;
+
+                float difference =
+                    afterValue -
+                    beforeValue;
+
+                string differenceText =
+                    Mathf.Approximately(
+                        difference,
+                        0f)
+                            ? string.Empty
+                            : $" ({difference:+0.##;-0.##})";
+
+                result.AppendLine(
+                    $"{stat}: " +
+                    $"{beforeValue:0.##} → " +
+                    $"{afterValue:0.##}" +
+                    differenceText);
+            }
+        }
+
+        private void AppendCurrentStats(
+            StringBuilder result)
+        {
+            result.AppendLine(
+                "Atributos atuais:");
+
+            for (int index = 0;
+                 index < ObservedStats.Length;
+                 index++)
+            {
+                CharacterStat stat =
+                    ObservedStats[index];
+
+                result.AppendLine(
+                    $"{stat}: " +
+                    $"{stats.GetFinalValue(stat):0.##}");
+            }
+        }
+
+        private static void AppendAffixes(
+            StringBuilder result,
+            ItemInstance itemInstance)
+        {
+            result.AppendLine(
+                "Afixos sorteados:");
+
+            if (itemInstance == null)
+            {
+                result.AppendLine(
+                    "Nenhum item.");
+
+                return;
+            }
+
+            bool hasAnyAffix = false;
+
+            if (itemInstance.Prefixes != null)
+            {
+                for (int index = 0;
+                     index < itemInstance.Prefixes.Count;
+                     index++)
+                {
+                    ItemAffixRoll roll =
+                        itemInstance.Prefixes[index];
+
+                    AppendAffixRoll(
+                        result,
+                        roll,
+                        "Prefixo",
+                        index + 1);
+
+                    hasAnyAffix = true;
+                }
+            }
+
+            if (itemInstance.Suffixes != null)
+            {
+                for (int index = 0;
+                     index < itemInstance.Suffixes.Count;
+                     index++)
+                {
+                    ItemAffixRoll roll =
+                        itemInstance.Suffixes[index];
+
+                    AppendAffixRoll(
+                        result,
+                        roll,
+                        "Sufixo",
+                        index + 1);
+
+                    hasAnyAffix = true;
+                }
+            }
+
+            if (!hasAnyAffix)
+            {
+                result.AppendLine(
+                    "Nenhum.");
+            }
+        }
+
+        private static void AppendAffixRoll(
+            StringBuilder result,
+            ItemAffixRoll roll,
+            string category,
+            int position)
+        {
+            if (roll == null ||
+                roll.Affix == null)
+            {
+                result.AppendLine(
+                    $"{category} {position}: inválido");
+
+                return;
+            }
+
+            ItemAffixData affix =
+                roll.Affix;
+
+            string affectedValue =
+                affix.EffectType ==
+                ItemAffixEffectType.CharacterStat
+                    ? affix.CharacterStat.ToString()
+                    : affix.EffectType.ToString();
+
+            string rolledValue =
+                FormatAffixValue(
+                    roll.RolledValue,
+                    affix.ValueMode);
+
+            result.AppendLine(
+                $"{category} {position}: " +
+                $"{affix.DisplayName}");
+
+            result.AppendLine(
+                $"  Efeito: {affectedValue}");
+
+            result.AppendLine(
+                $"  Tier: T{roll.Tier}");
+
+            result.AppendLine(
+                $"  Valor: {rolledValue}");
+        }
+
+        private static string FormatAffixValue(
+            float value,
+            ItemAffixValueMode valueMode)
+        {
+            switch (valueMode)
+            {
+                case ItemAffixValueMode.AdditivePercent:
+                case ItemAffixValueMode.MultiplicativePercent:
+                    return
+                        $"{value * 100f:+0.##;-0.##;0}%";
+
+                case ItemAffixValueMode.Flat:
+                default:
+                    return
+                        $"{value:+0.##;-0.##;0}";
+            }
+        }
+
         private bool ResolveReferences()
         {
             if (inventory == null)
             {
                 inventory =
-                    FindAnyObjectByType<InventoryController>();
+                    FindAnyObjectByType<
+                        InventoryController>();
             }
 
             if (equipment == null)
             {
                 equipment =
-                    FindAnyObjectByType<EquipmentController>();
+                    FindAnyObjectByType<
+                        EquipmentController>();
             }
 
             if (stats == null &&
                 equipment != null)
             {
                 stats =
-                    equipment.GetComponent<CharacterStatsController>();
+                    equipment.GetComponent<
+                        CharacterStatsController>();
             }
 
             if (defense == null &&
                 equipment != null)
             {
                 defense =
-                    equipment.GetComponent<DefenseController>();
+                    equipment.GetComponent<
+                        DefenseController>();
             }
 
             return inventory != null &&

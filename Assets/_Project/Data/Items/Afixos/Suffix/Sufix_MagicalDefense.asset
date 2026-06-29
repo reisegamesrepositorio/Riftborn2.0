@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4150982f4356d1f498cd342d5671db0b, type: 3}
+  m_Name: Sufix_MagicalDefense
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Items.ItemAffixData
+  affixId: Sufix_MagicalDefense
+  displayName: Magical Defense
+  affixType: 1
+  effectType: 2
+  valueMode: 0
+  characterStat: 4
+  progressionProfile: {fileID: 11400000, guid: e70db1f32e0994249bbd0b6e1730e1cc, type: 2}
+  tiers:
+  - tier: 1
+    minimumValue: 14
+    maximumValue: 15
+    rollWeight: 10
+  - tier: 2
+    minimumValue: 12
+    maximumValue: 13
+    rollWeight: 20
+  - tier: 3
+    minimumValue: 11
+    maximumValue: 12
+    rollWeight: 29.999998
+  - tier: 4
+    minimumValue: 9
+    maximumValue: 10
+    rollWeight: 40
+  - tier: 5
+    minimumValue: 8
+    maximumValue: 9
+    rollWeight: 49.999996
+  - tier: 6
+    minimumValue: 6
+    maximumValue: 7
+    rollWeight: 60
+  - tier: 7
+    minimumValue: 5
+    maximumValue: 6
+    rollWeight: 70
+  - tier: 8
+    minimumValue: 3
+    maximumValue: 4
+    rollWeight: 80
+  - tier: 9
+    minimumValue: 2
+    maximumValue: 3
+    rollWeight: 90
+  - tier: 10
+    minimumValue: 1
+    maximumValue: 1
+    rollWeight: 100

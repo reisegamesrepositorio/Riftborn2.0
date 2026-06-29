@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4150982f4356d1f498cd342d5671db0b, type: 3}
+  m_Name: Prefix_FORT
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Items.ItemAffixData
+  affixId: Prefix_FORT
+  displayName: FORT
+  affixType: 0
+  effectType: 0
+  valueMode: 0
+  characterStat: 4
+  progressionProfile: {fileID: 11400000, guid: 6d748a49a5baba5459cccb9df65b87e4, type: 2}
+  tiers:
+  - tier: 1
+    minimumValue: 9
+    maximumValue: 10
+    rollWeight: 10
+  - tier: 2
+    minimumValue: 8
+    maximumValue: 9
+    rollWeight: 20
+  - tier: 3
+    minimumValue: 7
+    maximumValue: 8
+    rollWeight: 29.999998
+  - tier: 4
+    minimumValue: 6
+    maximumValue: 7
+    rollWeight: 40
+  - tier: 5
+    minimumValue: 5
+    maximumValue: 6
+    rollWeight: 49.999996
+  - tier: 6
+    minimumValue: 4
+    maximumValue: 5
+    rollWeight: 60
+  - tier: 7
+    minimumValue: 3
+    maximumValue: 4
+    rollWeight: 70
+  - tier: 8
+    minimumValue: 2
+    maximumValue: 3
+    rollWeight: 80
+  - tier: 9
+    minimumValue: 1
+    maximumValue: 2
+    rollWeight: 90
+  - tier: 10
+    minimumValue: 1
+    maximumValue: 1
+    rollWeight: 100
