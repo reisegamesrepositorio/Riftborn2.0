@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 560ae86146d2c3c4c9d19634f5b7af6c, type: 3}
   m_Name: ID_Teste
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Items.ItemData
-  itemId: 
-  displayName: 
-  description: 
-  itemType: 5
+  itemId: Teste
+  displayName: teste
+  description: test111
+  itemType: 0
   icon: {fileID: 0}
   maxStack: 1

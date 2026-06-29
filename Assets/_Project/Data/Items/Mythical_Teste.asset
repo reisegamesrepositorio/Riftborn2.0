@@ -15,6 +15,6 @@ MonoBehaviour:
   rarityId: Mythical
   displayName: Mythical
   sortOrder: 4
-  maxPrefixes: 5
-  maxSuffixes: 5
-  baseValueMultiplier: 5
+  maxPrefixes: 2
+  maxSuffixes: 2
+  baseValueMultiplier: 1

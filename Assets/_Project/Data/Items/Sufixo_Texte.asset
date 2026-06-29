@@ -12,10 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4150982f4356d1f498cd342d5671db0b, type: 3}
   m_Name: Sufixo_Texte
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Items.ItemAffixData
-  affixId: 
-  displayName: 
-  affixType: 0
+  affixId: SUF_Teste
+  displayName: Sufixo Test
+  affixType: 1
   effectType: 0
   valueMode: 0
-  characterStat: 0
-  tiers: []
+  characterStat: 1
+  tiers:
+  - tier: 10
+    minimumValue: 4
+    maximumValue: 4
+    rollWeight: 1
