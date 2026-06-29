@@ -2082,11 +2082,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Equipment.EquipmentController
   stats: {fileID: 1615583188}
   defense: {fileID: 1615583195}
-  combat: {fileID: 0}
-  health: {fileID: 0}
-  resources: {fileID: 0}
-  abilities: {fileID: 0}
-  movement: {fileID: 0}
+  combat: {fileID: 1615583182}
+  health: {fileID: 1615583187}
+  resources: {fileID: 1615583186}
+  abilities: {fileID: 1615583181}
+  movement: {fileID: 1615583184}
 --- !u!114 &1615583179
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2141,26 +2141,41 @@ MonoBehaviour:
         tier: 10
         rolledValue: 4
   - instance:
-      instanceId: 
-      item: {fileID: 0}
-      rarity: {fileID: 0}
-      quantity: 0
-      prefixes: []
+      instanceId: b2e6de788e0c4835b6987eb0ece3828c
+      item: {fileID: 11400000, guid: 42e972ba606355242a2139e247adf4f1, type: 2}
+      rarity: {fileID: 11400000, guid: b72e50ae169d978449edf9f218789271, type: 2}
+      quantity: 1
+      prefixes:
+      - affix: {fileID: 11400000, guid: d006a7564517c7042bfa6b01535d011d, type: 2}
+        tier: 6
+        rolledValue: 4
       suffixes: []
   - instance:
-      instanceId: 
-      item: {fileID: 0}
-      rarity: {fileID: 0}
-      quantity: 0
-      prefixes: []
-      suffixes: []
+      instanceId: ed6aba69c9474a608519638f70c8b326
+      item: {fileID: 11400000, guid: 42e972ba606355242a2139e247adf4f1, type: 2}
+      rarity: {fileID: 11400000, guid: b72e50ae169d978449edf9f218789271, type: 2}
+      quantity: 1
+      prefixes:
+      - affix: {fileID: 11400000, guid: 2ee48e4a342893d4db56159c83fe9e7a, type: 2}
+        tier: 10
+        rolledValue: 1
+      suffixes:
+      - affix: {fileID: 11400000, guid: 6a5cd5a8af6a7c6448fb104b9ab3c510, type: 2}
+        tier: 4
+        rolledValue: 0.08
   - instance:
-      instanceId: 
-      item: {fileID: 0}
-      rarity: {fileID: 0}
-      quantity: 0
-      prefixes: []
-      suffixes: []
+      instanceId: 351534aa362b43a0b533ba5bb7ade351
+      item: {fileID: 11400000, guid: 42e972ba606355242a2139e247adf4f1, type: 2}
+      rarity: {fileID: 11400000, guid: b72e50ae169d978449edf9f218789271, type: 2}
+      quantity: 1
+      prefixes:
+      - affix: {fileID: 11400000, guid: 6e4a93d4a123de94bad06ec86eb59094, type: 2}
+        tier: 9
+        rolledValue: 1
+      suffixes:
+      - affix: {fileID: 11400000, guid: 4b005b5bca0f06d4b900763916cbdd7f, type: 2}
+        tier: 9
+        rolledValue: 1
   - instance:
       instanceId: 
       item: {fileID: 0}
@@ -3518,12 +3533,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 916bd2728c8fc7747a3edf6fa22798db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Items.EquipmentSystemTester
-  profile: {fileID: 11400000, guid: dc56bf21c6a6fad45964abfcb7191a48, type: 2}
+  profile: {fileID: 11400000, guid: b050412287435594b8b0a2e72d5efd65, type: 2}
   inventory: {fileID: 1615583179}
   equipment: {fileID: 1615583178}
   stats: {fileID: 1615583188}
   defense: {fileID: 1615583195}
-  observedStat: 0
   observedDefense: 0
   slotToUnequip: 3
 --- !u!4 &2136943418

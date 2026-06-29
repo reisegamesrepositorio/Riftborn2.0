@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using Riftborn.Characters.Inventory;
 using UnityEngine;
@@ -6,6 +7,8 @@ namespace Riftborn.Items
 {
     public sealed class ItemGenerationTester : MonoBehaviour
     {
+        private const int DiagnosticGenerationCount = 100;
+
         [Header("Generation")]
         [SerializeField]
         private ItemGenerationProfile profile;
@@ -23,15 +26,120 @@ namespace Riftborn.Items
         public void GenerateTestItem()
         {
             if (!TryGenerateItem(
-                    out ItemInstance itemInstance))
+                    out ItemInstance itemInstance,
+                    out ItemGenerationValidationResult validationResult))
             {
                 return;
             }
 
-            Debug.Log(
+            StringBuilder log =
+                new StringBuilder();
+
+            log.Append(
                 BuildItemDescription(
                     itemInstance,
-                    "[ITEM GENERATOR] Item gerado"),
+                    "[ITEM GENERATOR] Item gerado"));
+
+            AppendValidationSummary(
+                log,
+                validationResult);
+
+            Debug.Log(
+                log.ToString(),
+                this);
+        }
+
+        [ContextMenu("Generate 100 Diagnostic Items")]
+        public void GenerateDiagnosticItems()
+        {
+            if (profile == null)
+            {
+                Debug.LogError(
+                    "[ITEM GENERATOR] Nenhum perfil de geracao " +
+                    "foi configurado.",
+                    this);
+
+                return;
+            }
+
+            int generatedCount = 0;
+            int duplicateCount = 0;
+            StringBuilder result =
+                new StringBuilder();
+
+            result.AppendLine(
+                "[ITEM GENERATOR] Diagnostico de 100 itens");
+
+            for (int index = 0;
+                 index < DiagnosticGenerationCount;
+                 index++)
+            {
+                if (!ItemGenerator.TryGenerate(
+                        profile,
+                        out ItemInstance itemInstance,
+                        out ItemGenerationValidationResult validationResult,
+                        index == 0))
+                {
+                    result.AppendLine(
+                        $"#{index + 1}: falha ao gerar item.");
+
+                    AppendValidationSummary(
+                        result,
+                        validationResult);
+
+                    continue;
+                }
+
+                generatedCount++;
+
+                bool hasDuplicate =
+                    HasDuplicateAffixes(itemInstance);
+
+                if (hasDuplicate)
+                {
+                    duplicateCount++;
+                    Debug.LogError(
+                        BuildItemDescription(
+                            itemInstance,
+                            "[ITEM GENERATOR] Afixo duplicado detectado"),
+                        this);
+                }
+
+                result.Append(
+                    BuildItemDescription(
+                        itemInstance,
+                        $"[ITEM GENERATOR] Item #{index + 1}"));
+
+                result.AppendLine(
+                    hasDuplicate
+                        ? "Duplicidade: SIM"
+                        : "Duplicidade: nao");
+            }
+
+            ItemGenerationValidationResult finalValidation =
+                ItemGenerationProfileValidator.Validate(profile);
+
+            AppendValidationSummary(
+                result,
+                finalValidation);
+
+            result.AppendLine(
+                $"Gerados com sucesso: {generatedCount}/" +
+                $"{DiagnosticGenerationCount}");
+
+            result.AppendLine(
+                $"Itens com afixo duplicado: {duplicateCount}");
+
+            if (duplicateCount > 0)
+            {
+                Debug.LogError(
+                    result.ToString(),
+                    this);
+                return;
+            }
+
+            Debug.Log(
+                result.ToString(),
                 this);
         }
 
@@ -49,7 +157,8 @@ namespace Riftborn.Items
             }
 
             if (!TryGenerateItem(
-                    out ItemInstance itemInstance))
+                    out ItemInstance itemInstance,
+                    out _))
             {
                 return;
             }
@@ -64,7 +173,7 @@ namespace Riftborn.Items
             {
                 Debug.LogError(
                     "[ITEM INVENTORY TEST] O item foi gerado, " +
-                    "mas não pôde ser adicionado ao inventário.",
+                    "mas nao pode ser adicionado ao inventario.",
                     this);
 
                 return;
@@ -97,34 +206,34 @@ namespace Riftborn.Items
                 $"Nome: {itemInstance.DisplayName}");
 
             result.AppendLine(
-                $"Instance ID gerado: " +
+                "Instance ID gerado: " +
                 $"{originalInstanceId}");
 
             result.AppendLine(
-                $"Instance ID armazenado: " +
+                "Instance ID armazenado: " +
                 $"{storedInstance?.InstanceId ?? "NULL"}");
 
             result.AppendLine(
-                $"Mesma instância: " +
-                $"{(sameInstance ? "SIM" : "NÃO")}");
+                "Mesma instancia: " +
+                $"{(sameInstance ? "SIM" : "NAO")}");
 
             result.AppendLine(
-                $"Raridade: " +
+                "Raridade: " +
                 $"{itemInstance.Rarity?.DisplayName ?? "Sem raridade"}");
 
             result.AppendLine(
                 $"Quantidade: {itemInstance.Quantity}");
 
             result.AppendLine(
-                $"Prefixos preservados: " +
+                "Prefixos preservados: " +
                 $"{storedInstance?.PrefixCount ?? 0}");
 
             result.AppendLine(
-                $"Sufixos preservados: " +
+                "Sufixos preservados: " +
                 $"{storedInstance?.SuffixCount ?? 0}");
 
             result.AppendLine(
-                $"Slots ocupados: " +
+                "Slots ocupados: " +
                 $"{inventory.OccupiedSlotCount}/" +
                 $"{inventory.SlotCount}");
 
@@ -150,7 +259,7 @@ namespace Riftborn.Items
                 new StringBuilder();
 
             result.AppendLine(
-                "[INVENTORY] Conteúdo atual");
+                "[INVENTORY] Conteudo atual");
 
             bool foundAnyItem = false;
 
@@ -180,7 +289,7 @@ namespace Riftborn.Items
             if (!foundAnyItem)
             {
                 result.AppendLine(
-                    "Inventário vazio.");
+                    "Inventario vazio.");
             }
 
             Debug.Log(
@@ -204,7 +313,7 @@ namespace Riftborn.Items
             inventory.Clear();
 
             Debug.Log(
-                "[INVENTORY] Inventário limpo.",
+                "[INVENTORY] Inventario limpo.",
                 this);
         }
 
@@ -222,14 +331,16 @@ namespace Riftborn.Items
         }
 
         private bool TryGenerateItem(
-            out ItemInstance itemInstance)
+            out ItemInstance itemInstance,
+            out ItemGenerationValidationResult validationResult)
         {
             itemInstance = null;
+            validationResult = null;
 
             if (profile == null)
             {
                 Debug.LogError(
-                    "[ITEM GENERATOR] Nenhum perfil de geração " +
+                    "[ITEM GENERATOR] Nenhum perfil de geracao " +
                     "foi configurado.",
                     this);
 
@@ -238,7 +349,9 @@ namespace Riftborn.Items
 
             if (!ItemGenerator.TryGenerate(
                     profile,
-                    out itemInstance))
+                    out itemInstance,
+                    out validationResult,
+                    true))
             {
                 Debug.LogError(
                     "[ITEM GENERATOR] Falha ao gerar item.",
@@ -260,51 +373,130 @@ namespace Riftborn.Items
             result.AppendLine(header);
 
             result.AppendLine(
-                $"Nome: {itemInstance.DisplayName}");
+                $"Item gerado: {itemInstance.DisplayName}");
 
             result.AppendLine(
                 $"Instance ID: {itemInstance.InstanceId}");
 
             result.AppendLine(
-                $"Raridade: " +
+                "Raridade: " +
                 $"{itemInstance.Rarity?.DisplayName ?? "Sem raridade"}");
 
             result.AppendLine(
                 $"Quantidade: {itemInstance.Quantity}");
 
+            AppendAffixRolls(
+                result,
+                "Prefixos",
+                itemInstance.Prefixes);
+
+            AppendAffixRolls(
+                result,
+                "Sufixos",
+                itemInstance.Suffixes);
+
+            return result.ToString();
+        }
+
+        private static void AppendAffixRolls(
+            StringBuilder result,
+            string label,
+            IReadOnlyList<ItemAffixRoll> rolls)
+        {
             result.AppendLine(
-                $"Prefixos: {itemInstance.PrefixCount}");
+                $"{label}: {rolls.Count}");
+
+            for (int index = 0;
+                 index < rolls.Count;
+                 index++)
+            {
+                ItemAffixRoll roll =
+                    rolls[index];
+
+                result.AppendLine(
+                    $"- {roll.DisplayName} | " +
+                    $"{roll.Affix.EffectType} | " +
+                    $"Tier {roll.Tier} | " +
+                    $"Valor {roll.RolledValue:0.##}");
+            }
+        }
+
+        private static void AppendValidationSummary(
+            StringBuilder result,
+            ItemGenerationValidationResult validationResult)
+        {
+            if (validationResult == null)
+            {
+                return;
+            }
+
+            result.AppendLine(
+                "[ITEM GENERATOR] Validacao do perfil");
+
+            result.AppendLine(
+                $"Prefixos validos: {validationResult.ValidPrefixes.Count}");
+
+            result.AppendLine(
+                $"Sufixos validos: {validationResult.ValidSuffixes.Count}");
+
+            for (int index = 0;
+                 index < validationResult.Warnings.Count;
+                 index++)
+            {
+                result.AppendLine(
+                    $"WARNING: {validationResult.Warnings[index]}");
+            }
+
+            for (int index = 0;
+                 index < validationResult.DiscardedEntries.Count;
+                 index++)
+            {
+                ItemAffixPoolDiscard discard =
+                    validationResult.DiscardedEntries[index];
+
+                result.AppendLine(
+                    $"DESCARTADO {discard.PoolType}[{discard.Index}] " +
+                    $"{discard.AffixName}: {discard.Reason}");
+            }
+        }
+
+        private static bool HasDuplicateAffixes(
+            ItemInstance itemInstance)
+        {
+            HashSet<ItemAffixData> usedAffixes =
+                new HashSet<ItemAffixData>();
 
             for (int index = 0;
                  index < itemInstance.Prefixes.Count;
                  index++)
             {
-                ItemAffixRoll roll =
-                    itemInstance.Prefixes[index];
+                ItemAffixData affix =
+                    itemInstance.Prefixes[index]?.Affix;
 
-                result.AppendLine(
-                    $"- {roll.DisplayName}: " +
-                    $"{roll.RolledValue:0.##} " +
-                    $"(T{roll.Tier})");
+                if (affix != null &&
+                    !usedAffixes.Add(affix))
+                {
+                    return true;
+                }
             }
 
-            result.AppendLine(
-                $"Sufixos: {itemInstance.SuffixCount}");
+            usedAffixes.Clear();
 
             for (int index = 0;
                  index < itemInstance.Suffixes.Count;
                  index++)
             {
-                ItemAffixRoll roll =
-                    itemInstance.Suffixes[index];
+                ItemAffixData affix =
+                    itemInstance.Suffixes[index]?.Affix;
 
-                result.AppendLine(
-                    $"- {roll.DisplayName}: " +
-                    $"{roll.RolledValue:0.##} " +
-                    $"(T{roll.Tier})");
+                if (affix != null &&
+                    !usedAffixes.Add(affix))
+                {
+                    return true;
+                }
             }
 
-            return result.ToString();
+            return false;
         }
     }
 }

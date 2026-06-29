@@ -9,21 +9,46 @@ namespace Riftborn.Items
             ItemGenerationProfile profile,
             out ItemInstance itemInstance)
         {
+            return TryGenerate(
+                profile,
+                out itemInstance,
+                out _,
+                false);
+        }
+
+        public static bool TryGenerate(
+            ItemGenerationProfile profile,
+            out ItemInstance itemInstance,
+            out ItemGenerationValidationResult validationResult,
+            bool logValidationWarnings = false)
+        {
             itemInstance = null;
+            validationResult =
+                ItemGenerationProfileValidator.Validate(profile);
 
             if (profile == null ||
                 profile.Item == null)
             {
+                LogValidationIfNeeded(
+                    profile,
+                    validationResult,
+                    logValidationWarnings);
+
                 return false;
             }
+
+            LogValidationIfNeeded(
+                profile,
+                validationResult,
+                logValidationWarnings);
 
             if (!TryRollRarity(
                     profile.Rarities,
                     out ItemRarityData rarity))
             {
                 Debug.LogWarning(
-                    $"O perfil '{profile.name}' não possui uma " +
-                    "raridade válida para sortear.",
+                    $"O perfil '{profile.name}' nao possui uma " +
+                    "raridade valida para sortear.",
                     profile);
 
                 return false;
@@ -42,9 +67,27 @@ namespace Riftborn.Items
 
             GenerateAffixes(
                 itemInstance,
-                profile);
+                profile,
+                validationResult);
 
             return itemInstance.IsValid;
+        }
+
+        private static void LogValidationIfNeeded(
+            ItemGenerationProfile profile,
+            ItemGenerationValidationResult validationResult,
+            bool logValidationWarnings)
+        {
+            if (!logValidationWarnings ||
+                validationResult == null ||
+                !validationResult.HasWarnings)
+            {
+                return;
+            }
+
+            Debug.LogWarning(
+                validationResult.BuildDiagnosticText(profile),
+                profile);
         }
 
         private static bool TryRollRarity(
@@ -122,10 +165,12 @@ namespace Riftborn.Items
 
         private static void GenerateAffixes(
             ItemInstance itemInstance,
-            ItemGenerationProfile profile)
+            ItemGenerationProfile profile,
+            ItemGenerationValidationResult validationResult)
         {
             if (itemInstance == null ||
-                itemInstance.Rarity == null)
+                itemInstance.Rarity == null ||
+                validationResult == null)
             {
                 return;
             }
@@ -142,14 +187,12 @@ namespace Riftborn.Items
 
             FillAffixType(
                 itemInstance,
-                profile.PrefixPool,
-                ItemAffixType.Prefix,
+                validationResult.ValidPrefixes,
                 prefixCount);
 
             FillAffixType(
                 itemInstance,
-                profile.SuffixPool,
-                ItemAffixType.Suffix,
+                validationResult.ValidSuffixes,
                 suffixCount);
         }
 
@@ -185,29 +228,27 @@ namespace Riftborn.Items
 
         private static void FillAffixType(
             ItemInstance itemInstance,
-            IReadOnlyList<ItemAffixData> sourcePool,
-            ItemAffixType requiredType,
+            IReadOnlyList<ItemAffixData> validatedPool,
             int requestedCount)
         {
             if (itemInstance == null ||
-                sourcePool == null ||
+                validatedPool == null ||
                 requestedCount <= 0)
             {
                 return;
             }
 
             List<ItemAffixData> availableAffixes =
-                new();
+                new(validatedPool.Count);
 
             for (int index = 0;
-                 index < sourcePool.Count;
+                 index < validatedPool.Count;
                  index++)
             {
                 ItemAffixData affix =
-                    sourcePool[index];
+                    validatedPool[index];
 
                 if (affix == null ||
-                    affix.AffixType != requiredType ||
                     itemInstance.ContainsAffix(affix))
                 {
                     continue;
