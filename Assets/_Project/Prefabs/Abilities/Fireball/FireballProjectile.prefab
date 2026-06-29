@@ -104,8 +104,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Abilities.SingleTargetDamageProjectile
   movementSpeed: 8
-  hitDistance: 0.2
+  hitDistance: 0.45
   maximumLifetime: 5
   followMovingTarget: 1
   rotateTowardMovement: 1
   targetOffset: {x: 0, y: 0, z: 0}
+  impactVfxPrefab: {fileID: 2551402622227328544, guid: e5cc8cd9cdd661a449eef68248d18e0c, type: 3}
+  impactVfxLifetime: 1.5
+  impactSurfaceOffset: 0.65
+  impactVfxOffset: {x: 0, y: 0.1, z: 0}
+  useProjectileRotationForImpact: 0

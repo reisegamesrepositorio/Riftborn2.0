@@ -11,8 +11,11 @@ namespace Riftborn.Characters.Abilities
         [SerializeField, Min(0.1f)]
         private float movementSpeed = 8f;
 
+        [Tooltip(
+            "Distância do centro do alvo em que o projétil " +
+            "considera que acertou.")]
         [SerializeField, Min(0.01f)]
-        private float hitDistance = 0.2f;
+        private float hitDistance = 0.45f;
 
         [SerializeField, Min(0.1f)]
         private float maximumLifetime = 5f;
@@ -25,11 +28,33 @@ namespace Riftborn.Characters.Abilities
 
         [Header("Target Position")]
         [Tooltip(
-            "Offset aplicado à posição do alvo. " +
-            "Use Y positivo caso queira atingir o centro do corpo.")]
+            "Altura do ponto que o projétil persegue no alvo.")]
         [SerializeField]
         private Vector3 targetOffset =
             new Vector3(0f, 0.5f, 0f);
+
+        [Header("Impact VFX")]
+        [SerializeField]
+        private GameObject impactVfxPrefab;
+
+        [SerializeField, Min(0f)]
+        private float impactVfxLifetime = 1.5f;
+
+        [Tooltip(
+            "Afasta o VFX do centro do alvo na direção " +
+            "de onde o projétil chegou.")]
+        [SerializeField, Min(0f)]
+        private float impactSurfaceOffset = 0.65f;
+
+        [Tooltip(
+            "Ajuste adicional aplicado depois do afastamento " +
+            "da superfície.")]
+        [SerializeField]
+        private Vector3 impactVfxOffset =
+            new Vector3(0f, 0.1f, 0f);
+
+        [SerializeField]
+        private bool useProjectileRotationForImpact;
 
         private DamageRequest damageRequest;
         private CharacterContext target;
@@ -96,7 +121,7 @@ namespace Riftborn.Characters.Abilities
 
             if (remainingDistance <= hitDistance)
             {
-                ProcessImpact();
+                ProcessImpact(destination);
             }
         }
 
@@ -162,7 +187,8 @@ namespace Riftborn.Characters.Abilities
                     Time.deltaTime);
         }
 
-        private void ProcessImpact()
+        private void ProcessImpact(
+            Vector3 targetPosition)
         {
             if (impactProcessed)
             {
@@ -178,6 +204,41 @@ namespace Riftborn.Characters.Abilities
                 return;
             }
 
+            Vector3 impactDirection =
+                targetPosition -
+                transform.position;
+
+            if (impactDirection.sqrMagnitude <=
+                Mathf.Epsilon)
+            {
+                impactDirection =
+                    transform.forward;
+            }
+            else
+            {
+                impactDirection.Normalize();
+            }
+
+            /*
+             * O ponto começa no centro do alvo e volta na
+             * direção de onde a Fireball chegou.
+             *
+             * Isso coloca o VFX na superfície frontal,
+             * em vez de dentro do personagem.
+             */
+            Vector3 impactPosition =
+                targetPosition -
+                impactDirection *
+                impactSurfaceOffset +
+                impactVfxOffset;
+
+            Quaternion impactRotation =
+                useProjectileRotationForImpact
+                    ? Quaternion.LookRotation(
+                        impactDirection,
+                        Vector3.up)
+                    : Quaternion.identity;
+
             DamageResult result =
                 DamageCalculator.Calculate(
                     damageRequest);
@@ -187,6 +248,10 @@ namespace Riftborn.Characters.Abilities
 
             if (application != null)
             {
+                SpawnImpactVfx(
+                    impactPosition,
+                    impactRotation);
+
                 string abilityName =
                     damageRequest.OriginObject
                         is AbilityBase ability
@@ -206,6 +271,34 @@ namespace Riftborn.Characters.Abilities
             Destroy(gameObject);
         }
 
+        private void SpawnImpactVfx(
+            Vector3 position,
+            Quaternion rotation)
+        {
+            if (impactVfxPrefab == null)
+            {
+                return;
+            }
+
+            GameObject impactInstance =
+                Instantiate(
+                    impactVfxPrefab,
+                    position,
+                    rotation);
+
+            if (impactInstance == null)
+            {
+                return;
+            }
+
+            if (impactVfxLifetime > 0f)
+            {
+                Destroy(
+                    impactInstance,
+                    impactVfxLifetime);
+            }
+        }
+
         private void OnValidate()
         {
             movementSpeed =
@@ -222,6 +315,16 @@ namespace Riftborn.Characters.Abilities
                 Mathf.Max(
                     0.1f,
                     maximumLifetime);
+
+            impactVfxLifetime =
+                Mathf.Max(
+                    0f,
+                    impactVfxLifetime);
+
+            impactSurfaceOffset =
+                Mathf.Max(
+                    0f,
+                    impactSurfaceOffset);
         }
     }
 }
