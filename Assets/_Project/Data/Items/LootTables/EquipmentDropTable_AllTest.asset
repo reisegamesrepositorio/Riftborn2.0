@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdcedfceb8794a4fa72ee3df5dee2e52, type: 3}
+  m_Name: EquipmentDropTable_AllTest
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Items.ItemGenerationDropTable
+  entries:
+  - profile: {fileID: 11400000, guid: 6f0db745acfb4e62b574fa974c0bdbc6, type: 2}
+    weight: 1
+    enabled: 1
+  - profile: {fileID: 11400000, guid: 2dc17f8039a444eaab00378a15fb7e79, type: 2}
+    weight: 1
+    enabled: 1
+  - profile: {fileID: 11400000, guid: 68a91915f19c426bbcf2e2ed71efc163, type: 2}
+    weight: 1
+    enabled: 1
+  - profile: {fileID: 11400000, guid: 7f2c9dc8574b45d2977e3f78b8481838, type: 2}
+    weight: 1
+    enabled: 1
+  - profile: {fileID: 11400000, guid: 3a280407ae6d48028b78ad4953062129, type: 2}
+    weight: 1
+    enabled: 1
+  - profile: {fileID: 11400000, guid: 125f8ad5d7c34430b7234f06f34bf050, type: 2}
+    weight: 1
+    enabled: 1
+  - profile: {fileID: 11400000, guid: 064cc564ddb845fa955ad182582ab693, type: 2}
+    weight: 1
+    enabled: 1
+  - profile: {fileID: 11400000, guid: 30e9573b208f4bc8b9a5b03e0e04e51c, type: 2}
+    weight: 1
+    enabled: 1
+  - profile: {fileID: 11400000, guid: 1920458fae8840858df611ee22195a2e, type: 2}
+    weight: 1
+    enabled: 1
+  - profile: {fileID: 11400000, guid: 70b3a4b18a2d40518802507c803db842, type: 2}
+    weight: 1
+    enabled: 1
+  - profile: {fileID: 11400000, guid: 03978038db80460a968313de1c934ce4, type: 2}
+    weight: 1
+    enabled: 1

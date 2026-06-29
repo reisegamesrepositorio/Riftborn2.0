@@ -12,6 +12,9 @@ namespace Riftborn.Items
         [SerializeField]
         private ItemGenerationProfile generationProfile;
 
+        [SerializeField]
+        private ItemGenerationDropTable generationDropTable;
+
         [Tooltip(
             "Chance de gerar o item em cada tentativa. " +
             "1 representa 100%.")]
@@ -27,6 +30,9 @@ namespace Riftborn.Items
         public ItemGenerationProfile GenerationProfile =>
             generationProfile;
 
+        public ItemGenerationDropTable GenerationDropTable =>
+            generationDropTable;
+
         public float DropChance =>
             Mathf.Clamp01(dropChance);
 
@@ -39,6 +45,25 @@ namespace Riftborn.Items
             Mathf.Max(
                 MinimumRolls,
                 maximumRolls);
+
+        public bool TrySelectGenerationProfile(
+            out ItemGenerationProfile selectedProfile,
+            bool logWarnings)
+        {
+            selectedProfile = null;
+
+            if (generationDropTable != null)
+            {
+                return generationDropTable.TrySelectProfile(
+                    out selectedProfile,
+                    logWarnings);
+            }
+
+            selectedProfile =
+                generationProfile;
+
+            return selectedProfile != null;
+        }
 
         public void Validate()
         {
@@ -310,11 +335,13 @@ namespace Riftborn.Items
                     continue;
                 }
 
-                if (entry.GenerationProfile == null)
+                if (!entry.TrySelectGenerationProfile(
+                        out ItemGenerationProfile selectedProfile,
+                        showDebugLogs))
                 {
                     Debug.LogWarning(
-                        $"[LOOT] Entrada {entryIndex} não possui " +
-                        "ItemGenerationProfile.",
+                        $"[LOOT] Entrada {entryIndex} nao possui " +
+                        "perfil ou tabela valida para gerar item.",
                         this);
 
                     continue;
@@ -350,13 +377,13 @@ namespace Riftborn.Items
                     }
 
                     if (!ItemGenerator.TryGenerate(
-                            entry.GenerationProfile,
+                            selectedProfile,
                             out ItemInstance itemInstance))
                     {
                         Debug.LogWarning(
                             $"[LOOT] Não foi possível gerar item " +
                             $"com o perfil " +
-                            $"'{entry.GenerationProfile.name}'.",
+                            $"'{selectedProfile.name}'.",
                             this);
 
                         continue;

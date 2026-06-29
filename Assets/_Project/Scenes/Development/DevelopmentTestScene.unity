@@ -1677,6 +1677,7 @@ MonoBehaviour:
   verticalOffset: 0.15
   lootEntries:
   - generationProfile: {fileID: 11400000, guid: dc56bf21c6a6fad45964abfcb7191a48, type: 2}
+    generationDropTable: {fileID: 11400000, guid: adaf40d7374d48fd8ce912919a5488f0, type: 2}
     dropChance: 1
     minimumRolls: 1
     maximumRolls: 1
@@ -3101,6 +3102,7 @@ MonoBehaviour:
   verticalOffset: 0.15
   lootEntries:
   - generationProfile: {fileID: 11400000, guid: dc56bf21c6a6fad45964abfcb7191a48, type: 2}
+    generationDropTable: {fileID: 0}
     dropChance: 1
     minimumRolls: 1
     maximumRolls: 1

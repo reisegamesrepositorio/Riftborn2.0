@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="8" result="Failed(Child)" total="8" passed="2" failed="6" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-06-29 17:24:42Z" end-time="2026-06-29 17:24:43Z" duration="0,0960184">
+  <test-suite type="TestSuite" id="1000" name="Riftborn" fullname="Riftborn" runstate="Runnable" testcasecount="27" result="Failed" site="Child" start-time="2026-06-29 17:24:42Z" end-time="2026-06-29 17:24:43Z" duration="0.096018" total="8" passed="2" failed="6" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1035" name="Riftborn.Tests.EditMode.dll" fullname="C:/Projetos/Riftborn2.0/Library/ScriptAssemblies/Riftborn.Tests.EditMode.dll" runstate="Runnable" testcasecount="27" result="Failed" site="Child" start-time="2026-06-29 17:24:42Z" end-time="2026-06-29 17:24:43Z" duration="0.065648" total="8" passed="2" failed="6" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="35952" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1036" name="Riftborn" fullname="Riftborn" runstate="Runnable" testcasecount="27" result="Failed" site="Child" start-time="2026-06-29 17:24:42Z" end-time="2026-06-29 17:24:43Z" duration="0.064806" total="8" passed="2" failed="6" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1037" name="Tests" fullname="Riftborn.Tests" runstate="Runnable" testcasecount="27" result="Failed" site="Child" start-time="2026-06-29 17:24:42Z" end-time="2026-06-29 17:24:43Z" duration="0.064400" total="8" passed="2" failed="6" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestFixture" id="1001" name="EquipmentRuntimeTestInputTests" fullname="Riftborn.Tests.EquipmentRuntimeTestInputTests" classname="Riftborn.Tests.EquipmentRuntimeTestInputTests" runstate="Runnable" testcasecount="8" result="Failed" site="Child" start-time="2026-06-29 17:24:42Z" end-time="2026-06-29 17:24:43Z" duration="0.062177" total="8" passed="2" failed="6" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-case id="1008" name="DoesNothingWhenNoValidItemExists" fullname="Riftborn.Tests.EquipmentRuntimeTestInputTests.DoesNothingWhenNoValidItemExists" methodname="DoesNothingWhenNoValidItemExists" classname="Riftborn.Tests.EquipmentRuntimeTestInputTests" runstate="Runnable" seed="876085678" result="Passed" start-time="2026-06-29 17:24:42Z" end-time="2026-06-29 17:24:42Z" duration="0.025614" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[Equipment Test] No valid equippable item found in inventory.
+[Equipment Test] No item was equipped by V yet.
+]]></output>
+            </test-case>
+            <test-case id="1003" name="EquipmentModifiersDoNotAccumulateAfterRepeatedEquipUnequip" fullname="Riftborn.Tests.EquipmentRuntimeTestInputTests.EquipmentModifiersDoNotAccumulateAfterRepeatedEquipUnequip" methodname="EquipmentModifiersDoNotAccumulateAfterRepeatedEquipUnequip" classname="Riftborn.Tests.EquipmentRuntimeTestInputTests" runstate="Runnable" seed="334566123" result="Failed" start-time="2026-06-29 17:24:42Z" end-time="2026-06-29 17:24:43Z" duration="0.010153" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[  Expected: True
+  But was:  False
+]]></message>
+                <stack-trace><![CDATA[at Riftborn.Tests.EquipmentRuntimeTestInputTests.EquipmentModifiersDoNotAccumulateAfterRepeatedEquipUnequip () [0x00036] in C:\Projetos\Riftborn2.0\Assets\_Project\Tests\EditMode\EquipmentRuntimeTestInputTests.cs:56
+]]></stack-trace>
+              </failure>
+              <output><![CDATA[[Equipment Test] No valid equippable item found in inventory.
+]]></output>
+            </test-case>
+            <test-case id="1002" name="EquipsExistingInventoryInstanceAndPreservesId" fullname="Riftborn.Tests.EquipmentRuntimeTestInputTests.EquipsExistingInventoryInstanceAndPreservesId" methodname="EquipsExistingInventoryInstanceAndPreservesId" classname="Riftborn.Tests.EquipmentRuntimeTestInputTests" runstate="Runnable" seed="1006378009" result="Failed" start-time="2026-06-29 17:24:43Z" end-time="2026-06-29 17:24:43Z" duration="0.001868" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[  Expected: True
+  But was:  False
+]]></message>
+                <stack-trace><![CDATA[at Riftborn.Tests.EquipmentRuntimeTestInputTests.EquipsExistingInventoryInstanceAndPreservesId () [0x0003e] in C:\Projetos\Riftborn2.0\Assets\_Project\Tests\EditMode\EquipmentRuntimeTestInputTests.cs:39
+]]></stack-trace>
+              </failure>
+              <output><![CDATA[[Equipment Test] No valid equippable item found in inventory.
+]]></output>
+            </test-case>
+            <test-case id="1007" name="IgnoresNonEquippableItems" fullname="Riftborn.Tests.EquipmentRuntimeTestInputTests.IgnoresNonEquippableItems" methodname="IgnoresNonEquippableItems" classname="Riftborn.Tests.EquipmentRuntimeTestInputTests" runstate="Runnable" seed="97899929" result="Passed" start-time="2026-06-29 17:24:43Z" end-time="2026-06-29 17:24:43Z" duration="0.002626" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[Equipment Test] No valid equippable item found in inventory.
+]]></output>
+            </test-case>
+            <test-case id="1009" name="MostRecentEquipmentIsSelectedBeforeOlderEquipment" fullname="Riftborn.Tests.EquipmentRuntimeTestInputTests.MostRecentEquipmentIsSelectedBeforeOlderEquipment" methodname="MostRecentEquipmentIsSelectedBeforeOlderEquipment" classname="Riftborn.Tests.EquipmentRuntimeTestInputTests" runstate="Runnable" seed="473897594" result="Failed" start-time="2026-06-29 17:24:43Z" end-time="2026-06-29 17:24:43Z" duration="0.001623" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[  Expected: True
+  But was:  False
+]]></message>
+                <stack-trace><![CDATA[at Riftborn.Tests.EquipmentRuntimeTestInputTests.MostRecentEquipmentIsSelectedBeforeOlderEquipment () [0x0004c] in C:\Projetos\Riftborn2.0\Assets\_Project\Tests\EditMode\EquipmentRuntimeTestInputTests.cs:168
+]]></stack-trace>
+              </failure>
+              <output><![CDATA[[Equipment Test] No valid equippable item found in inventory.
+]]></output>
+            </test-case>
+            <test-case id="1004" name="ReplacesSameSlotWithoutLosingPreviousInstance" fullname="Riftborn.Tests.EquipmentRuntimeTestInputTests.ReplacesSameSlotWithoutLosingPreviousInstance" methodname="ReplacesSameSlotWithoutLosingPreviousInstance" classname="Riftborn.Tests.EquipmentRuntimeTestInputTests" runstate="Runnable" seed="1110789777" result="Failed" start-time="2026-06-29 17:24:43Z" end-time="2026-06-29 17:24:43Z" duration="0.001465" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[  Expected: True
+  But was:  False
+]]></message>
+                <stack-trace><![CDATA[at Riftborn.Tests.EquipmentRuntimeTestInputTests.ReplacesSameSlotWithoutLosingPreviousInstance () [0x0003b] in C:\Projetos\Riftborn2.0\Assets\_Project\Tests\EditMode\EquipmentRuntimeTestInputTests.cs:76
+]]></stack-trace>
+              </failure>
+              <output><![CDATA[[Equipment Test] No valid equippable item found in inventory.
+]]></output>
+            </test-case>
+            <test-case id="1006" name="UnequipFailsSafelyWhenInventoryIsFull" fullname="Riftborn.Tests.EquipmentRuntimeTestInputTests.UnequipFailsSafelyWhenInventoryIsFull" methodname="UnequipFailsSafelyWhenInventoryIsFull" classname="Riftborn.Tests.EquipmentRuntimeTestInputTests" runstate="Runnable" seed="1409388707" result="Failed" start-time="2026-06-29 17:24:43Z" end-time="2026-06-29 17:24:43Z" duration="0.001254" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[  Expected: True
+  But was:  False
+]]></message>
+                <stack-trace><![CDATA[at Riftborn.Tests.EquipmentRuntimeTestInputTests.UnequipFailsSafelyWhenInventoryIsFull () [0x00034] in C:\Projetos\Riftborn2.0\Assets\_Project\Tests\EditMode\EquipmentRuntimeTestInputTests.cs:124
+]]></stack-trace>
+              </failure>
+              <output><![CDATA[[Equipment Test] No valid equippable item found in inventory.
+]]></output>
+            </test-case>
+            <test-case id="1005" name="UnequipsAndReturnsSameInstanceToInventory" fullname="Riftborn.Tests.EquipmentRuntimeTestInputTests.UnequipsAndReturnsSameInstanceToInventory" methodname="UnequipsAndReturnsSameInstanceToInventory" classname="Riftborn.Tests.EquipmentRuntimeTestInputTests" runstate="Runnable" seed="634516321" result="Failed" start-time="2026-06-29 17:24:43Z" end-time="2026-06-29 17:24:43Z" duration="0.001598" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[  Expected: True
+  But was:  False
+]]></message>
+                <stack-trace><![CDATA[at Riftborn.Tests.EquipmentRuntimeTestInputTests.UnequipsAndReturnsSameInstanceToInventory () [0x0005c] in C:\Projetos\Riftborn2.0\Assets\_Project\Tests\EditMode\EquipmentRuntimeTestInputTests.cs:100
+]]></stack-trace>
+              </failure>
+              <output><![CDATA[[Equipment Test] No valid equippable item found in inventory.
+Saving results to: C:/Users/arthu/AppData/LocalLow/DefaultCompany/Riftborn\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
