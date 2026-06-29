@@ -306,6 +306,127 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &131690130
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 131690131}
+  - component: {fileID: 131690133}
+  - component: {fileID: 131690132}
+  m_Layer: 5
+  m_Name: Background
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &131690131
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 131690130}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2125283861}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &131690132
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 131690130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 3
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 0
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &131690133
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 131690130}
+  m_CullTransparentMesh: 1
+--- !u!1 &147390544
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 147390546}
+  - component: {fileID: 147390545}
+  m_Layer: 0
+  m_Name: ItemGenerationTester
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &147390545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 147390544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0fd113d7d7084441ab3d3b7ae30019c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Items.ItemGenerationTester
+  profile: {fileID: 11400000, guid: dc56bf21c6a6fad45964abfcb7191a48, type: 2}
+  inventory: {fileID: 1615583179}
+--- !u!4 &147390546
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 147390544}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.33542, y: 0.70052, z: 3.56245}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &295326646
 GameObject:
   m_ObjectHideFlags: 0
@@ -390,7 +511,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 8
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -414,13 +535,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 318071397}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.38268346, y: 0, z: 0, w: 0.9238795}
-  m_LocalPosition: {x: 0, y: 7, z: -7}
+  m_LocalRotation: {x: 0.53729963, y: 0, z: 0, w: 0.8433915}
+  m_LocalPosition: {x: 0, y: 10, z: -7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 65, y: 0, z: 0}
 --- !u!1 &389436615
 GameObject:
   m_ObjectHideFlags: 0
@@ -680,6 +801,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 809449266}
+  - {fileID: 1689662787}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &577920171
@@ -847,6 +969,96 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 633487399}
   m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &685208372
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 685208373}
+  - component: {fileID: 685208375}
+  - component: {fileID: 685208374}
+  m_Layer: 0
+  m_Name: Visual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &685208373
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 685208372}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1689662787}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &685208374
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 685208372}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: af58f44eaf92dff44a16deb263b3f47d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &685208375
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 685208372}
+  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &809449247
 GameObject:
   m_ObjectHideFlags: 0
@@ -873,6 +1085,9 @@ GameObject:
   - component: {fileID: 809449248}
   - component: {fileID: 809449267}
   - component: {fileID: 809449268}
+  - component: {fileID: 809449269}
+  - component: {fileID: 809449270}
+  - component: {fileID: 809449271}
   m_Layer: 0
   m_Name: EnemyDummy
   m_TagString: Untagged
@@ -958,6 +1173,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Equipment.EquipmentController
   stats: {fileID: 0}
+  defense: {fileID: 0}
+  combat: {fileID: 0}
+  health: {fileID: 0}
+  resources: {fileID: 0}
+  abilities: {fileID: 0}
+  movement: {fileID: 0}
 --- !u!114 &809449253
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -971,6 +1192,217 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Inventory.InventoryController
   slotCount: 30
+  slots:
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
 --- !u!114 &809449254
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1027,6 +1459,7 @@ MonoBehaviour:
   actionState: {fileID: 0}
   targeting: {fileID: 0}
   stats: {fileID: 0}
+  equipment: {fileID: 0}
 --- !u!114 &809449258
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1073,9 +1506,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Resources.ResourceController
   resourceType: 0
   initialState: 0
-  maxValue: 100
+  baseMaxValue: 100
   currentValue: 100
-  regenerationPerSecond: 0
+  baseRegenerationPerSecond: 0
 --- !u!114 &809449261
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1179,6 +1612,76 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Targeting.TargetHighlight
   outlineObject: {fileID: 633487399}
+--- !u!114 &809449269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 809449247}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5529f08cebe124d4d971d81a470f7f9c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Visual.CharacterHitFeedback
+  character: {fileID: 809449248}
+  visualTransform: {fileID: 809449266}
+  targetRenderers:
+  - {fileID: 18891013}
+  useColorFlash: 1
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.12
+  useScaleReaction: 1
+  compressedScale: 0.88
+  compressionDuration: 0.05
+  recoveryDuration: 0.1
+  playHurtAnimation: 1
+  showDebugLogs: 1
+--- !u!114 &809449270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 809449247}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efbc9032955e57e468bba9061dce740b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.CharacterDeathFeedback
+  character: {fileID: 809449248}
+  visualRoot: {fileID: 18891012}
+  playDeathAnimation: 1
+  disableColliders: 1
+  disableGameplayControllers: 1
+  delayBeforeShrink: 0.15
+  shrinkDuration: 0.25
+  destroyAfterDeath: 0
+  destroyDelay: 2
+--- !u!114 &809449271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 809449247}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2a430b0788481640a85b41b4dbb6ffb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Items.LootDropController
+  character: {fileID: 809449248}
+  pickupPrefab: {fileID: 6716336860631969268, guid: d38ae6944ebd67b42b7893a5172f2dde, type: 3}
+  dropPoint: {fileID: 0}
+  horizontalScatterRadius: 0.6
+  verticalOffset: 0.15
+  lootEntries:
+  - generationProfile: {fileID: 11400000, guid: dc56bf21c6a6fad45964abfcb7191a48, type: 2}
+    dropChance: 1
+    minimumRolls: 1
+    maximumRolls: 1
+  dropOnlyOnce: 1
+  showDebugLogs: 1
 --- !u!1 &1017913538
 GameObject:
   m_ObjectHideFlags: 0
@@ -1254,6 +1757,96 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1017913538}
   m_CullTransparentMesh: 1
+--- !u!1 &1037776851
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1037776852}
+  - component: {fileID: 1037776854}
+  - component: {fileID: 1037776853}
+  m_Layer: 0
+  m_Name: VisualOutline
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &1037776852
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1037776851}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1689662787}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &1037776853
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1037776851}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: ee607258d296e1a429ddb078710ed14b, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1037776854
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1037776851}
+  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &1509434892
 GameObject:
   m_ObjectHideFlags: 0
@@ -1487,7 +2080,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 374ba73f79493d647aa95f78f7c6de7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Equipment.EquipmentController
-  stats: {fileID: 0}
+  stats: {fileID: 1615583188}
+  defense: {fileID: 1615583195}
+  combat: {fileID: 0}
+  health: {fileID: 0}
+  resources: {fileID: 0}
+  abilities: {fileID: 0}
+  movement: {fileID: 0}
 --- !u!114 &1615583179
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1501,6 +2100,235 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Inventory.InventoryController
   slotCount: 30
+  slots:
+  - instance:
+      instanceId: 9ba173f4a895402f9c9c6be35a9bb358
+      item: {fileID: 11400000, guid: d3c37569cb3c059449f246c8bfb31b59, type: 2}
+      rarity: {fileID: 11400000, guid: b72e50ae169d978449edf9f218789271, type: 2}
+      quantity: 1
+      prefixes:
+      - affix: {fileID: 11400000, guid: 6bf1b32bca013474890df8b15e46406e, type: 2}
+        tier: 10
+        rolledValue: 4
+      suffixes:
+      - affix: {fileID: 11400000, guid: 77f7181fa06e7134d94b1b19c094c652, type: 2}
+        tier: 10
+        rolledValue: 4
+  - instance:
+      instanceId: 0d4648b3953841ffb8513bab7c78a84b
+      item: {fileID: 11400000, guid: d3c37569cb3c059449f246c8bfb31b59, type: 2}
+      rarity: {fileID: 11400000, guid: b72e50ae169d978449edf9f218789271, type: 2}
+      quantity: 1
+      prefixes:
+      - affix: {fileID: 11400000, guid: 6bf1b32bca013474890df8b15e46406e, type: 2}
+        tier: 10
+        rolledValue: 4
+      suffixes:
+      - affix: {fileID: 11400000, guid: 77f7181fa06e7134d94b1b19c094c652, type: 2}
+        tier: 10
+        rolledValue: 4
+  - instance:
+      instanceId: 2af27738764448d2a4fc120d5ce1f270
+      item: {fileID: 11400000, guid: 5397165cec1475e4f93787c509268c83, type: 2}
+      rarity: {fileID: 11400000, guid: b72e50ae169d978449edf9f218789271, type: 2}
+      quantity: 1
+      prefixes:
+      - affix: {fileID: 11400000, guid: 6bf1b32bca013474890df8b15e46406e, type: 2}
+        tier: 10
+        rolledValue: 4
+      suffixes:
+      - affix: {fileID: 11400000, guid: 77f7181fa06e7134d94b1b19c094c652, type: 2}
+        tier: 10
+        rolledValue: 4
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
 --- !u!114 &1615583180
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1557,6 +2385,7 @@ MonoBehaviour:
   actionState: {fileID: 0}
   targeting: {fileID: 0}
   stats: {fileID: 0}
+  equipment: {fileID: 0}
 --- !u!114 &1615583184
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1603,9 +2432,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Resources.ResourceController
   resourceType: 0
   initialState: 0
-  maxValue: 100
+  baseMaxValue: 100
   currentValue: 100
-  regenerationPerSecond: 0
+  baseRegenerationPerSecond: 0
 --- !u!114 &1615583187
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1673,6 +2502,7 @@ MonoBehaviour:
   actionMapName: Player
   moveActionName: Move
   selectTargetActionName: SelectTarget
+  basicAttackActionName: BasicAttack
   ability1ActionName: Ability1
   selectionCamera: {fileID: 318071398}
   selectableLayers:
@@ -1680,6 +2510,7 @@ MonoBehaviour:
     m_Bits: 4294967295
   selectionDistance: 500
   movementController: {fileID: 1615583184}
+  combatController: {fileID: 0}
   abilityController: {fileID: 1615583181}
   targetingController: {fileID: 1615583196}
 --- !u!143 &1615583194
@@ -1733,6 +2564,629 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08d0fd8ce7cffd843af2caad072f1963, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Targeting.TargetingController
+--- !u!1 &1689662786
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1689662787}
+  - component: {fileID: 1689662807}
+  - component: {fileID: 1689662801}
+  - component: {fileID: 1689662800}
+  - component: {fileID: 1689662799}
+  - component: {fileID: 1689662797}
+  - component: {fileID: 1689662798}
+  - component: {fileID: 1689662796}
+  - component: {fileID: 1689662795}
+  - component: {fileID: 1689662794}
+  - component: {fileID: 1689662793}
+  - component: {fileID: 1689662792}
+  - component: {fileID: 1689662791}
+  - component: {fileID: 1689662790}
+  - component: {fileID: 1689662789}
+  - component: {fileID: 1689662788}
+  - component: {fileID: 1689662806}
+  - component: {fileID: 1689662805}
+  - component: {fileID: 1689662804}
+  - component: {fileID: 1689662803}
+  - component: {fileID: 1689662802}
+  m_Layer: 0
+  m_Name: EnemyDummy (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1689662787
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 7.25, y: 1.32, z: -2.48}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 685208373}
+  - {fileID: 1037776852}
+  - {fileID: 2125283861}
+  m_Father: {fileID: 564676965}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1689662788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f2b3b9f421936844b4b03d7843ee0a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Core.CharacterContext
+  stats: {fileID: 1689662801}
+  health: {fileID: 1689662800}
+  defense: {fileID: 0}
+  resources: {fileID: 1689662799}
+  movement: {fileID: 1689662798}
+  actionState: {fileID: 1689662797}
+  combat: {fileID: 1689662796}
+  targeting: {fileID: 0}
+  abilities: {fileID: 1689662795}
+  statusEffects: {fileID: 1689662794}
+  inventory: {fileID: 1689662793}
+  equipment: {fileID: 1689662792}
+  runes: {fileID: 1689662791}
+  animationController: {fileID: 1689662790}
+  characterEvents: {fileID: 1689662789}
+--- !u!114 &1689662789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99ba909d6b7b6824a9a02b0972296cf9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Core.CharacterEvents
+--- !u!114 &1689662790
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a76802cde18973144b83829384bc1257, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Animation.CharacterAnimationController
+  animator: {fileID: 0}
+--- !u!114 &1689662791
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c256461618191e747b731d997897844f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Runes.RuneController
+  equippedPage: {fileID: 0}
+--- !u!114 &1689662792
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 374ba73f79493d647aa95f78f7c6de7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Equipment.EquipmentController
+  stats: {fileID: 0}
+  defense: {fileID: 0}
+  combat: {fileID: 0}
+  health: {fileID: 0}
+  resources: {fileID: 0}
+  abilities: {fileID: 0}
+  movement: {fileID: 0}
+--- !u!114 &1689662793
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 248d2f6084700574cac164bfc36c56e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Inventory.InventoryController
+  slotCount: 30
+  slots:
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+--- !u!114 &1689662794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 773d79253d376124398bf7b059150dbe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.StatusEffects.StatusEffectController
+--- !u!114 &1689662795
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25a123a44bd25de45b97c1cfcb727c4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Abilities.AbilityController
+  equippedAbilities:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  actionState: {fileID: 0}
+--- !u!114 &1689662796
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fb0e153909bae6489549f8be71e674a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Combat.CombatController
+  basicAttackBaseDamage: 10
+  damagePerSTR: 1
+  baseAttackInterval: 1.5
+  attackSpeedPerDEX: 0.02
+  attackRange: 2
+  criticalChance: 0.05
+  criticalMultiplier: 1.5
+  actionState: {fileID: 0}
+  targeting: {fileID: 0}
+  stats: {fileID: 0}
+  equipment: {fileID: 0}
+--- !u!114 &1689662797
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29c933f9e194e1a448995e1ca651ab0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.ActionStates.ActionStateController
+--- !u!114 &1689662798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cb9aafeb4d6f5f439db239dc1ddc2ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Movement.MovementController
+  movementMode: 0
+  moveSpeed: 5
+  rotationSpeed: 14
+  gravity: -25
+  groundedStickForce: -2
+  actionState: {fileID: 0}
+  characterController: {fileID: 0}
+  cameraTransform: {fileID: 0}
+--- !u!114 &1689662799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bae76663394bdcd439f211ebceebaac8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Resources.ResourceController
+  resourceType: 0
+  initialState: 0
+  baseMaxValue: 100
+  currentValue: 100
+  baseRegenerationPerSecond: 0
+--- !u!114 &1689662800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c41f2f198b40f0d4b96e7251b7332703, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Health.HealthController
+  stats: {fileID: 0}
+  statusEffects: {fileID: 0}
+  baseMaxHealth: 100
+  healthPerFort: 5
+  currentHealth: 100
+  startFullHealth: 1
+--- !u!114 &1689662801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ade2325af5493e43ac3668e6fff8b2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Stats.CharacterStatsController
+  baseSTR: 10
+  baseDEX: 10
+  baseWIS: 10
+  baseISP: 10
+  baseFORT: 10
+--- !u!114 &1689662802
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2a430b0788481640a85b41b4dbb6ffb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Items.LootDropController
+  character: {fileID: 1689662788}
+  pickupPrefab: {fileID: 6716336860631969268, guid: d38ae6944ebd67b42b7893a5172f2dde, type: 3}
+  dropPoint: {fileID: 0}
+  horizontalScatterRadius: 0.6
+  verticalOffset: 0.15
+  lootEntries:
+  - generationProfile: {fileID: 11400000, guid: dc56bf21c6a6fad45964abfcb7191a48, type: 2}
+    dropChance: 1
+    minimumRolls: 1
+    maximumRolls: 1
+  dropOnlyOnce: 1
+  showDebugLogs: 1
+--- !u!114 &1689662803
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efbc9032955e57e468bba9061dce740b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.CharacterDeathFeedback
+  character: {fileID: 1689662788}
+  visualRoot: {fileID: 685208373}
+  playDeathAnimation: 1
+  disableColliders: 1
+  disableGameplayControllers: 1
+  delayBeforeShrink: 0.15
+  shrinkDuration: 0.25
+  destroyAfterDeath: 0
+  destroyDelay: 2
+--- !u!114 &1689662804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5529f08cebe124d4d971d81a470f7f9c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Visual.CharacterHitFeedback
+  character: {fileID: 1689662788}
+  visualTransform: {fileID: 1689662787}
+  targetRenderers:
+  - {fileID: 685208374}
+  useColorFlash: 1
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.12
+  useScaleReaction: 1
+  compressedScale: 0.88
+  compressionDuration: 0.05
+  recoveryDuration: 0.1
+  playHurtAnimation: 1
+  showDebugLogs: 1
+--- !u!114 &1689662805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a482a24111451e4daa5dede1a88b927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Targeting.TargetHighlight
+  outlineObject: {fileID: 1037776851}
+--- !u!114 &1689662806
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53a3e78db0755ed44a0f03bf62553ebc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Defense.DefenseController
+  basePhysicalDefense: 0
+  baseMagicalDefense: 0
+--- !u!136 &1689662807
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689662786}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.45
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!1 &1785527260
 GameObject:
   m_ObjectHideFlags: 0
@@ -1843,6 +3297,250 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2060315270
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2060315271}
+  - component: {fileID: 2060315273}
+  - component: {fileID: 2060315272}
+  m_Layer: 5
+  m_Name: Fill
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2060315271
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2060315270}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2125283861}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -4, y: -4}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2060315272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2060315270}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 3
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 0
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &2060315273
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2060315270}
+  m_CullTransparentMesh: 1
+--- !u!1 &2125283860
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2125283861}
+  - component: {fileID: 2125283865}
+  - component: {fileID: 2125283864}
+  - component: {fileID: 2125283863}
+  - component: {fileID: 2125283862}
+  m_Layer: 5
+  m_Name: Healthbar
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2125283861
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2125283860}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 131690131}
+  - {fileID: 2060315271}
+  m_Father: {fileID: 1689662787}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 1.5}
+  m_SizeDelta: {x: 150, y: 15}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2125283862
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2125283860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56be4cbe648b2464099013d047517203, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.UI.World.WorldHealthBar
+  character: {fileID: 1689662788}
+  fillImage: {fileID: 2060315272}
+  worldCamera: {fileID: 318071398}
+  faceCamera: 1
+  hideWhenDead: 1
+--- !u!225 &2125283863
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2125283860}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &2125283864
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2125283860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
+  m_UiScaleMode: 0
+  m_ReferencePixelsPerUnit: 100
+  m_ScaleFactor: 1
+  m_ReferenceResolution: {x: 800, y: 600}
+  m_ScreenMatchMode: 0
+  m_MatchWidthOrHeight: 0
+  m_PhysicalUnit: 3
+  m_FallbackScreenDPI: 96
+  m_DefaultSpriteDPI: 96
+  m_DynamicPixelsPerUnit: 1
+  m_PresetInfoIsWorld: 1
+--- !u!223 &2125283865
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2125283860}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
+--- !u!1 &2136943416
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2136943418}
+  - component: {fileID: 2136943417}
+  m_Layer: 0
+  m_Name: EquipmentSystemTester
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2136943417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2136943416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 916bd2728c8fc7747a3edf6fa22798db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Items.EquipmentSystemTester
+  profile: {fileID: 11400000, guid: dc56bf21c6a6fad45964abfcb7191a48, type: 2}
+  inventory: {fileID: 1615583179}
+  equipment: {fileID: 1615583178}
+  stats: {fileID: 1615583188}
+  defense: {fileID: 1615583195}
+  observedStat: 0
+  observedDefense: 0
+  slotToUnequip: 3
+--- !u!4 &2136943418
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2136943416}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.17468, y: 0.70052, z: 0.6841}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1854,3 +3552,5 @@ SceneRoots:
   - {fileID: 1852073990}
   - {fileID: 1509434893}
   - {fileID: 1785527263}
+  - {fileID: 147390546}
+  - {fileID: 2136943418}
