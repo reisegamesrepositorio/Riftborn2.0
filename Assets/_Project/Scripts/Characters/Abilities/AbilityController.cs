@@ -21,9 +21,21 @@ namespace Riftborn.Characters.Abilities
         private readonly Dictionary<AbilityBase, float>
             cooldownEnds = new();
 
+        private readonly Dictionary<
+            AbilityModifierType,
+            List<AbilityModifier>>
+            modifiersByType = new();
+
+        private readonly Dictionary<string, AbilityModifier>
+            modifiersById =
+                new(StringComparer.Ordinal);
+
         private CharacterContext context;
+        private bool modifiersInitialized;
 
         public event Action<int, AbilityBase> AbilityUsed;
+
+        public event Action AbilityValuesChanged;
 
         public int SlotCount =>
             equippedAbilities?.Length ?? 0;
@@ -31,6 +43,7 @@ namespace Riftborn.Characters.Abilities
         private void Awake()
         {
             CacheReferences();
+            EnsureModifiersInitialized();
         }
 
         public bool TryUse(
@@ -91,7 +104,8 @@ namespace Riftborn.Characters.Abilities
             {
                 if (resourceConsumed)
                 {
-                    resources.Restore(resourceCost);
+                    resources.Restore(
+                        resourceCost);
                 }
 
                 Debug.LogException(
@@ -101,18 +115,12 @@ namespace Riftborn.Characters.Abilities
                 return false;
             }
 
-            /*
-             * A habilidade passou pelas validações, mas ainda
-             * assim falhou durante a execução.
-             *
-             * Nesse caso, o recurso reservado é devolvido
-             * e nenhum cooldown é iniciado.
-             */
             if (!executionSucceeded)
             {
                 if (resourceConsumed)
                 {
-                    resources.Restore(resourceCost);
+                    resources.Restore(
+                        resourceCost);
                 }
 
                 return false;
@@ -176,7 +184,8 @@ namespace Riftborn.Characters.Abilities
                     context.Resources;
 
                 if (resources == null ||
-                    !resources.CanConsume(resourceCost))
+                    !resources.CanConsume(
+                        resourceCost))
                 {
                     return false;
                 }
@@ -210,7 +219,8 @@ namespace Riftborn.Characters.Abilities
                 return false;
             }
 
-            equippedAbilities[slot] = ability;
+            equippedAbilities[slot] =
+                ability;
 
             return true;
         }
@@ -239,7 +249,183 @@ namespace Riftborn.Characters.Abilities
                 return 0f;
             }
 
-            return GetRemainingCooldown(ability);
+            return GetRemainingCooldown(
+                ability);
+        }
+
+        public float ApplyDamageModifiers(
+            float baseDamage)
+        {
+            float safeBaseDamage =
+                Mathf.Max(
+                    0f,
+                    baseDamage);
+
+            float finalDamage =
+                ApplyModifiers(
+                    AbilityModifierType.AbilityDamage,
+                    safeBaseDamage);
+
+            return Mathf.Max(
+                0f,
+                finalDamage);
+        }
+
+        public bool AddModifier(
+            AbilityModifier modifier)
+        {
+            if (modifier == null)
+            {
+                return false;
+            }
+
+            EnsureModifiersInitialized();
+
+            if (modifiersById.ContainsKey(
+                    modifier.Id))
+            {
+                Debug.LogWarning(
+                    $"[ABILITY] Já existe um modificador " +
+                    $"com o ID '{modifier.Id}'.",
+                    this);
+
+                return false;
+            }
+
+            modifiersByType[
+                    modifier.ModifierType]
+                .Add(modifier);
+
+            modifiersById.Add(
+                modifier.Id,
+                modifier);
+
+            AbilityValuesChanged?.Invoke();
+
+            return true;
+        }
+
+        public bool RemoveModifier(
+            string modifierId)
+        {
+            if (string.IsNullOrWhiteSpace(
+                    modifierId))
+            {
+                return false;
+            }
+
+            EnsureModifiersInitialized();
+
+            if (!modifiersById.TryGetValue(
+                    modifierId,
+                    out AbilityModifier modifier))
+            {
+                return false;
+            }
+
+            modifiersById.Remove(
+                modifierId);
+
+            bool removed =
+                modifiersByType[
+                        modifier.ModifierType]
+                    .Remove(modifier);
+
+            if (removed)
+            {
+                AbilityValuesChanged?.Invoke();
+            }
+
+            return removed;
+        }
+
+        public int RemoveModifiersFromSource(
+            object source)
+        {
+            if (source == null)
+            {
+                return 0;
+            }
+
+            EnsureModifiersInitialized();
+
+            int totalRemoved = 0;
+
+            foreach (
+                KeyValuePair<
+                    AbilityModifierType,
+                    List<AbilityModifier>> pair
+                in modifiersByType)
+            {
+                List<AbilityModifier> modifiers =
+                    pair.Value;
+
+                for (int index =
+                         modifiers.Count - 1;
+                     index >= 0;
+                     index--)
+                {
+                    AbilityModifier modifier =
+                        modifiers[index];
+
+                    if (!Equals(
+                            modifier.Source,
+                            source))
+                    {
+                        continue;
+                    }
+
+                    modifiers.RemoveAt(index);
+
+                    modifiersById.Remove(
+                        modifier.Id);
+
+                    totalRemoved++;
+                }
+            }
+
+            if (totalRemoved > 0)
+            {
+                AbilityValuesChanged?.Invoke();
+            }
+
+            return totalRemoved;
+        }
+
+        public bool HasModifier(
+            string modifierId)
+        {
+            if (string.IsNullOrWhiteSpace(
+                    modifierId))
+            {
+                return false;
+            }
+
+            EnsureModifiersInitialized();
+
+            return modifiersById.ContainsKey(
+                modifierId);
+        }
+
+        [ContextMenu("Log Current Ability Modifiers")]
+        public void LogCurrentAbilityModifiers()
+        {
+            GetModifierTotals(
+                AbilityModifierType.AbilityDamage,
+                out float flatValue,
+                out float additivePercent,
+                out float multiplicativeFactor);
+
+            Debug.Log(
+                $"[ABILITY VALUES] " +
+                $"Dano fixo: {flatValue:0.##} | " +
+                $"Dano aditivo: " +
+                $"{additivePercent * 100f:0.##}% | " +
+                $"Multiplicador: " +
+                $"{multiplicativeFactor:0.##}x | " +
+                $"Exemplo sobre 25: " +
+                $"{ApplyDamageModifiers(25f):0.##}",
+                this);
         }
 
         private bool IsOnCooldown(
@@ -259,7 +445,9 @@ namespace Riftborn.Characters.Abilities
 
             if (Time.time >= cooldownEnd)
             {
-                cooldownEnds.Remove(ability);
+                cooldownEnds.Remove(
+                    ability);
+
                 return false;
             }
 
@@ -284,11 +472,13 @@ namespace Riftborn.Characters.Abilities
             float remainingCooldown =
                 Mathf.Max(
                     0f,
-                    cooldownEnd - Time.time);
+                    cooldownEnd -
+                    Time.time);
 
             if (remainingCooldown <= 0f)
             {
-                cooldownEnds.Remove(ability);
+                cooldownEnds.Remove(
+                    ability);
             }
 
             return remainingCooldown;
@@ -309,12 +499,15 @@ namespace Riftborn.Characters.Abilities
 
             if (cooldownDuration <= 0f)
             {
-                cooldownEnds.Remove(ability);
+                cooldownEnds.Remove(
+                    ability);
+
                 return;
             }
 
             cooldownEnds[ability] =
-                Time.time + cooldownDuration;
+                Time.time +
+                cooldownDuration;
         }
 
         private bool TryGetAbility(
@@ -338,7 +531,86 @@ namespace Riftborn.Characters.Abilities
         {
             return equippedAbilities != null &&
                    slot >= 0 &&
-                   slot < equippedAbilities.Length;
+                   slot <
+                   equippedAbilities.Length;
+        }
+
+        private float ApplyModifiers(
+            AbilityModifierType modifierType,
+            float baseValue)
+        {
+            GetModifierTotals(
+                modifierType,
+                out float flatValue,
+                out float additivePercent,
+                out float multiplicativeFactor);
+
+            float finalValue =
+                baseValue +
+                flatValue;
+
+            finalValue *=
+                1f +
+                additivePercent;
+
+            finalValue *=
+                multiplicativeFactor;
+
+            return finalValue;
+        }
+
+        private void GetModifierTotals(
+            AbilityModifierType modifierType,
+            out float flatValue,
+            out float additivePercent,
+            out float multiplicativeFactor)
+        {
+            EnsureModifiersInitialized();
+
+            flatValue = 0f;
+            additivePercent = 0f;
+            multiplicativeFactor = 1f;
+
+            List<AbilityModifier> modifiers =
+                modifiersByType[
+                    modifierType];
+
+            for (int index = 0;
+                 index < modifiers.Count;
+                 index++)
+            {
+                AbilityModifier modifier =
+                    modifiers[index];
+
+                flatValue +=
+                    modifier.FlatValue;
+
+                additivePercent +=
+                    modifier.AdditivePercent;
+
+                multiplicativeFactor *=
+                    1f +
+                    modifier.MultiplicativePercent;
+            }
+        }
+
+        private void EnsureModifiersInitialized()
+        {
+            if (modifiersInitialized)
+            {
+                return;
+            }
+
+            foreach (
+                AbilityModifierType modifierType
+                in Enum.GetValues(
+                    typeof(AbilityModifierType)))
+            {
+                modifiersByType[modifierType] =
+                    new List<AbilityModifier>();
+            }
+
+            modifiersInitialized = true;
         }
 
         private void CacheReferences()

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Riftborn.Characters.Resources
 {
@@ -41,61 +43,83 @@ namespace Riftborn.Characters.Resources
 
         public float Max { get; }
 
-        public float Delta => Current - OldCurrent;
+        public float Delta =>
+            Current - OldCurrent;
 
-        public float MaxDelta => Max - OldMax;
+        public float MaxDelta =>
+            Max - OldMax;
     }
 
     public sealed class ResourceController : MonoBehaviour
     {
         [Header("Resource")]
         [SerializeField]
-        private ResourceType resourceType = ResourceType.Mana;
+        private ResourceType resourceType =
+            ResourceType.Mana;
 
         [SerializeField]
         private InitialResourceState initialState =
             InitialResourceState.Full;
 
-        [Header("Values")]
+        [Header("Base Values")]
+        [FormerlySerializedAs("maxValue")]
         [SerializeField, Min(1f)]
-        private float maxValue = 100f;
+        private float baseMaxValue = 100f;
 
         [SerializeField, Min(0f)]
         private float currentValue = 100f;
 
+        [FormerlySerializedAs("regenerationPerSecond")]
         [SerializeField, Min(0f)]
+        private float baseRegenerationPerSecond;
+
+        private readonly Dictionary<
+            ResourceModifierType,
+            List<ResourceModifier>>
+            modifiersByType = new();
+
+        private readonly Dictionary<string, ResourceModifier>
+            modifiersById =
+                new(StringComparer.Ordinal);
+
+        private float maxValue;
         private float regenerationPerSecond;
+        private bool modifiersInitialized;
 
-        /// <summary>
-        /// Evento simples mantido para compatibilidade.
-        /// Entrega o valor atual e o valor máximo.
-        /// </summary>
-        public event Action<float, float> ResourceChanged;
+        public event Action<float, float>
+            ResourceChanged;
 
-        /// <summary>
-        /// Evento detalhado com valores antigos, novos e deltas.
-        /// </summary>
         public event Action<ResourceChangedEventArgs>
             ResourceStateChanged;
 
-        /// <summary>
-        /// Informa quanto recurso foi realmente consumido.
-        /// </summary>
-        public event Action<float> ResourceConsumed;
+        public event Action<float>
+            ResourceConsumed;
 
-        /// <summary>
-        /// Informa quanto recurso foi realmente restaurado.
-        /// </summary>
-        public event Action<float> ResourceRestored;
+        public event Action<float>
+            ResourceRestored;
 
-        public ResourceType ResourceType => resourceType;
+        public event Action<float, float>
+            RegenerationChanged;
 
-        public float CurrentValue => currentValue;
+        public event Action ResourceValuesChanged;
 
-        public float MaxValue => maxValue;
+        public ResourceType ResourceType =>
+            resourceType;
+
+        public float CurrentValue =>
+            currentValue;
+
+        public float MaxValue =>
+            maxValue;
+
+        public float BaseMaxValue =>
+            baseMaxValue;
 
         public float RegenerationPerSecond =>
             regenerationPerSecond;
+
+        public float BaseRegenerationPerSecond =>
+            baseRegenerationPerSecond;
 
         public float ResourcePercentage =>
             maxValue > 0f
@@ -110,6 +134,7 @@ namespace Riftborn.Characters.Resources
 
         private void Awake()
         {
+            EnsureModifiersInitialized();
             InitializeResource();
         }
 
@@ -122,33 +147,46 @@ namespace Riftborn.Characters.Resources
             }
 
             Restore(
-                regenerationPerSecond * Time.deltaTime);
+                regenerationPerSecond *
+                Time.deltaTime);
         }
 
         private void OnValidate()
         {
-            maxValue = Mathf.Max(1f, maxValue);
-            currentValue = Mathf.Clamp(
-                currentValue,
-                0f,
-                maxValue);
+            baseMaxValue =
+                Mathf.Max(
+                    1f,
+                    baseMaxValue);
 
-            regenerationPerSecond =
-                Mathf.Max(0f, regenerationPerSecond);
+            baseRegenerationPerSecond =
+                Mathf.Max(
+                    0f,
+                    baseRegenerationPerSecond);
+
+            currentValue =
+                Mathf.Clamp(
+                    currentValue,
+                    0f,
+                    baseMaxValue);
         }
 
         public bool CanConsume(float amount)
         {
             float requestedAmount =
-                Mathf.Max(0f, amount);
+                Mathf.Max(
+                    0f,
+                    amount);
 
-            return currentValue >= requestedAmount;
+            return currentValue >=
+                   requestedAmount;
         }
 
         public bool Consume(float amount)
         {
             float requestedAmount =
-                Mathf.Max(0f, amount);
+                Mathf.Max(
+                    0f,
+                    amount);
 
             if (requestedAmount <= 0f)
             {
@@ -160,14 +198,17 @@ namespace Riftborn.Characters.Resources
                 return false;
             }
 
-            float oldCurrentValue = currentValue;
+            float oldCurrentValue =
+                currentValue;
 
             SetResourceState(
-                currentValue - requestedAmount,
+                currentValue -
+                requestedAmount,
                 maxValue);
 
             float effectiveConsumption =
-                oldCurrentValue - currentValue;
+                oldCurrentValue -
+                currentValue;
 
             if (effectiveConsumption > 0f)
             {
@@ -181,21 +222,26 @@ namespace Riftborn.Characters.Resources
         public float Restore(float amount)
         {
             float requestedAmount =
-                Mathf.Max(0f, amount);
+                Mathf.Max(
+                    0f,
+                    amount);
 
             if (requestedAmount <= 0f)
             {
                 return 0f;
             }
 
-            float oldCurrentValue = currentValue;
+            float oldCurrentValue =
+                currentValue;
 
             SetResourceState(
-                currentValue + requestedAmount,
+                currentValue +
+                requestedAmount,
                 maxValue);
 
             float effectiveRestoration =
-                currentValue - oldCurrentValue;
+                currentValue -
+                oldCurrentValue;
 
             if (effectiveRestoration > 0f)
             {
@@ -210,36 +256,40 @@ namespace Riftborn.Characters.Resources
             float value,
             bool fillToMax = false)
         {
-            float newMaxValue =
-                Mathf.Max(1f, value);
+            baseMaxValue =
+                Mathf.Max(
+                    1f,
+                    value);
 
-            float newCurrentValue =
-                fillToMax
-                    ? newMaxValue
-                    : Mathf.Min(
-                        currentValue,
-                        newMaxValue);
-
-            SetResourceState(
-                newCurrentValue,
-                newMaxValue);
+            RecalculateResourceValues(
+                fillToMax);
         }
 
-        public void SetRegenerationPerSecond(float value)
+        public void SetRegenerationPerSecond(
+            float value)
         {
-            regenerationPerSecond =
-                Mathf.Max(0f, value);
+            baseRegenerationPerSecond =
+                Mathf.Max(
+                    0f,
+                    value);
+
+            RecalculateResourceValues(
+                fillToMax: false);
         }
 
         public void SetResourceType(
             ResourceType newResourceType)
         {
-            resourceType = newResourceType;
+            resourceType =
+                newResourceType;
         }
 
+        [ContextMenu("Fill Resource To Maximum")]
         public void FillToMaximum()
         {
-            Restore(maxValue - currentValue);
+            Restore(
+                maxValue -
+                currentValue);
         }
 
         public void Empty()
@@ -249,14 +299,16 @@ namespace Riftborn.Characters.Resources
                 return;
             }
 
-            float oldCurrentValue = currentValue;
+            float oldCurrentValue =
+                currentValue;
 
             SetResourceState(
                 0f,
                 maxValue);
 
             float effectiveConsumption =
-                oldCurrentValue - currentValue;
+                oldCurrentValue -
+                currentValue;
 
             if (effectiveConsumption > 0f)
             {
@@ -265,46 +317,379 @@ namespace Riftborn.Characters.Resources
             }
         }
 
+        public bool AddModifier(
+            ResourceModifier modifier)
+        {
+            if (modifier == null)
+            {
+                return false;
+            }
+
+            EnsureModifiersInitialized();
+
+            if (modifiersById.ContainsKey(
+                    modifier.Id))
+            {
+                Debug.LogWarning(
+                    $"[RESOURCE] Já existe um modificador " +
+                    $"com o ID '{modifier.Id}'.",
+                    this);
+
+                return false;
+            }
+
+            modifiersByType[
+                    modifier.ModifierType]
+                .Add(modifier);
+
+            modifiersById.Add(
+                modifier.Id,
+                modifier);
+
+            RecalculateResourceValues(
+                fillToMax: false);
+
+            return true;
+        }
+
+        public bool RemoveModifier(
+            string modifierId)
+        {
+            if (string.IsNullOrWhiteSpace(
+                    modifierId))
+            {
+                return false;
+            }
+
+            EnsureModifiersInitialized();
+
+            if (!modifiersById.TryGetValue(
+                    modifierId,
+                    out ResourceModifier modifier))
+            {
+                return false;
+            }
+
+            modifiersById.Remove(
+                modifierId);
+
+            bool removed =
+                modifiersByType[
+                        modifier.ModifierType]
+                    .Remove(modifier);
+
+            if (removed)
+            {
+                RecalculateResourceValues(
+                    fillToMax: false);
+            }
+
+            return removed;
+        }
+
+        public int RemoveModifiersFromSource(
+            object source)
+        {
+            if (source == null)
+            {
+                return 0;
+            }
+
+            EnsureModifiersInitialized();
+
+            int totalRemoved = 0;
+
+            foreach (
+                KeyValuePair<
+                    ResourceModifierType,
+                    List<ResourceModifier>> pair
+                in modifiersByType)
+            {
+                List<ResourceModifier> modifiers =
+                    pair.Value;
+
+                for (int index =
+                         modifiers.Count - 1;
+                     index >= 0;
+                     index--)
+                {
+                    ResourceModifier modifier =
+                        modifiers[index];
+
+                    if (!Equals(
+                            modifier.Source,
+                            source))
+                    {
+                        continue;
+                    }
+
+                    modifiers.RemoveAt(index);
+
+                    modifiersById.Remove(
+                        modifier.Id);
+
+                    totalRemoved++;
+                }
+            }
+
+            if (totalRemoved > 0)
+            {
+                RecalculateResourceValues(
+                    fillToMax: false);
+            }
+
+            return totalRemoved;
+        }
+
+        public bool HasModifier(
+            string modifierId)
+        {
+            if (string.IsNullOrWhiteSpace(
+                    modifierId))
+            {
+                return false;
+            }
+
+            EnsureModifiersInitialized();
+
+            return modifiersById.ContainsKey(
+                modifierId);
+        }
+
+        [ContextMenu("Log Current Resource Values")]
+        public void LogCurrentResourceValues()
+        {
+            GetModifierTotals(
+                ResourceModifierType.MaximumResource,
+                out float maximumFlat,
+                out float maximumAdditive,
+                out float maximumMultiplicative);
+
+            GetModifierTotals(
+                ResourceModifierType.Regeneration,
+                out float regenerationFlat,
+                out float regenerationAdditive,
+                out float regenerationMultiplicative);
+
+            Debug.Log(
+                $"[RESOURCE VALUES] " +
+                $"Tipo: {resourceType} | " +
+                $"Recurso: {currentValue:0.##}/" +
+                $"{maxValue:0.##} | " +
+                $"Máximo-base: {baseMaxValue:0.##} | " +
+                $"Bônus máximo fixo: {maximumFlat:0.##} | " +
+                $"Bônus máximo aditivo: " +
+                $"{maximumAdditive * 100f:0.##}% | " +
+                $"Multiplicador máximo: " +
+                $"{maximumMultiplicative:0.##}x | " +
+                $"Regeneração: " +
+                $"{regenerationPerSecond:0.##}/s | " +
+                $"Regeneração-base: " +
+                $"{baseRegenerationPerSecond:0.##}/s | " +
+                $"Bônus regeneração fixo: " +
+                $"{regenerationFlat:0.##}/s | " +
+                $"Bônus regeneração aditivo: " +
+                $"{regenerationAdditive * 100f:0.##}% | " +
+                $"Multiplicador regeneração: " +
+                $"{regenerationMultiplicative:0.##}x",
+                this);
+        }
+
         private void InitializeResource()
         {
-            maxValue = Mathf.Max(1f, maxValue);
+            maxValue =
+                CalculateMaximumResource();
 
-            currentValue = initialState switch
-            {
-                InitialResourceState.Full =>
-                    maxValue,
+            regenerationPerSecond =
+                CalculateRegeneration();
 
-                InitialResourceState.Empty =>
-                    0f,
+            currentValue =
+                initialState switch
+                {
+                    InitialResourceState.Full =>
+                        maxValue,
 
-                InitialResourceState.Custom =>
-                    Mathf.Clamp(
-                        currentValue,
+                    InitialResourceState.Empty =>
                         0f,
-                        maxValue),
 
-                _ => Mathf.Clamp(
-                    currentValue,
-                    0f,
-                    maxValue)
-            };
+                    InitialResourceState.Custom =>
+                        Mathf.Clamp(
+                            currentValue,
+                            0f,
+                            maxValue),
+
+                    _ =>
+                        Mathf.Clamp(
+                            currentValue,
+                            0f,
+                            maxValue)
+                };
+        }
+
+        private void RecalculateResourceValues(
+            bool fillToMax)
+        {
+            float oldRegeneration =
+                regenerationPerSecond;
+
+            float newMaximum =
+                CalculateMaximumResource();
+
+            float newRegeneration =
+                CalculateRegeneration();
+
+            /*
+             * Preserva a quantidade atual para impedir
+             * recuperação gratuita ao trocar equipamentos.
+             */
+            float newCurrent =
+                fillToMax
+                    ? newMaximum
+                    : Mathf.Min(
+                        currentValue,
+                        newMaximum);
+
+            SetResourceState(
+                newCurrent,
+                newMaximum);
+
+            regenerationPerSecond =
+                newRegeneration;
+
+            if (!Mathf.Approximately(
+                    oldRegeneration,
+                    regenerationPerSecond))
+            {
+                RegenerationChanged?.Invoke(
+                    oldRegeneration,
+                    regenerationPerSecond);
+            }
+
+            ResourceValuesChanged?.Invoke();
+        }
+
+        private float CalculateMaximumResource()
+        {
+            float finalValue =
+                ApplyModifiers(
+                    ResourceModifierType.MaximumResource,
+                    baseMaxValue);
+
+            return Mathf.Max(
+                1f,
+                finalValue);
+        }
+
+        private float CalculateRegeneration()
+        {
+            float finalValue =
+                ApplyModifiers(
+                    ResourceModifierType.Regeneration,
+                    baseRegenerationPerSecond);
+
+            return Mathf.Max(
+                0f,
+                finalValue);
+        }
+
+        private float ApplyModifiers(
+            ResourceModifierType modifierType,
+            float baseValue)
+        {
+            GetModifierTotals(
+                modifierType,
+                out float flatValue,
+                out float additivePercent,
+                out float multiplicativeFactor);
+
+            float finalValue =
+                baseValue +
+                flatValue;
+
+            finalValue *=
+                1f +
+                additivePercent;
+
+            finalValue *=
+                multiplicativeFactor;
+
+            return finalValue;
+        }
+
+        private void GetModifierTotals(
+            ResourceModifierType modifierType,
+            out float flatValue,
+            out float additivePercent,
+            out float multiplicativeFactor)
+        {
+            EnsureModifiersInitialized();
+
+            flatValue = 0f;
+            additivePercent = 0f;
+            multiplicativeFactor = 1f;
+
+            List<ResourceModifier> modifiers =
+                modifiersByType[
+                    modifierType];
+
+            for (int index = 0;
+                 index < modifiers.Count;
+                 index++)
+            {
+                ResourceModifier modifier =
+                    modifiers[index];
+
+                flatValue +=
+                    modifier.FlatValue;
+
+                additivePercent +=
+                    modifier.AdditivePercent;
+
+                multiplicativeFactor *=
+                    1f +
+                    modifier.MultiplicativePercent;
+            }
+        }
+
+        private void EnsureModifiersInitialized()
+        {
+            if (modifiersInitialized)
+            {
+                return;
+            }
+
+            foreach (
+                ResourceModifierType modifierType
+                in Enum.GetValues(
+                    typeof(ResourceModifierType)))
+            {
+                modifiersByType[modifierType] =
+                    new List<ResourceModifier>();
+            }
+
+            modifiersInitialized = true;
         }
 
         private void SetResourceState(
             float newCurrentValue,
             float newMaxValue)
         {
-            float oldCurrentValue = currentValue;
-            float oldMaxValue = maxValue;
+            float oldCurrentValue =
+                currentValue;
 
-            maxValue = Mathf.Max(
-                1f,
-                newMaxValue);
+            float oldMaxValue =
+                maxValue;
 
-            currentValue = Mathf.Clamp(
-                newCurrentValue,
-                0f,
-                maxValue);
+            maxValue =
+                Mathf.Max(
+                    1f,
+                    newMaxValue);
+
+            currentValue =
+                Mathf.Clamp(
+                    newCurrentValue,
+                    0f,
+                    maxValue);
 
             bool currentChanged =
                 !Mathf.Approximately(
@@ -316,7 +701,8 @@ namespace Riftborn.Characters.Resources
                     oldMaxValue,
                     maxValue);
 
-            if (!currentChanged && !maxChanged)
+            if (!currentChanged &&
+                !maxChanged)
             {
                 return;
             }

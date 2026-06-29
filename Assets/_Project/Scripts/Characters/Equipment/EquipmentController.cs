@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Riftborn.Characters.Abilities;
 using Riftborn.Characters.Combat;
 using Riftborn.Characters.Defense;
 using Riftborn.Characters.Health;
+using Riftborn.Characters.Resources;
 using Riftborn.Characters.Stats;
 using Riftborn.Items;
 using UnityEngine;
@@ -23,6 +25,12 @@ namespace Riftborn.Characters.Equipment
 
         [SerializeField]
         private HealthController health;
+
+        [SerializeField]
+        private ResourceController resources;
+
+        [SerializeField]
+        private AbilityController abilities;
 
         private readonly Dictionary<EquipmentSlot, ItemInstance>
             equipped = new();
@@ -55,7 +63,8 @@ namespace Riftborn.Characters.Equipment
             }
 
             EquipmentItemData equipmentData =
-                itemInstance.Item as EquipmentItemData;
+                itemInstance.Item
+                    as EquipmentItemData;
 
             if (equipmentData == null)
             {
@@ -162,8 +171,7 @@ namespace Riftborn.Characters.Equipment
             RemoveAppliedModifiers(
                 itemInstance);
 
-            equipped.Remove(
-                slot);
+            equipped.Remove(slot);
 
             NotifyEquipmentChanged(
                 slot,
@@ -190,8 +198,7 @@ namespace Riftborn.Characters.Equipment
             EquipmentSlot slot)
         {
             ItemInstance itemInstance =
-                GetEquippedInstance(
-                    slot);
+                GetEquippedInstance(slot);
 
             return itemInstance?.Item
                 as EquipmentItemData;
@@ -200,8 +207,7 @@ namespace Riftborn.Characters.Equipment
         public bool IsSlotOccupied(
             EquipmentSlot slot)
         {
-            return equipped.ContainsKey(
-                slot);
+            return equipped.ContainsKey(slot);
         }
 
         private bool TryApplyItemModifiers(
@@ -309,7 +315,8 @@ namespace Riftborn.Characters.Equipment
             }
 
             for (int index = 0;
-                 index < equipmentData.DefenseModifiers.Count;
+                 index <
+                 equipmentData.DefenseModifiers.Count;
                  index++)
             {
                 DefenseModifierDefinition definition =
@@ -465,6 +472,27 @@ namespace Riftborn.Characters.Equipment
                         roll,
                         modifierId);
 
+                case ItemAffixEffectType.MaximumResource:
+                    return ApplyResourceAffix(
+                        itemInstance,
+                        roll,
+                        modifierId,
+                        ResourceModifierType.MaximumResource);
+
+                case ItemAffixEffectType.ResourceRegeneration:
+                    return ApplyResourceAffix(
+                        itemInstance,
+                        roll,
+                        modifierId,
+                        ResourceModifierType.Regeneration);
+
+                case ItemAffixEffectType.AbilityDamage:
+                    return ApplyAbilityAffix(
+                        itemInstance,
+                        roll,
+                        modifierId,
+                        AbilityModifierType.AbilityDamage);
+
                 default:
                     Debug.LogWarning(
                         $"[EQUIPMENT] O efeito " +
@@ -605,6 +633,68 @@ namespace Riftborn.Characters.Equipment
                 modifier);
         }
 
+        private bool ApplyResourceAffix(
+            ItemInstance itemInstance,
+            ItemAffixRoll roll,
+            string modifierId,
+            ResourceModifierType modifierType)
+        {
+            if (resources == null)
+            {
+                return false;
+            }
+
+            ConvertAffixValue(
+                roll,
+                out float flatValue,
+                out float additivePercent,
+                out float multiplicativePercent);
+
+            ResourceModifier modifier =
+                new ResourceModifier(
+                    id: modifierId,
+                    source: itemInstance,
+                    modifierType: modifierType,
+                    flatValue: flatValue,
+                    additivePercent: additivePercent,
+                    multiplicativePercent:
+                        multiplicativePercent);
+
+            return resources.AddModifier(
+                modifier);
+        }
+
+        private bool ApplyAbilityAffix(
+            ItemInstance itemInstance,
+            ItemAffixRoll roll,
+            string modifierId,
+            AbilityModifierType modifierType)
+        {
+            if (abilities == null)
+            {
+                return false;
+            }
+
+            ConvertAffixValue(
+                roll,
+                out float flatValue,
+                out float additivePercent,
+                out float multiplicativePercent);
+
+            AbilityModifier modifier =
+                new AbilityModifier(
+                    id: modifierId,
+                    source: itemInstance,
+                    modifierType: modifierType,
+                    flatValue: flatValue,
+                    additivePercent: additivePercent,
+                    multiplicativePercent:
+                        multiplicativePercent);
+
+            return abilities.AddModifier(
+                modifier);
+        }
+
         private static void ConvertAffixValue(
             ItemAffixRoll roll,
             out float flatValue,
@@ -657,6 +747,12 @@ namespace Riftborn.Characters.Equipment
                 itemInstance);
 
             health?.RemoveModifiersFromSource(
+                itemInstance);
+
+            resources?.RemoveModifiersFromSource(
+                itemInstance);
+
+            abilities?.RemoveModifiersFromSource(
                 itemInstance);
         }
 
@@ -724,6 +820,12 @@ namespace Riftborn.Characters.Equipment
 
             health ??=
                 GetComponent<HealthController>();
+
+            resources ??=
+                GetComponent<ResourceController>();
+
+            abilities ??=
+                GetComponent<AbilityController>();
         }
 
         private void ValidateReferences()
@@ -757,6 +859,22 @@ namespace Riftborn.Characters.Equipment
                 Debug.LogError(
                     $"{nameof(EquipmentController)} requires a " +
                     $"{nameof(HealthController)}.",
+                    this);
+            }
+
+            if (resources == null)
+            {
+                Debug.LogError(
+                    $"{nameof(EquipmentController)} requires a " +
+                    $"{nameof(ResourceController)}.",
+                    this);
+            }
+
+            if (abilities == null)
+            {
+                Debug.LogError(
+                    $"{nameof(EquipmentController)} requires an " +
+                    $"{nameof(AbilityController)}.",
                     this);
             }
         }

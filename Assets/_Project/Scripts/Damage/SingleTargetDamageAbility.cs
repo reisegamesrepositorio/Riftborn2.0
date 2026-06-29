@@ -59,7 +59,9 @@ namespace Riftborn.Characters.Abilities
             CharacterContext caster,
             CharacterContext target)
         {
-            if (!base.CanExecute(caster, target))
+            if (!base.CanExecute(
+                    caster,
+                    target))
             {
                 return false;
             }
@@ -106,7 +108,9 @@ namespace Riftborn.Characters.Abilities
             CharacterContext caster,
             CharacterContext target)
         {
-            if (!CanExecute(caster, target))
+            if (!CanExecute(
+                    caster,
+                    target))
             {
                 if (projectilePrefab == null)
                 {
@@ -119,10 +123,20 @@ namespace Riftborn.Characters.Abilities
                 return false;
             }
 
+            float rawAbilityDamage =
+                CalculateRawAbilityDamage();
+
+            float finalAbilityDamage =
+                caster.Abilities != null
+                    ? caster.Abilities.ApplyDamageModifiers(
+                        rawAbilityDamage)
+                    : rawAbilityDamage;
+
             DamageRequest damageRequest =
                 CreateDamageRequest(
                     caster,
-                    target);
+                    target,
+                    finalAbilityDamage);
 
             Vector3 directionToTarget =
                 target.transform.position -
@@ -176,23 +190,55 @@ namespace Riftborn.Characters.Abilities
 
             Debug.Log(
                 $"[ABILITY] {AbilityId} lançado contra " +
-                $"{target.name}.",
+                $"{target.name} | " +
+                $"Dano original: " +
+                $"{rawAbilityDamage:0.##} | " +
+                $"Dano com modificadores: " +
+                $"{finalAbilityDamage:0.##}.",
                 caster);
 
             return true;
         }
 
+        private float CalculateRawAbilityDamage()
+        {
+            float safeBaseDamage =
+                Mathf.Max(
+                    0f,
+                    baseDamage);
+
+            float safeScaling =
+                Mathf.Max(
+                    0f,
+                    scaling);
+
+            return safeBaseDamage *
+                   safeScaling;
+        }
+
         private DamageRequest CreateDamageRequest(
             CharacterContext caster,
-            CharacterContext target)
+            CharacterContext target,
+            float finalAbilityDamage)
         {
             return new DamageRequest
             {
                 Source = caster,
                 Target = target,
 
-                BaseValue = baseDamage,
-                Scaling = scaling,
+                /*
+                 * O scaling já foi calculado antes e o bônus
+                 * de Ability Damage já foi aplicado.
+                 *
+                 * O DamageCalculator recebe o valor final
+                 * pré-crítico e pré-mitigação.
+                 */
+                BaseValue =
+                    Mathf.Max(
+                        0f,
+                        finalAbilityDamage),
+
+                Scaling = 1f,
 
                 Type = damageType,
                 Tags = BuildDamageTags(),
