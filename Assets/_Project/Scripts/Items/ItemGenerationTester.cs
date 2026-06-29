@@ -7,7 +7,7 @@ namespace Riftborn.Items
 {
     public sealed class ItemGenerationTester : MonoBehaviour
     {
-        private const int DiagnosticGenerationCount = 100;
+        private const int DiagnosticGenerationCount = 3;
 
         [Header("Generation")]
         [SerializeField]
@@ -49,7 +49,7 @@ namespace Riftborn.Items
                 this);
         }
 
-        [ContextMenu("Generate 100 Diagnostic Items")]
+        [ContextMenu("Generate 3 Diagnostic Items")]
         public void GenerateDiagnosticItems()
         {
             if (profile == null)
@@ -68,7 +68,7 @@ namespace Riftborn.Items
                 new StringBuilder();
 
             result.AppendLine(
-                "[ITEM GENERATOR] Diagnostico de 100 itens");
+                "[ITEM GENERATOR] Diagnostico de 3 itens");
 
             for (int index = 0;
                  index < DiagnosticGenerationCount;

@@ -12,7 +12,7 @@ namespace Riftborn.EditorTools.Items
     public sealed class ItemGenerationProfileEditor :
         UnityEditor.Editor
     {
-        private const int DiagnosticGenerationCount = 100;
+        private const int DiagnosticGenerationCount = 3;
 
         public override void OnInspectorGUI()
         {
@@ -45,7 +45,7 @@ namespace Riftborn.EditorTools.Items
             }
 
             if (GUILayout.Button(
-                    "Generate 100 Diagnostic Items",
+                    "Generate 3 Diagnostic Items",
                     GUILayout.Height(30f)))
             {
                 RunDiagnosticGeneration(profile);

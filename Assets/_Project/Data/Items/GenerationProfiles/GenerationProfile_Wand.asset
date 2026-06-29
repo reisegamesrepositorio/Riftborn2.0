@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57e5d62eca74b5b44bf632daaebe2cbb, type: 3}
+  m_Name: GenerationProfile_Wand
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Items.ItemGenerationProfile
+  item: {fileID: 11400000, guid: 4e7c63da280843069f7da8c223e67473, type: 2}
+  minimumQuantity: 1
+  maximumQuantity: 1
+  rarities:
+  - rarity: {fileID: 11400000, guid: b72e50ae169d978449edf9f218789271, type: 2}
+    weight: 100
+  prefixPool:
+  - {fileID: 11400000, guid: d006a7564517c7042bfa6b01535d011d, type: 2}
+  - {fileID: 11400000, guid: 6e4a93d4a123de94bad06ec86eb59094, type: 2}
+  - {fileID: 11400000, guid: 2ee48e4a342893d4db56159c83fe9e7a, type: 2}
+  - {fileID: 11400000, guid: fb988580b5b5e894e88821a03411509d, type: 2}
+  - {fileID: 11400000, guid: 15557b9b6c3233b468b1d78b43e795aa, type: 2}
+  suffixPool:
+  - {fileID: 11400000, guid: 4b005b5bca0f06d4b900763916cbdd7f, type: 2}
+  - {fileID: 11400000, guid: 6a5cd5a8af6a7c6448fb104b9ab3c510, type: 2}
+  - {fileID: 11400000, guid: 2c8afe27198505a469ed882382c1f75a, type: 2}
+  - {fileID: 11400000, guid: 85a6a20ad0089e5468a227e02b462913, type: 2}
+  - {fileID: 11400000, guid: b04c1e87bf3f26645be55ce698c6ed71, type: 2}
+  - {fileID: 11400000, guid: 1774c219347e0a34e8acdc3260ebffde, type: 2}
+  allowedPrefixEffects: 00000000
+  allowedSuffixEffects: 030000000a00000004000000050000000c0000000d000000
+  fillAllAffixSlots: 1
+  affixSlotFillChance: 0.75
