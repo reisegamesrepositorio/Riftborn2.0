@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Riftborn.Characters.Combat;
 using Riftborn.Characters.Defense;
+using Riftborn.Characters.Health;
 using Riftborn.Characters.Stats;
 using Riftborn.Items;
 using UnityEngine;
@@ -19,6 +20,9 @@ namespace Riftborn.Characters.Equipment
 
         [SerializeField]
         private CombatController combat;
+
+        [SerializeField]
+        private HealthController health;
 
         private readonly Dictionary<EquipmentSlot, ItemInstance>
             equipped = new();
@@ -142,7 +146,8 @@ namespace Riftborn.Characters.Equipment
                     quantity: 1,
                     rarity: null);
 
-            return Equip(temporaryInstance);
+            return Equip(
+                temporaryInstance);
         }
 
         public bool Unequip(EquipmentSlot slot)
@@ -157,7 +162,8 @@ namespace Riftborn.Characters.Equipment
             RemoveAppliedModifiers(
                 itemInstance);
 
-            equipped.Remove(slot);
+            equipped.Remove(
+                slot);
 
             NotifyEquipmentChanged(
                 slot,
@@ -184,7 +190,8 @@ namespace Riftborn.Characters.Equipment
             EquipmentSlot slot)
         {
             ItemInstance itemInstance =
-                GetEquippedInstance(slot);
+                GetEquippedInstance(
+                    slot);
 
             return itemInstance?.Item
                 as EquipmentItemData;
@@ -193,7 +200,8 @@ namespace Riftborn.Characters.Equipment
         public bool IsSlotOccupied(
             EquipmentSlot slot)
         {
-            return equipped.ContainsKey(slot);
+            return equipped.ContainsKey(
+                slot);
         }
 
         private bool TryApplyItemModifiers(
@@ -281,7 +289,8 @@ namespace Riftborn.Characters.Equipment
                         multiplicativePercent:
                             definition.MultiplicativePercent);
 
-                if (!stats.AddModifier(modifier))
+                if (!stats.AddModifier(
+                        modifier))
                 {
                     return false;
                 }
@@ -334,7 +343,8 @@ namespace Riftborn.Characters.Equipment
                         multiplicativePercent:
                             definition.MultiplicativePercent);
 
-                if (!defense.AddModifier(modifier))
+                if (!defense.AddModifier(
+                        modifier))
                 {
                     return false;
                 }
@@ -449,6 +459,12 @@ namespace Riftborn.Characters.Equipment
                         modifierId,
                         CombatModifierType.CriticalMultiplier);
 
+                case ItemAffixEffectType.MaximumHealth:
+                    return ApplyHealthAffix(
+                        itemInstance,
+                        roll,
+                        modifierId);
+
                 default:
                     Debug.LogWarning(
                         $"[EQUIPMENT] O efeito " +
@@ -491,7 +507,8 @@ namespace Riftborn.Characters.Equipment
                     multiplicativePercent:
                         multiplicativePercent);
 
-            return stats.AddModifier(modifier);
+            return stats.AddModifier(
+                modifier);
         }
 
         private bool ApplyDefenseAffix(
@@ -524,7 +541,8 @@ namespace Riftborn.Characters.Equipment
                     multiplicativePercent:
                         multiplicativePercent);
 
-            return defense.AddModifier(modifier);
+            return defense.AddModifier(
+                modifier);
         }
 
         private bool ApplyCombatAffix(
@@ -554,7 +572,37 @@ namespace Riftborn.Characters.Equipment
                     multiplicativePercent:
                         multiplicativePercent);
 
-            return combat.AddModifier(modifier);
+            return combat.AddModifier(
+                modifier);
+        }
+
+        private bool ApplyHealthAffix(
+            ItemInstance itemInstance,
+            ItemAffixRoll roll,
+            string modifierId)
+        {
+            if (health == null)
+            {
+                return false;
+            }
+
+            ConvertAffixValue(
+                roll,
+                out float flatValue,
+                out float additivePercent,
+                out float multiplicativePercent);
+
+            HealthModifier modifier =
+                new HealthModifier(
+                    id: modifierId,
+                    source: itemInstance,
+                    flatValue: flatValue,
+                    additivePercent: additivePercent,
+                    multiplicativePercent:
+                        multiplicativePercent);
+
+            return health.AddModifier(
+                modifier);
         }
 
         private static void ConvertAffixValue(
@@ -606,6 +654,9 @@ namespace Riftborn.Characters.Equipment
                 itemInstance);
 
             combat?.RemoveModifiersFromSource(
+                itemInstance);
+
+            health?.RemoveModifiersFromSource(
                 itemInstance);
         }
 
@@ -670,6 +721,9 @@ namespace Riftborn.Characters.Equipment
 
             combat ??=
                 GetComponent<CombatController>();
+
+            health ??=
+                GetComponent<HealthController>();
         }
 
         private void ValidateReferences()
@@ -695,6 +749,14 @@ namespace Riftborn.Characters.Equipment
                 Debug.LogError(
                     $"{nameof(EquipmentController)} requires a " +
                     $"{nameof(CombatController)}.",
+                    this);
+            }
+
+            if (health == null)
+            {
+                Debug.LogError(
+                    $"{nameof(EquipmentController)} requires a " +
+                    $"{nameof(HealthController)}.",
                     this);
             }
         }

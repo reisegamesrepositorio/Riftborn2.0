@@ -113,6 +113,19 @@ namespace Riftborn.Characters.Combat
         public float CurrentAttackInterval =>
             CalculateAttackInterval();
 
+        public float CurrentAttacksPerSecond
+        {
+            get
+            {
+                float interval =
+                    CurrentAttackInterval;
+
+                return interval > 0f
+                    ? 1f / interval
+                    : 0f;
+            }
+        }
+
         public float CurrentCriticalChance =>
             CalculateCriticalChance();
 
@@ -152,9 +165,17 @@ namespace Riftborn.Characters.Combat
                 return false;
             }
 
+            float currentAttackInterval =
+                CalculateAttackInterval();
+
+            float currentAttacksPerSecond =
+                currentAttackInterval > 0f
+                    ? 1f / currentAttackInterval
+                    : 0f;
+
             nextAttackTime =
                 Time.time +
-                CalculateAttackInterval();
+                currentAttackInterval;
 
             BasicAttackStarted?.Invoke();
 
@@ -203,14 +224,53 @@ namespace Riftborn.Characters.Combat
             Debug.Log(
                 $"[COMBAT] Ataque básico causou " +
                 $"{damageResult.FinalAmount:0.##} de dano. " +
-                $"Faixa atual: " +
+                $"Faixa: " +
                 $"{MinimumBasicAttackDamage:0.##}–" +
-                $"{MaximumBasicAttackDamage:0.##}. " +
+                $"{MaximumBasicAttackDamage:0.##} | " +
+                $"Intervalo: " +
+                $"{currentAttackInterval:0.###}s | " +
+                $"Ataques/s: " +
+                $"{currentAttacksPerSecond:0.##} | " +
                 $"Crítico: " +
                 $"{(damageResult.WasCritical ? "SIM" : "NÃO")}.",
                 this);
 
             return true;
+        }
+
+        [ContextMenu("Log Current Combat Values")]
+        public void LogCurrentCombatValues()
+        {
+            CacheReferences();
+
+            float finalSTR =
+                stats != null
+                    ? stats.GetFinalValue(
+                        CharacterStat.STR)
+                    : 0f;
+
+            float finalDEX =
+                stats != null
+                    ? stats.GetFinalValue(
+                        CharacterStat.DEX)
+                    : 0f;
+
+            Debug.Log(
+                $"[COMBAT VALUES] " +
+                $"Dano: " +
+                $"{MinimumBasicAttackDamage:0.##}–" +
+                $"{MaximumBasicAttackDamage:0.##} | " +
+                $"STR: {finalSTR:0.##} | " +
+                $"DEX: {finalDEX:0.##} | " +
+                $"Intervalo: " +
+                $"{CurrentAttackInterval:0.###}s | " +
+                $"Ataques/s: " +
+                $"{CurrentAttacksPerSecond:0.##} | " +
+                $"Crítico: " +
+                $"{CurrentCriticalChance * 100f:0.##}% | " +
+                $"Multiplicador crítico: " +
+                $"{CurrentCriticalMultiplier:0.##}x",
+                this);
         }
 
         public bool CanAttack(

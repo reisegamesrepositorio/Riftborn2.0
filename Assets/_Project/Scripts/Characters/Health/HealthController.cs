@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Riftborn.Characters.Stats;
 using Riftborn.Characters.StatusEffects;
 using Riftborn.Damage;
@@ -58,23 +59,28 @@ namespace Riftborn.Characters.Health
         [SerializeField]
         private bool startFullHealth = true;
 
+        private readonly List<HealthModifier>
+            modifiers = new();
+
+        private readonly Dictionary<string, HealthModifier>
+            modifiersById =
+                new(StringComparer.Ordinal);
+
         private float maxHealth;
 
-        public event Action<HealthChangedEventArgs> HealthChanged;
+        public event Action<HealthChangedEventArgs>
+            HealthChanged;
 
-        /// <summary>
-        /// Disparado sempre que um dano válido é processado,
-        /// inclusive quando é totalmente absorvido.
-        /// </summary>
-        public event Action<DamageApplicationResult> DamageApplied;
+        public event Action<DamageApplicationResult>
+            DamageApplied;
 
-        /// <summary>
-        /// Disparado somente quando houve perda real de vida.
-        /// </summary>
-        public event Action<DamageResult> DamageTaken;
+        public event Action<DamageResult>
+            DamageTaken;
 
         public event Action<float> Healed;
+
         public event Action Died;
+
         public event Action Revived;
 
         public float CurrentHealth =>
@@ -82,6 +88,12 @@ namespace Riftborn.Characters.Health
 
         public float MaxHealth =>
             maxHealth;
+
+        public float BaseMaxHealth =>
+            baseMaxHealth;
+
+        public float HealthPerFort =>
+            healthPerFort;
 
         public float HealthPercentage =>
             maxHealth > 0f
@@ -95,28 +107,18 @@ namespace Riftborn.Characters.Health
 
         private void Awake()
         {
-            stats ??=
-                GetComponent<CharacterStatsController>();
-
-            statusEffects ??=
-                GetComponent<StatusEffectController>();
-
-            if (stats == null)
-            {
-                Debug.LogError(
-                    $"{nameof(HealthController)} requires a " +
-                    $"{nameof(CharacterStatsController)}.",
-                    this);
-            }
-
+            CacheReferences();
             InitializeHealth();
         }
 
         private void OnEnable()
         {
+            CacheReferences();
+
             if (stats != null)
             {
-                stats.StatChanged += HandleStatChanged;
+                stats.StatChanged +=
+                    HandleStatChanged;
             }
         }
 
@@ -124,26 +126,34 @@ namespace Riftborn.Characters.Health
         {
             if (stats != null)
             {
-                stats.StatChanged -= HandleStatChanged;
+                stats.StatChanged -=
+                    HandleStatChanged;
             }
         }
 
         private void OnValidate()
         {
             baseMaxHealth =
-                Mathf.Max(1f, baseMaxHealth);
+                Mathf.Max(
+                    1f,
+                    baseMaxHealth);
 
             healthPerFort =
-                Mathf.Max(0f, healthPerFort);
+                Mathf.Max(
+                    0f,
+                    healthPerFort);
 
             currentHealth =
-                Mathf.Max(0f, currentHealth);
+                Mathf.Max(
+                    0f,
+                    currentHealth);
         }
 
         public DamageApplicationResult ApplyDamage(
             DamageResult result)
         {
-            if (result == null || IsDead)
+            if (result == null ||
+                IsDead)
             {
                 return null;
             }
@@ -181,12 +191,14 @@ namespace Riftborn.Characters.Health
             if (damageAfterShields > 0f)
             {
                 SetHealthState(
-                    currentHealth - damageAfterShields,
+                    currentHealth -
+                    damageAfterShields,
                     maxHealth);
             }
 
             float healthDamage =
-                oldHealth - currentHealth;
+                oldHealth -
+                currentHealth;
 
             LastDamageApplication =
                 new DamageApplicationResult(
@@ -208,7 +220,8 @@ namespace Riftborn.Characters.Health
 
             DamageTaken?.Invoke(result);
 
-            if (currentHealth <= 0f && !IsDead)
+            if (currentHealth <= 0f &&
+                !IsDead)
             {
                 IsDead = true;
                 Died?.Invoke();
@@ -225,7 +238,9 @@ namespace Riftborn.Characters.Health
             }
 
             float requestedHealing =
-                Mathf.Max(0f, amount);
+                Mathf.Max(
+                    0f,
+                    amount);
 
             if (requestedHealing <= 0f)
             {
@@ -236,18 +251,21 @@ namespace Riftborn.Characters.Health
                 currentHealth;
 
             SetHealthState(
-                currentHealth + requestedHealing,
+                currentHealth +
+                requestedHealing,
                 maxHealth);
 
             float effectiveHealing =
-                currentHealth - oldHealth;
+                currentHealth -
+                oldHealth;
 
             if (effectiveHealing <= 0f)
             {
                 return;
             }
 
-            Healed?.Invoke(effectiveHealing);
+            Healed?.Invoke(
+                effectiveHealing);
         }
 
         public void Revive(float healthAmount)
@@ -277,9 +295,12 @@ namespace Riftborn.Characters.Health
             bool fillToMax = false)
         {
             baseMaxHealth =
-                Mathf.Max(1f, value);
+                Mathf.Max(
+                    1f,
+                    value);
 
-            RecalculateMaxHealth(fillToMax);
+            RecalculateMaxHealth(
+                fillToMax);
         }
 
         public void SetHealthPerFort(
@@ -287,9 +308,12 @@ namespace Riftborn.Characters.Health
             bool fillToMax = false)
         {
             healthPerFort =
-                Mathf.Max(0f, value);
+                Mathf.Max(
+                    0f,
+                    value);
 
-            RecalculateMaxHealth(fillToMax);
+            RecalculateMaxHealth(
+                fillToMax);
         }
 
         public void SetMaxHealth(
@@ -299,6 +323,170 @@ namespace Riftborn.Characters.Health
             SetBaseMaxHealth(
                 value,
                 fillToMax);
+        }
+
+        public bool AddModifier(
+            HealthModifier modifier)
+        {
+            if (modifier == null)
+            {
+                return false;
+            }
+
+            if (modifiersById.ContainsKey(
+                    modifier.Id))
+            {
+                Debug.LogWarning(
+                    $"[HEALTH] Já existe um modificador " +
+                    $"com o ID '{modifier.Id}'.",
+                    this);
+
+                return false;
+            }
+
+            modifiers.Add(modifier);
+
+            modifiersById.Add(
+                modifier.Id,
+                modifier);
+
+            RecalculateMaxHealth(
+                fillToMax: false);
+
+            return true;
+        }
+
+        public bool RemoveModifier(
+            string modifierId)
+        {
+            if (string.IsNullOrWhiteSpace(
+                    modifierId))
+            {
+                return false;
+            }
+
+            if (!modifiersById.TryGetValue(
+                    modifierId,
+                    out HealthModifier modifier))
+            {
+                return false;
+            }
+
+            modifiersById.Remove(
+                modifierId);
+
+            bool removed =
+                modifiers.Remove(
+                    modifier);
+
+            if (removed)
+            {
+                RecalculateMaxHealth(
+                    fillToMax: false);
+            }
+
+            return removed;
+        }
+
+        public int RemoveModifiersFromSource(
+            object source)
+        {
+            if (source == null)
+            {
+                return 0;
+            }
+
+            int totalRemoved = 0;
+
+            for (int index =
+                     modifiers.Count - 1;
+                 index >= 0;
+                 index--)
+            {
+                HealthModifier modifier =
+                    modifiers[index];
+
+                if (!Equals(
+                        modifier.Source,
+                        source))
+                {
+                    continue;
+                }
+
+                modifiers.RemoveAt(index);
+
+                modifiersById.Remove(
+                    modifier.Id);
+
+                totalRemoved++;
+            }
+
+            if (totalRemoved > 0)
+            {
+                RecalculateMaxHealth(
+                    fillToMax: false);
+            }
+
+            return totalRemoved;
+        }
+
+        public bool HasModifier(
+            string modifierId)
+        {
+            if (string.IsNullOrWhiteSpace(
+                    modifierId))
+            {
+                return false;
+            }
+
+            return modifiersById.ContainsKey(
+                modifierId);
+        }
+
+        [ContextMenu("Log Current Health Values")]
+        public void LogCurrentHealthValues()
+        {
+            float finalFort =
+                stats != null
+                    ? stats.GetFinalValue(
+                        CharacterStat.FORT)
+                    : 0f;
+
+            GetModifierTotals(
+                out float flatValue,
+                out float additivePercent,
+                out float multiplicativeFactor);
+
+            Debug.Log(
+                $"[HEALTH VALUES] " +
+                $"Vida: {CurrentHealth:0.##}/" +
+                $"{MaxHealth:0.##} | " +
+                $"Base: {baseMaxHealth:0.##} | " +
+                $"FORT: {finalFort:0.##} | " +
+                $"Vida por FORT: {healthPerFort:0.##} | " +
+                $"Bônus fixo: {flatValue:0.##} | " +
+                $"Bônus aditivo: " +
+                $"{additivePercent * 100f:0.##}% | " +
+                $"Multiplicador: " +
+                $"{multiplicativeFactor:0.##}x",
+                this);
+        }
+
+        private void CacheReferences()
+        {
+            stats ??=
+                GetComponent<CharacterStatsController>();
+
+            statusEffects ??=
+                GetComponent<StatusEffectController>();
+
+            if (stats == null)
+            {
+                Debug.LogError(
+                    $"{nameof(HealthController)} requires a " +
+                    $"{nameof(CharacterStatsController)}.",
+                    this);
+            }
         }
 
         private void InitializeHealth()
@@ -326,19 +514,65 @@ namespace Riftborn.Characters.Health
                         CharacterStat.FORT)
                     : 0f;
 
-            float calculatedMaxHealth =
+            float rawMaxHealth =
                 baseMaxHealth +
-                finalFort * healthPerFort;
+                finalFort *
+                healthPerFort;
+
+            GetModifierTotals(
+                out float flatValue,
+                out float additivePercent,
+                out float multiplicativeFactor);
+
+            float finalMaxHealth =
+                rawMaxHealth +
+                flatValue;
+
+            finalMaxHealth *=
+                1f +
+                additivePercent;
+
+            finalMaxHealth *=
+                multiplicativeFactor;
 
             return Mathf.Max(
                 1f,
-                calculatedMaxHealth);
+                finalMaxHealth);
+        }
+
+        private void GetModifierTotals(
+            out float flatValue,
+            out float additivePercent,
+            out float multiplicativeFactor)
+        {
+            flatValue = 0f;
+            additivePercent = 0f;
+            multiplicativeFactor = 1f;
+
+            for (int index = 0;
+                 index < modifiers.Count;
+                 index++)
+            {
+                HealthModifier modifier =
+                    modifiers[index];
+
+                flatValue +=
+                    modifier.FlatValue;
+
+                additivePercent +=
+                    modifier.AdditivePercent;
+
+                multiplicativeFactor *=
+                    1f +
+                    modifier.MultiplicativePercent;
+            }
         }
 
         private void HandleStatChanged(
             StatChangedEventArgs eventArgs)
         {
-            if (eventArgs.Stat != CharacterStat.FORT)
+            if (eventArgs.Stat !=
+                CharacterStat.FORT)
             {
                 return;
             }
@@ -368,6 +602,16 @@ namespace Riftborn.Characters.Health
             }
             else
             {
+                /*
+                 * Preserva a quantidade de vida faltante.
+                 *
+                 * Exemplo:
+                 * 150/150 recebe +50 de vida máxima
+                 * → 200/200.
+                 *
+                 * 100/150 recebe +50 de vida máxima
+                 * → 150/200.
+                 */
                 float missingHealth =
                     Mathf.Max(
                         0f,
@@ -383,7 +627,8 @@ namespace Riftborn.Characters.Health
                 newCurrentHealth,
                 newMaxHealth);
 
-            if (currentHealth <= 0f && !IsDead)
+            if (currentHealth <= 0f &&
+                !IsDead)
             {
                 IsDead = true;
                 Died?.Invoke();
@@ -421,7 +666,8 @@ namespace Riftborn.Characters.Health
                     oldMaxHealth,
                     maxHealth);
 
-            if (!currentChanged && !maxChanged)
+            if (!currentChanged &&
+                !maxChanged)
             {
                 return;
             }
