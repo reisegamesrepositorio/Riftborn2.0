@@ -1,4 +1,4 @@
-﻿using Riftborn.Characters.Abilities;
+using Riftborn.Characters.Abilities;
 using Riftborn.Characters.ActionStates;
 using Riftborn.Characters.Animation;
 using Riftborn.Characters.Combat;
@@ -7,6 +7,7 @@ using Riftborn.Characters.Equipment;
 using Riftborn.Characters.Health;
 using Riftborn.Characters.Inventory;
 using Riftborn.Characters.Movement;
+using Riftborn.Characters.Progression;
 using Riftborn.Characters.Resources;
 using Riftborn.Characters.Runes;
 using Riftborn.Characters.Stats;
@@ -58,42 +59,61 @@ namespace Riftborn.Characters.Core
         private RuneController runes;
 
         [SerializeField]
+        private CharacterProgressionController progression;
+
+        [SerializeField]
         private CharacterAnimationController animationController;
 
         [SerializeField]
         private CharacterEvents characterEvents;
 
-        public CharacterStatsController Stats => stats;
+        public CharacterStatsController Stats =>
+            stats;
 
-        public HealthController Health => health;
+        public HealthController Health =>
+            health;
 
-        public DefenseController Defense => defense;
+        public DefenseController Defense =>
+            defense;
 
-        public ResourceController Resources => resources;
+        public ResourceController Resources =>
+            resources;
 
-        public MovementController Movement => movement;
+        public MovementController Movement =>
+            movement;
 
-        public ActionStateController ActionState => actionState;
+        public ActionStateController ActionState =>
+            actionState;
 
-        public CombatController Combat => combat;
+        public CombatController Combat =>
+            combat;
 
-        public TargetingController Targeting => targeting;
+        public TargetingController Targeting =>
+            targeting;
 
-        public AbilityController Abilities => abilities;
+        public AbilityController Abilities =>
+            abilities;
 
         public StatusEffectController StatusEffects =>
             statusEffects;
 
-        public InventoryController Inventory => inventory;
+        public InventoryController Inventory =>
+            inventory;
 
-        public EquipmentController Equipment => equipment;
+        public EquipmentController Equipment =>
+            equipment;
 
-        public RuneController Runes => runes;
+        public RuneController Runes =>
+            runes;
+
+        public CharacterProgressionController Progression =>
+            progression;
 
         public CharacterAnimationController AnimationController =>
             animationController;
 
-        public CharacterEvents Events => characterEvents;
+        public CharacterEvents Events =>
+            characterEvents;
 
         private void Awake()
         {
@@ -146,6 +166,9 @@ namespace Riftborn.Characters.Core
 
             runes ??=
                 GetComponent<RuneController>();
+
+            progression ??=
+                GetComponent<CharacterProgressionController>();
 
             animationController ??=
                 GetComponent<CharacterAnimationController>();

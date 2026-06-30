@@ -18,20 +18,9 @@ MonoBehaviour:
   effectType: 0
   valueMode: 0
   characterStat: 1
+  progressionProfile: {fileID: 0}
   tiers:
   - tier: 10
     minimumValue: 4
     maximumValue: 4
     rollWeight: 1
-  - tier: 10
-    minimumValue: 0
-    maximumValue: 0
-    rollWeight: 0
-  - tier: 10
-    minimumValue: 0
-    maximumValue: 0
-    rollWeight: 0
-  - tier: 10
-    minimumValue: 0
-    maximumValue: 0
-    rollWeight: 0

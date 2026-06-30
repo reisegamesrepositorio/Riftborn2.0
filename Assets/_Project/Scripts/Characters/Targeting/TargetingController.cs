@@ -1,3 +1,4 @@
+using System;
 using Riftborn.Characters.Core;
 using UnityEngine;
 
@@ -7,6 +8,10 @@ namespace Riftborn.Characters.Targeting
     {
         private CharacterContext ownerCharacter;
         private TargetHighlight currentHighlight;
+
+        public event Action<
+            CharacterContext,
+            CharacterContext> TargetChanged;
 
         public CharacterContext CurrentTarget { get; private set; }
 
@@ -32,33 +37,37 @@ namespace Riftborn.Characters.Targeting
                 return false;
             }
 
-            if (CurrentTarget == newTarget)
+            if (ReferenceEquals(
+                    CurrentTarget,
+                    newTarget))
             {
                 return true;
             }
 
-            UnsubscribeFromCurrentTarget();
+            CharacterContext previousTarget =
+                CurrentTarget;
+
             DisableCurrentHighlight();
 
-            CurrentTarget = newTarget;
+            CurrentTarget =
+                newTarget;
 
             currentHighlight =
                 FindHighlight(CurrentTarget);
 
             if (currentHighlight != null)
             {
-                currentHighlight.SetSelected(true);
-            }
-
-            if (CurrentTarget.Health != null)
-            {
-                CurrentTarget.Health.Died +=
-                    HandleTargetDied;
+                currentHighlight.SetSelected(
+                    true);
             }
 
             Debug.Log(
                 $"[TARGETING] Alvo definido: " +
                 $"{CurrentTarget.name}",
+                CurrentTarget);
+
+            TargetChanged?.Invoke(
+                previousTarget,
                 CurrentTarget);
 
             return true;
@@ -73,9 +82,11 @@ namespace Riftborn.Characters.Targeting
             }
 
             CharacterContext targetCharacter =
-                targetObject.GetComponentInParent<CharacterContext>();
+                targetObject.GetComponentInParent<
+                    CharacterContext>();
 
-            return SetTarget(targetCharacter);
+            return SetTarget(
+                targetCharacter);
         }
 
         public bool IsValidTarget(
@@ -92,7 +103,9 @@ namespace Riftborn.Characters.Targeting
             }
 
             if (ownerCharacter != null &&
-                target == ownerCharacter)
+                ReferenceEquals(
+                    target,
+                    ownerCharacter))
             {
                 return false;
             }
@@ -115,57 +128,46 @@ namespace Riftborn.Characters.Targeting
             }
 
             CharacterContext targetCharacter =
-                targetObject.GetComponentInParent<CharacterContext>();
+                targetObject.GetComponentInParent<
+                    CharacterContext>();
 
-            return IsValidTarget(targetCharacter);
+            return IsValidTarget(
+                targetCharacter);
         }
 
         public bool IsValidTarget()
         {
-            return IsValidTarget(CurrentTarget);
+            return IsValidTarget(
+                CurrentTarget);
         }
 
         public void ClearTarget()
         {
-            UnsubscribeFromCurrentTarget();
-            DisableCurrentHighlight();
-
-            CurrentTarget = null;
-            currentHighlight = null;
-        }
-
-        private void HandleTargetDied()
-        {
-            string targetName =
-                CurrentTarget != null
-                    ? CurrentTarget.name
-                    : "desconhecido";
-
-            Debug.Log(
-                $"[TARGETING] O alvo {targetName} morreu. " +
-                "Seleção removida.",
-                this);
-
-            ClearTarget();
-        }
-
-        private void UnsubscribeFromCurrentTarget()
-        {
-            if (CurrentTarget == null ||
-                CurrentTarget.Health == null)
+            if (CurrentTarget == null &&
+                currentHighlight == null)
             {
                 return;
             }
 
-            CurrentTarget.Health.Died -=
-                HandleTargetDied;
+            CharacterContext previousTarget =
+                CurrentTarget;
+
+            DisableCurrentHighlight();
+
+            CurrentTarget = null;
+            currentHighlight = null;
+
+            TargetChanged?.Invoke(
+                previousTarget,
+                null);
         }
 
         private void DisableCurrentHighlight()
         {
             if (currentHighlight != null)
             {
-                currentHighlight.SetSelected(false);
+                currentHighlight.SetSelected(
+                    false);
             }
         }
 
@@ -186,7 +188,8 @@ namespace Riftborn.Characters.Targeting
             }
 
             highlight =
-                target.GetComponentInChildren<TargetHighlight>(
+                target.GetComponentInChildren<
+                    TargetHighlight>(
                     includeInactive: true);
 
             if (highlight != null)
@@ -194,7 +197,8 @@ namespace Riftborn.Characters.Targeting
                 return highlight;
             }
 
-            return target.GetComponentInParent<TargetHighlight>();
+            return target.GetComponentInParent<
+                TargetHighlight>();
         }
 
         private void OnDisable()

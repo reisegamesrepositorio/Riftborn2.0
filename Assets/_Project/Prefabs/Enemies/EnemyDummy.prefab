@@ -17,7 +17,6 @@ GameObject:
   - component: {fileID: 8967384653261416485}
   - component: {fileID: 8958242074409520022}
   - component: {fileID: 6476023750167445716}
-  - component: {fileID: 9010063372311242538}
   - component: {fileID: 8361492972460420155}
   - component: {fileID: 228777772945262740}
   - component: {fileID: 1960794866547449763}
@@ -43,8 +42,8 @@ Transform:
   m_GameObject: {fileID: 5417122168795643846}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.5, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.2, y: 1.9, z: 1.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -158,7 +157,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c41f2f198b40f0d4b96e7251b7332703, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Health.HealthController
-  maxHealth: 100
+  stats: {fileID: 0}
+  statusEffects: {fileID: 0}
+  baseMaxHealth: 100
+  healthPerFort: 5
   currentHealth: 100
   startFullHealth: 1
 --- !u!114 &8967384653261416485
@@ -174,9 +176,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Resources.ResourceController
   resourceType: 0
-  maxValue: 100
+  initialState: 0
+  baseMaxValue: 100
   currentValue: 100
-  regenerationPerSecond: 0
+  baseRegenerationPerSecond: 0
 --- !u!114 &8958242074409520022
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -201,21 +204,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7cb9aafeb4d6f5f439db239dc1ddc2ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Movement.MovementController
+  movementMode: 0
   moveSpeed: 5
+  rotationSpeed: 14
+  clickStoppingDistance: 0.15
+  gravity: -25
+  groundedStickForce: -2
   actionState: {fileID: 0}
---- !u!114 &9010063372311242538
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5417122168795643846}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f5edf1a41520bac4b86642f4367d8ddc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Targeting.TargetingController
-  currentTarget: {fileID: 0}
+  characterController: {fileID: 0}
+  cameraTransform: {fileID: 0}
 --- !u!114 &8361492972460420155
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -228,11 +225,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9fb0e153909bae6489549f8be71e674a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Combat.CombatController
-  basicAttackDamage: 10
-  attackInterval: 1.5
+  basicAttackBaseDamage: 10
+  damagePerSTR: 1
+  baseAttackInterval: 1.5
+  attackSpeedPerDEX: 0.02
   attackRange: 2
+  criticalChance: 0.05
+  criticalMultiplier: 1.5
   actionState: {fileID: 0}
   targeting: {fileID: 0}
+  stats: {fileID: 0}
+  equipment: {fileID: 0}
 --- !u!114 &228777772945262740
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -280,6 +283,217 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Inventory.InventoryController
   slotCount: 30
+  slots:
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
+  - instance:
+      instanceId: 
+      item: {fileID: 0}
+      rarity: {fileID: 0}
+      quantity: 0
+      prefixes: []
+      suffixes: []
 --- !u!114 &8360563014324777895
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -293,6 +507,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Equipment.EquipmentController
   stats: {fileID: 0}
+  defense: {fileID: 0}
+  combat: {fileID: 0}
+  health: {fileID: 0}
+  resources: {fileID: 0}
+  abilities: {fileID: 0}
+  movement: {fileID: 0}
 --- !u!114 &6330045800115725982
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -345,15 +565,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Core.CharacterContext
   stats: {fileID: 729878872470617856}
   health: {fileID: 3958632699840065873}
+  defense: {fileID: 0}
   resources: {fileID: 8967384653261416485}
   movement: {fileID: 6476023750167445716}
   actionState: {fileID: 8958242074409520022}
   combat: {fileID: 8361492972460420155}
-  targeting: {fileID: 9010063372311242538}
+  targeting: {fileID: 0}
   abilities: {fileID: 228777772945262740}
   statusEffects: {fileID: 1960794866547449763}
   inventory: {fileID: 4355122781336027882}
   equipment: {fileID: 8360563014324777895}
   runes: {fileID: 6330045800115725982}
+  progression: {fileID: 0}
   animationController: {fileID: 4494651875140665265}
   characterEvents: {fileID: 521329361176086821}

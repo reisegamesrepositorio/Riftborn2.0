@@ -1,17 +1,17 @@
-using Riftborn.Characters.Abilities;
-using Riftborn.Characters.Combat;
+using System;
+using Riftborn.Characters.Controllers;
 using Riftborn.Characters.Core;
-using Riftborn.Characters.Movement;
-using Riftborn.Characters.Targeting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 namespace Riftborn.Characters.Input
 {
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(PlayerController))]
     public sealed class PlayerInputReader : MonoBehaviour
     {
-        [Header("Input Actions")]
+        [Header("Input Action")]
         [SerializeField]
         private InputActionAsset inputActions;
 
@@ -19,16 +19,8 @@ namespace Riftborn.Characters.Input
         private string actionMapName = "Player";
 
         [SerializeField]
-        private string moveActionName = "Move";
-
-        [SerializeField]
-        private string selectTargetActionName = "SelectTarget";
-
-        [SerializeField]
-        private string basicAttackActionName = "BasicAttack";
-
-        [SerializeField]
-        private string ability1ActionName = "Ability1";
+        private string selectTargetActionName =
+            "SelectTarget";
 
         [Header("Target Selection")]
         [SerializeField]
@@ -40,101 +32,64 @@ namespace Riftborn.Characters.Input
         [SerializeField, Min(1f)]
         private float selectionDistance = 500f;
 
+        [Tooltip(
+            "Quando desmarcado, clicar no chão, no próprio player " +
+            "ou em um objeto inválido mantém o alvo atual.")]
+        [SerializeField]
+        private bool clearTargetWhenClickingEmptySpace;
+
         [Header("References")]
         [SerializeField]
-        private MovementController movementController;
+        private PlayerController playerController;
 
         [SerializeField]
-        private CombatController combatController;
+        private CharacterContext selfContext;
 
+        [Header("Debug")]
         [SerializeField]
-        private AbilityController abilityController;
+        private bool showDebugLogs = true;
 
-        [SerializeField]
-        private TargetingController targetingController;
-
-        private InputAction moveAction;
         private InputAction selectTargetAction;
-        private InputAction basicAttackAction;
-        private InputAction ability1Action;
-
-        private bool ownsMoveAction;
         private bool ownsSelectTargetAction;
-        private bool ownsBasicAttackAction;
-        private bool ownsAbility1Action;
 
         private void Awake()
         {
             CacheReferences();
-            ResolveActions();
+            ResolveAction();
         }
 
         private void OnEnable()
         {
             CacheReferences();
-            ResolveActions();
+            ResolveAction();
 
-            moveAction?.Enable();
             selectTargetAction?.Enable();
-            basicAttackAction?.Enable();
-            ability1Action?.Enable();
         }
 
         private void OnDisable()
         {
-            moveAction?.Disable();
             selectTargetAction?.Disable();
-            basicAttackAction?.Disable();
-            ability1Action?.Disable();
-
-            movementController?.SetMoveInput(
-                Vector2.zero);
         }
 
         private void OnDestroy()
         {
-            if (ownsMoveAction)
-            {
-                moveAction?.Dispose();
-            }
-
             if (ownsSelectTargetAction)
             {
                 selectTargetAction?.Dispose();
             }
+        }
 
-            if (ownsBasicAttackAction)
-            {
-                basicAttackAction?.Dispose();
-            }
-
-            if (ownsAbility1Action)
-            {
-                ability1Action?.Dispose();
-            }
+        private void OnValidate()
+        {
+            selectionDistance =
+                Mathf.Max(
+                    1f,
+                    selectionDistance);
         }
 
         private void Update()
         {
-            ReadMovement();
-
-            /*
-             * A seleção acontece antes dos ataques e habilidades,
-             * garantindo que ambos utilizem o alvo mais recente.
-             */
             ReadTargetSelection();
-            ReadBasicAttack();
-            ReadAbilities();
-        }
-
-        private void ReadMovement()
-        {
-            Vector2 input =
-                moveAction != null
-                    ? moveAction.ReadValue<Vector2>()
-                    : Vector2.zero;
-
-            movementController?.SetMoveInput(input);
         }
 
         private void ReadTargetSelection()
@@ -160,6 +115,8 @@ namespace Riftborn.Characters.Input
                 return;
             }
 
+            CacheReferences();
+
             Camera cameraToUse =
                 selectionCamera != null
                     ? selectionCamera
@@ -167,11 +124,12 @@ namespace Riftborn.Characters.Input
 
             if (cameraToUse == null ||
                 Mouse.current == null ||
-                targetingController == null)
+                playerController == null)
             {
                 Debug.LogWarning(
-                    "[TARGETING] Não foi possível processar o clique. " +
-                    "Verifique Camera e TargetingController.",
+                    "[TARGETING INPUT] Não foi possível processar " +
+                    "a seleção. Verifique a câmera e o " +
+                    "PlayerController.",
                     this);
 
                 return;
@@ -184,270 +142,195 @@ namespace Riftborn.Characters.Input
                 cameraToUse.ScreenPointToRay(
                     mousePosition);
 
-            bool hitSomething =
-                Physics.Raycast(
+            RaycastHit[] hits =
+                Physics.RaycastAll(
                     ray,
-                    out RaycastHit hit,
                     selectionDistance,
                     selectableLayers,
-                    QueryTriggerInteraction.Ignore);
+                    QueryTriggerInteraction.Collide);
 
-            if (!hitSomething)
+            Array.Sort(
+                hits,
+                CompareHitsByDistance);
+
+            for (int index = 0;
+                 index < hits.Length;
+                 index++)
             {
-                targetingController.ClearTarget();
+                RaycastHit hit =
+                    hits[index];
 
-                Debug.Log(
-                    "[TARGETING] Alvo removido.",
-                    this);
+                if (hit.collider == null)
+                {
+                    continue;
+                }
+
+                CharacterContext clickedCharacter =
+                    hit.collider.GetComponentInParent<
+                        CharacterContext>();
+
+                if (clickedCharacter == null ||
+                    IsSelf(clickedCharacter) ||
+                    !playerController.IsValidTarget(
+                        clickedCharacter))
+                {
+                    continue;
+                }
+
+                bool targetSelected =
+                    playerController.TrySelectTarget(
+                        clickedCharacter);
+
+                bool isAlreadySelected =
+                    ReferenceEquals(
+                        playerController.CurrentTarget,
+                        clickedCharacter);
+
+                if (!targetSelected &&
+                    !isAlreadySelected)
+                {
+                    continue;
+                }
+
+                if (showDebugLogs)
+                {
+                    Debug.Log(
+                        $"[TARGETING INPUT] Alvo selecionado: " +
+                        $"{clickedCharacter.name}",
+                        clickedCharacter);
+                }
 
                 return;
             }
 
-            CharacterContext clickedCharacter =
-                hit.collider
-                    .GetComponentInParent<CharacterContext>();
-
-            if (clickedCharacter == null)
-            {
-                targetingController.ClearTarget();
-
-                Debug.Log(
-                    $"[TARGETING] Clique em '{hit.collider.name}', " +
-                    "mas o objeto não possui CharacterContext.",
-                    hit.collider);
-
-                return;
-            }
-
-            bool targetSelected =
-                targetingController.SetTarget(
-                    clickedCharacter);
-
-            if (targetSelected)
-            {
-                Debug.Log(
-                    $"[TARGETING] Alvo selecionado: " +
-                    $"{clickedCharacter.name}",
-                    clickedCharacter);
-
-                return;
-            }
-
-            if (!targetingController.IsValidTarget(
-                    clickedCharacter))
-            {
-                targetingController.ClearTarget();
-
-                Debug.Log(
-                    $"[TARGETING] '{clickedCharacter.name}' " +
-                    "não é um alvo válido.",
-                    clickedCharacter);
-            }
+            HandleClickWithoutValidTarget(
+                hits);
         }
 
-        private void ReadBasicAttack()
+        private void HandleClickWithoutValidTarget(
+            RaycastHit[] hits)
         {
-            bool attackPressed =
-                basicAttackAction != null &&
-                basicAttackAction.WasPressedThisFrame();
-
-            /*
-             * Fallback provisório:
-             * F executa o ataque básico mesmo que a action
-             * BasicAttack ainda não exista no InputActionAsset.
-             */
-            if (Keyboard.current != null &&
-                Keyboard.current.fKey.wasPressedThisFrame)
+            if (clearTargetWhenClickingEmptySpace)
             {
-                attackPressed = true;
+                playerController?.ClearTarget();
+
+                if (showDebugLogs)
+                {
+                    Debug.Log(
+                        "[TARGETING INPUT] Nenhum alvo válido " +
+                        "encontrado. Seleção removida.",
+                        this);
+                }
+
+                return;
             }
 
-            if (!attackPressed)
+            if (!showDebugLogs)
             {
                 return;
             }
 
-            CharacterContext target =
-                targetingController?.CurrentTarget;
+            string hitName =
+                GetFirstHitName(
+                    hits);
+
+            CharacterContext currentTarget =
+                playerController?.CurrentTarget;
 
             Debug.Log(
-                $"[BASIC ATTACK TEST] F pressionado. " +
-                $"CombatController: " +
-                $"{(combatController != null ? "OK" : "NULL")} | " +
-                $"Target: " +
-                $"{(target != null ? target.name : "NULL")}",
-                this);
-
-            bool succeeded =
-                combatController != null &&
-                combatController.TryBasicAttack(target);
-
-            Debug.Log(
-                $"[BASIC ATTACK TEST] Resultado: " +
-                $"{(succeeded ? "SUCESSO" : "FALHOU")}",
-                this);
-        }
-
-        private void ReadAbilities()
-        {
-            bool abilityPressed =
-                ability1Action != null &&
-                ability1Action.WasPressedThisFrame();
-
-            if (Keyboard.current != null &&
-                Keyboard.current.qKey.wasPressedThisFrame)
-            {
-                abilityPressed = true;
-            }
-
-            if (!abilityPressed)
-            {
-                return;
-            }
-
-            CharacterContext target =
-                targetingController?.CurrentTarget;
-
-            Debug.Log(
-                $"[ABILITY TEST] Q pressionado. " +
-                $"AbilityController: " +
-                $"{(abilityController != null ? "OK" : "NULL")} | " +
-                $"Target: " +
-                $"{(target != null ? target.name : "NULL")}",
-                this);
-
-            bool succeeded =
-                abilityController != null &&
-                abilityController.TryUse(
-                    slot: 0,
-                    target: target);
-
-            Debug.Log(
-                $"[ABILITY TEST] Resultado: " +
-                $"{(succeeded ? "SUCESSO" : "FALHOU")}",
+                $"[TARGETING INPUT] Nenhum novo alvo válido " +
+                $"encontrado{hitName}. Alvo atual mantido: " +
+                $"{(currentTarget != null ? currentTarget.name : "Nenhum")}.",
                 this);
         }
 
-        private void ResolveActions()
+        private bool IsSelf(
+            CharacterContext candidate)
         {
-            InputActionMap actionMap = null;
-
-            if (inputActions != null)
+            if (candidate == null)
             {
-                actionMap =
-                    inputActions.FindActionMap(
+                return false;
+            }
+
+            if (selfContext != null &&
+                ReferenceEquals(
+                    candidate,
+                    selfContext))
+            {
+                return true;
+            }
+
+            return candidate.transform == transform ||
+                   candidate.transform.IsChildOf(transform) ||
+                   transform.IsChildOf(candidate.transform);
+        }
+
+        private static int CompareHitsByDistance(
+            RaycastHit first,
+            RaycastHit second)
+        {
+            return first.distance.CompareTo(
+                second.distance);
+        }
+
+        private static string GetFirstHitName(
+            RaycastHit[] hits)
+        {
+            if (hits == null ||
+                hits.Length == 0 ||
+                hits[0].collider == null)
+            {
+                return string.Empty;
+            }
+
+            return
+                $" ao clicar em '{hits[0].collider.name}'";
+        }
+
+        private void ResolveAction()
+        {
+            if (selectTargetAction != null)
+            {
+                return;
+            }
+
+            InputActionMap actionMap =
+                inputActions != null
+                    ? inputActions.FindActionMap(
                         actionMapName,
-                        throwIfNotFound: false);
-            }
+                        throwIfNotFound: false)
+                    : null;
 
-            if (moveAction == null)
+            selectTargetAction =
+                actionMap?.FindAction(
+                    selectTargetActionName,
+                    throwIfNotFound: false);
+
+            if (selectTargetAction != null)
             {
-                moveAction =
-                    actionMap?.FindAction(
-                        moveActionName,
-                        throwIfNotFound: false);
-
-                if (moveAction == null)
-                {
-                    moveAction =
-                        CreateFallbackMoveAction();
-
-                    ownsMoveAction = true;
-                }
+                ownsSelectTargetAction = false;
+                return;
             }
 
-            if (selectTargetAction == null)
-            {
-                selectTargetAction =
-                    actionMap?.FindAction(
-                        selectTargetActionName,
-                        throwIfNotFound: false);
+            selectTargetAction =
+                CreateFallbackSelectTargetAction();
 
-                if (selectTargetAction == null)
-                {
-                    selectTargetAction =
-                        CreateFallbackSelectTargetAction();
-
-                    ownsSelectTargetAction = true;
-                }
-            }
-
-            if (basicAttackAction == null)
-            {
-                basicAttackAction =
-                    actionMap?.FindAction(
-                        basicAttackActionName,
-                        throwIfNotFound: false);
-
-                if (basicAttackAction == null)
-                {
-                    basicAttackAction =
-                        CreateFallbackBasicAttackAction();
-
-                    ownsBasicAttackAction = true;
-                }
-            }
-
-            if (ability1Action == null)
-            {
-                ability1Action =
-                    actionMap?.FindAction(
-                        ability1ActionName,
-                        throwIfNotFound: false);
-
-                if (ability1Action == null)
-                {
-                    ability1Action =
-                        CreateFallbackAbility1Action();
-
-                    ownsAbility1Action = true;
-                }
-            }
+            ownsSelectTargetAction = true;
         }
 
         private void CacheReferences()
         {
-            movementController ??=
-                GetComponent<MovementController>();
+            playerController ??=
+                GetComponent<PlayerController>();
 
-            combatController ??=
-                GetComponent<CombatController>();
-
-            abilityController ??=
-                GetComponent<AbilityController>();
-
-            targetingController ??=
-                GetComponent<TargetingController>();
+            selfContext ??=
+                GetComponent<CharacterContext>();
 
             if (selectionCamera == null)
             {
                 selectionCamera =
                     Camera.main;
             }
-        }
-
-        private static InputAction CreateFallbackMoveAction()
-        {
-            InputAction action =
-                new InputAction(
-                    name: "Move",
-                    type: InputActionType.Value,
-                    expectedControlType: "Vector2");
-
-            action.AddCompositeBinding("2DVector")
-                .With("Up", "<Keyboard>/w")
-                .With("Up", "<Keyboard>/upArrow")
-                .With("Down", "<Keyboard>/s")
-                .With("Down", "<Keyboard>/downArrow")
-                .With("Left", "<Keyboard>/a")
-                .With("Left", "<Keyboard>/leftArrow")
-                .With("Right", "<Keyboard>/d")
-                .With("Right", "<Keyboard>/rightArrow");
-
-            action.AddBinding(
-                "<Gamepad>/leftStick");
-
-            return action;
         }
 
         private static InputAction
@@ -460,37 +343,6 @@ namespace Riftborn.Characters.Input
 
             action.AddBinding(
                 "<Mouse>/leftButton");
-
-            return action;
-        }
-
-        private static InputAction
-            CreateFallbackBasicAttackAction()
-        {
-            InputAction action =
-                new InputAction(
-                    name: "BasicAttack",
-                    type: InputActionType.Button);
-
-            action.AddBinding(
-                "<Keyboard>/f");
-
-            return action;
-        }
-
-        private static InputAction
-            CreateFallbackAbility1Action()
-        {
-            InputAction action =
-                new InputAction(
-                    name: "Ability1",
-                    type: InputActionType.Button);
-
-            action.AddBinding(
-                "<Keyboard>/q");
-
-            action.AddBinding(
-                "<Gamepad>/buttonWest");
 
             return action;
         }

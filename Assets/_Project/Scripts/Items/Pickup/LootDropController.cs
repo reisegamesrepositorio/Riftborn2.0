@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Riftborn.Characters.Core;
-using Riftborn.Characters.Health;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Riftborn.Items
 {
@@ -34,7 +33,8 @@ namespace Riftborn.Items
             generationDropTable;
 
         public float DropChance =>
-            Mathf.Clamp01(dropChance);
+            Mathf.Clamp01(
+                dropChance);
 
         public int MinimumRolls =>
             Mathf.Max(
@@ -50,7 +50,8 @@ namespace Riftborn.Items
             out ItemGenerationProfile selectedProfile,
             bool logWarnings)
         {
-            selectedProfile = null;
+            selectedProfile =
+                null;
 
             if (generationDropTable != null)
             {
@@ -68,7 +69,8 @@ namespace Riftborn.Items
         public void Validate()
         {
             dropChance =
-                Mathf.Clamp01(dropChance);
+                Mathf.Clamp01(
+                    dropChance);
 
             minimumRolls =
                 Mathf.Max(
@@ -84,10 +86,6 @@ namespace Riftborn.Items
 
     public sealed class LootDropController : MonoBehaviour
     {
-        [Header("Character")]
-        [SerializeField]
-        private CharacterContext character;
-
         [Header("World Pickup")]
         [SerializeField]
         private WorldItemPickup pickupPrefab;
@@ -108,55 +106,32 @@ namespace Riftborn.Items
             new();
 
         [Header("Rules")]
+        [FormerlySerializedAs("dropOnlyOnce")]
+        [Tooltip(
+            "Impede que a mesma vida processe loot mais de uma vez. " +
+            "O EnemyController reinicia este estado no revive.")]
         [SerializeField]
-        private bool dropOnlyOnce = true;
+        private bool dropOncePerLife = true;
 
         [Header("Debug")]
         [SerializeField]
         private bool showDebugLogs = true;
 
-        private HealthController health;
+        private bool lootProcessedThisLife;
 
-        private bool isSubscribed;
-        private bool lootDropped;
+        public bool LootProcessedThisLife =>
+            lootProcessedThisLife;
 
-        private void Awake()
-        {
-            CacheReferences();
-        }
-
-        private void OnEnable()
-        {
-            CacheReferences();
-            SubscribeToHealth();
-        }
-
-        /*
-         * Start acontece depois dos Awakes.
-         * Fazemos uma segunda tentativa porque o CharacterContext
-         * pode ainda não ter guardado o HealthController durante
-         * o primeiro OnEnable.
-         */
         private void Start()
         {
-            CacheReferences();
-            SubscribeToHealth();
-
             if (showDebugLogs)
             {
                 Debug.Log(
                     $"[LOOT] {name} inicializado | " +
-                    $"Health: {(health != null ? "OK" : "NULL")} | " +
-                    $"Pickup Prefab: " +
-                    $"{(pickupPrefab != null ? "OK" : "NULL")} | " +
+                    $"Pickup: {(pickupPrefab != null ? "OK" : "NULL")} | " +
                     $"Entradas: {lootEntries.Count}",
                     this);
             }
-        }
-
-        private void OnDisable()
-        {
-            UnsubscribeFromHealth();
         }
 
         private void OnValidate()
@@ -183,115 +158,34 @@ namespace Riftborn.Items
             DropLoot();
         }
 
-        private void CacheReferences()
+        [ContextMenu("Reset Loot State")]
+        public void ResetLootState()
         {
-            character ??=
-                GetComponent<CharacterContext>();
-
-            /*
-             * Primeiro tenta pelo CharacterContext.
-             * Caso ele ainda não tenha sido inicializado,
-             * procura diretamente no mesmo GameObject.
-             */
-            if (health == null &&
-                character != null)
-            {
-                health =
-                    character.Health;
-            }
-
-            health ??=
-                GetComponent<HealthController>();
-        }
-
-        private void SubscribeToHealth()
-        {
-            if (isSubscribed)
-            {
-                return;
-            }
-
-            if (health == null)
-            {
-                if (showDebugLogs)
-                {
-                    Debug.LogWarning(
-                        $"[LOOT] {name} não encontrou " +
-                        "HealthController e não pôde se conectar " +
-                        "ao evento de morte.",
-                        this);
-                }
-
-                return;
-            }
-
-            health.Died +=
-                HandleCharacterDied;
-
-            health.Revived +=
-                HandleCharacterRevived;
-
-            isSubscribed = true;
+            lootProcessedThisLife =
+                false;
 
             if (showDebugLogs)
             {
                 Debug.Log(
-                    $"[LOOT] {name} conectado ao evento Died.",
+                    $"[LOOT] Estado de loot de {name} foi reiniciado.",
                     this);
             }
         }
 
-        private void UnsubscribeFromHealth()
+        public int DropLoot()
         {
-            if (!isSubscribed ||
-                health == null)
-            {
-                return;
-            }
-
-            health.Died -=
-                HandleCharacterDied;
-
-            health.Revived -=
-                HandleCharacterRevived;
-
-            isSubscribed = false;
-        }
-
-        private void HandleCharacterDied()
-        {
-            if (showDebugLogs)
-            {
-                Debug.Log(
-                    $"[LOOT] Morte detectada em {name}. " +
-                    "Processando tabela de loot.",
-                    this);
-            }
-
-            DropLoot();
-        }
-
-        private void HandleCharacterRevived()
-        {
-            if (!dropOnlyOnce)
-            {
-                lootDropped = false;
-            }
-        }
-
-        private void DropLoot()
-        {
-            if (dropOnlyOnce &&
-                lootDropped)
+            if (dropOncePerLife &&
+                lootProcessedThisLife)
             {
                 if (showDebugLogs)
                 {
                     Debug.Log(
-                        $"[LOOT] {name} já processou o loot.",
+                        $"[LOOT] {name} já processou " +
+                        "o loot desta vida.",
                         this);
                 }
 
-                return;
+                return 0;
             }
 
             if (pickupPrefab == null)
@@ -301,7 +195,7 @@ namespace Riftborn.Items
                     "WorldItemPickup configurado.",
                     this);
 
-                return;
+                return 0;
             }
 
             if (lootEntries == null ||
@@ -312,12 +206,14 @@ namespace Riftborn.Items
                     "na tabela de loot.",
                     this);
 
-                return;
+                return 0;
             }
 
-            lootDropped = true;
+            lootProcessedThisLife =
+                true;
 
-            int generatedItemCount = 0;
+            int generatedItemCount =
+                0;
 
             for (int entryIndex = 0;
                  entryIndex < lootEntries.Count;
@@ -340,8 +236,8 @@ namespace Riftborn.Items
                         showDebugLogs))
                 {
                     Debug.LogWarning(
-                        $"[LOOT] Entrada {entryIndex} nao possui " +
-                        "perfil ou tabela valida para gerar item.",
+                        $"[LOOT] Entrada {entryIndex} não possui " +
+                        "perfil ou tabela válida.",
                         this);
 
                     continue;
@@ -366,8 +262,7 @@ namespace Riftborn.Items
                         {
                             Debug.Log(
                                 $"[LOOT] Entrada {entryIndex}, " +
-                                $"tentativa {rollIndex}: " +
-                                $"falhou na chance " +
+                                $"tentativa {rollIndex}: falhou " +
                                 $"({chanceRoll:0.###} > " +
                                 $"{entry.DropChance:0.###}).",
                                 this);
@@ -381,8 +276,7 @@ namespace Riftborn.Items
                             out ItemInstance itemInstance))
                     {
                         Debug.LogWarning(
-                            $"[LOOT] Não foi possível gerar item " +
-                            $"com o perfil " +
+                            $"[LOOT] Falha ao gerar item com " +
                             $"'{selectedProfile.name}'.",
                             this);
 
@@ -402,6 +296,8 @@ namespace Riftborn.Items
                 $"[LOOT] {name} gerou " +
                 $"{generatedItemCount} item(ns).",
                 this);
+
+            return generatedItemCount;
         }
 
         private bool SpawnWorldItem(
@@ -458,11 +354,6 @@ namespace Riftborn.Items
                 pickupInstance);
 
             return true;
-        }
-
-        private void OnDestroy()
-        {
-            UnsubscribeFromHealth();
         }
     }
 }

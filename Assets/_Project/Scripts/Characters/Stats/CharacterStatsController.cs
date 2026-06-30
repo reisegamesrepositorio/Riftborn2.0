@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -26,31 +26,45 @@ namespace Riftborn.Characters.Stats
     public sealed class CharacterStatsController : MonoBehaviour
     {
         [Header("Base Attributes")]
-        [SerializeField] private float baseSTR = 10f;
-        [SerializeField] private float baseDEX = 10f;
-        [SerializeField] private float baseWIS = 10f;
-        [SerializeField] private float baseISP = 10f;
-        [SerializeField] private float baseFORT = 10f;
+        [SerializeField]
+        private float baseSTR = 10f;
 
-        private readonly Dictionary<CharacterStat, List<StatModifier>>
+        [SerializeField]
+        private float baseDEX = 10f;
+
+        [SerializeField]
+        private float baseWIS = 10f;
+
+        [SerializeField]
+        private float baseISP = 10f;
+
+        [SerializeField]
+        private float baseFORT = 10f;
+
+        private readonly Dictionary<
+            CharacterStat,
+            List<StatModifier>>
             modifiersByStat = new();
 
         private readonly Dictionary<string, StatModifier>
-            modifiersById = new(StringComparer.Ordinal);
+            modifiersById =
+                new(StringComparer.Ordinal);
 
         private readonly Dictionary<CharacterStat, float>
             cachedFinalValues = new();
 
         private bool initialized;
 
-        public event Action<StatChangedEventArgs> StatChanged;
+        public event Action<StatChangedEventArgs>
+            StatChanged;
 
         private void Awake()
         {
             EnsureInitialized();
         }
 
-        public float GetBaseValue(CharacterStat stat)
+        public float GetBaseValue(
+            CharacterStat stat)
         {
             return stat switch
             {
@@ -67,9 +81,11 @@ namespace Riftborn.Characters.Stats
             };
         }
 
-        public float GetFinalValue(CharacterStat stat)
+        public float GetFinalValue(
+            CharacterStat stat)
         {
             EnsureInitialized();
+
             return cachedFinalValues[stat];
         }
 
@@ -111,7 +127,32 @@ namespace Riftborn.Characters.Stats
             Recalculate(stat);
         }
 
-        public bool AddModifier(StatModifier modifier)
+        public float AddBaseValue(
+            CharacterStat stat,
+            float amount)
+        {
+            if (float.IsNaN(amount) ||
+                float.IsInfinity(amount))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(amount),
+                    amount,
+                    "The base stat change must be finite.");
+            }
+
+            float newBaseValue =
+                GetBaseValue(stat) +
+                amount;
+
+            SetBaseValue(
+                stat,
+                newBaseValue);
+
+            return newBaseValue;
+        }
+
+        public bool AddModifier(
+            StatModifier modifier)
         {
             if (modifier == null)
             {
@@ -120,7 +161,8 @@ namespace Riftborn.Characters.Stats
 
             EnsureInitialized();
 
-            if (modifiersById.ContainsKey(modifier.Id))
+            if (modifiersById.ContainsKey(
+                    modifier.Id))
             {
                 Debug.LogWarning(
                     $"A stat modifier with ID '{modifier.Id}' " +
@@ -130,17 +172,26 @@ namespace Riftborn.Characters.Stats
                 return false;
             }
 
-            modifiersByStat[modifier.Stat].Add(modifier);
-            modifiersById.Add(modifier.Id, modifier);
+            modifiersByStat[
+                    modifier.Stat]
+                .Add(
+                    modifier);
 
-            Recalculate(modifier.Stat);
+            modifiersById.Add(
+                modifier.Id,
+                modifier);
+
+            Recalculate(
+                modifier.Stat);
 
             return true;
         }
 
-        public bool RemoveModifier(string modifierId)
+        public bool RemoveModifier(
+            string modifierId)
         {
-            if (string.IsNullOrWhiteSpace(modifierId))
+            if (string.IsNullOrWhiteSpace(
+                    modifierId))
             {
                 return false;
             }
@@ -154,20 +205,26 @@ namespace Riftborn.Characters.Stats
                 return false;
             }
 
-            modifiersById.Remove(modifierId);
+            modifiersById.Remove(
+                modifierId);
 
             bool removed =
-                modifiersByStat[modifier.Stat].Remove(modifier);
+                modifiersByStat[
+                        modifier.Stat]
+                    .Remove(
+                        modifier);
 
             if (removed)
             {
-                Recalculate(modifier.Stat);
+                Recalculate(
+                    modifier.Stat);
             }
 
             return removed;
         }
 
-        public int RemoveModifiersFromSource(object source)
+        public int RemoveModifiersFromSource(
+            object source)
         {
             if (source == null)
             {
@@ -177,34 +234,50 @@ namespace Riftborn.Characters.Stats
             EnsureInitialized();
 
             int totalRemoved = 0;
-            HashSet<CharacterStat> changedStats = new();
+
+            HashSet<CharacterStat> changedStats =
+                new();
 
             foreach (
-                KeyValuePair<CharacterStat, List<StatModifier>> pair
+                KeyValuePair<
+                    CharacterStat,
+                    List<StatModifier>> pair
                 in modifiersByStat)
             {
-                List<StatModifier> statModifiers = pair.Value;
+                List<StatModifier> statModifiers =
+                    pair.Value;
 
-                for (int index = statModifiers.Count - 1;
+                for (int index =
+                         statModifiers.Count - 1;
                      index >= 0;
                      index--)
                 {
-                    StatModifier modifier = statModifiers[index];
+                    StatModifier modifier =
+                        statModifiers[index];
 
-                    if (!Equals(modifier.Source, source))
+                    if (!Equals(
+                            modifier.Source,
+                            source))
                     {
                         continue;
                     }
 
-                    statModifiers.RemoveAt(index);
-                    modifiersById.Remove(modifier.Id);
+                    statModifiers.RemoveAt(
+                        index);
+
+                    modifiersById.Remove(
+                        modifier.Id);
 
                     totalRemoved++;
-                    changedStats.Add(pair.Key);
+
+                    changedStats.Add(
+                        pair.Key);
                 }
             }
 
-            foreach (CharacterStat stat in changedStats)
+            foreach (
+                CharacterStat stat
+                in changedStats)
             {
                 Recalculate(stat);
             }
@@ -212,16 +285,19 @@ namespace Riftborn.Characters.Stats
             return totalRemoved;
         }
 
-        public bool HasModifier(string modifierId)
+        public bool HasModifier(
+            string modifierId)
         {
-            if (string.IsNullOrWhiteSpace(modifierId))
+            if (string.IsNullOrWhiteSpace(
+                    modifierId))
             {
                 return false;
             }
 
             EnsureInitialized();
 
-            return modifiersById.ContainsKey(modifierId);
+            return modifiersById.ContainsKey(
+                modifierId);
         }
 
         private void EnsureInitialized()
@@ -233,7 +309,8 @@ namespace Riftborn.Characters.Stats
 
             foreach (
                 CharacterStat stat
-                in Enum.GetValues(typeof(CharacterStat)))
+                in Enum.GetValues(
+                    typeof(CharacterStat)))
             {
                 modifiersByStat[stat] =
                     new List<StatModifier>();
@@ -245,16 +322,24 @@ namespace Riftborn.Characters.Stats
             initialized = true;
         }
 
-        private void Recalculate(CharacterStat stat)
+        private void Recalculate(
+            CharacterStat stat)
         {
             EnsureInitialized();
 
-            float oldValue = cachedFinalValues[stat];
-            float newValue = CalculateFinalValue(stat);
+            float oldValue =
+                cachedFinalValues[stat];
 
-            cachedFinalValues[stat] = newValue;
+            float newValue =
+                CalculateFinalValue(
+                    stat);
 
-            if (Mathf.Approximately(oldValue, newValue))
+            cachedFinalValues[stat] =
+                newValue;
+
+            if (Mathf.Approximately(
+                    oldValue,
+                    newValue))
             {
                 return;
             }
@@ -266,7 +351,8 @@ namespace Riftborn.Characters.Stats
                     newValue));
         }
 
-        private float CalculateFinalValue(CharacterStat stat)
+        private float CalculateFinalValue(
+            CharacterStat stat)
         {
             float flatTotal = 0f;
             float additivePercentTotal = 0f;
@@ -275,23 +361,30 @@ namespace Riftborn.Characters.Stats
             List<StatModifier> statModifiers =
                 modifiersByStat[stat];
 
-            foreach (StatModifier modifier in statModifiers)
+            foreach (
+                StatModifier modifier
+                in statModifiers)
             {
-                flatTotal += modifier.FlatValue;
+                flatTotal +=
+                    modifier.FlatValue;
 
                 additivePercentTotal +=
                     modifier.AdditivePercent;
 
                 multiplicativeFactor *=
-                    1f + modifier.MultiplicativePercent;
+                    1f +
+                    modifier.MultiplicativePercent;
             }
 
-            float finalValue = GetBaseValue(stat);
+            float finalValue =
+                GetBaseValue(stat);
 
-            finalValue += flatTotal;
+            finalValue +=
+                flatTotal;
 
             finalValue *=
-                1f + additivePercentTotal;
+                1f +
+                additivePercentTotal;
 
             finalValue *=
                 multiplicativeFactor;

@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using Riftborn.Characters.Core;
-using Riftborn.Characters.Health;
 using Riftborn.Damage;
 using UnityEngine;
 
@@ -67,10 +66,9 @@ namespace Riftborn.Characters.Visual
         private readonly List<MaterialState>
             materialStates = new();
 
-        private HealthController health;
         private Coroutine feedbackCoroutine;
         private Vector3 originalScale;
-        private bool isSubscribed;
+        private bool visualStateCached;
 
         private void Awake()
         {
@@ -82,12 +80,41 @@ namespace Riftborn.Characters.Visual
         {
             CacheReferences();
             PrepareMaterials();
-            SubscribeToHealth();
         }
 
         private void OnDisable()
         {
-            UnsubscribeFromHealth();
+            StopCurrentFeedback();
+            RestoreVisual();
+        }
+
+        public void PlayHit(
+            DamageResult damageResult)
+        {
+            CacheReferences();
+
+            if (showDebugLogs)
+            {
+                Debug.Log(
+                    $"[HIT FEEDBACK] {name} recebeu dano.",
+                    this);
+            }
+
+            if (playHurtAnimation)
+            {
+                character?.AnimationController?.
+                    PlayHurt();
+            }
+
+            StopCurrentFeedback();
+
+            feedbackCoroutine =
+                StartCoroutine(
+                    PlayFeedback());
+        }
+
+        public void ResetFeedback()
+        {
             StopCurrentFeedback();
             RestoreVisual();
         }
@@ -96,11 +123,6 @@ namespace Riftborn.Characters.Visual
         {
             character ??=
                 GetComponent<CharacterContext>();
-
-            health =
-                character != null
-                    ? character.Health
-                    : GetComponent<HealthController>();
 
             if (visualTransform == null)
             {
@@ -121,8 +143,14 @@ namespace Riftborn.Characters.Visual
                         includeInactive: true);
             }
 
-            originalScale =
-                visualTransform.localScale;
+            if (!visualStateCached)
+            {
+                originalScale =
+                    visualTransform.localScale;
+
+                visualStateCached =
+                    true;
+            }
         }
 
         private void PrepareMaterials()
@@ -152,12 +180,15 @@ namespace Riftborn.Characters.Visual
                     }
 
                     bool hasBaseColor =
-                        material.HasProperty(BaseColorId);
+                        material.HasProperty(
+                            BaseColorId);
 
                     bool hasColor =
-                        material.HasProperty(ColorId);
+                        material.HasProperty(
+                            ColorId);
 
-                    if (!hasBaseColor && !hasColor)
+                    if (!hasBaseColor &&
+                        !hasColor)
                     {
                         continue;
                     }
@@ -168,14 +199,17 @@ namespace Riftborn.Characters.Visual
                             : ColorId;
 
                     Color originalColor =
-                        material.GetColor(colorPropertyId);
+                        material.GetColor(
+                            colorPropertyId);
 
                     bool hasEmission =
-                        material.HasProperty(EmissionColorId);
+                        material.HasProperty(
+                            EmissionColorId);
 
                     Color originalEmission =
                         hasEmission
-                            ? material.GetColor(EmissionColorId)
+                            ? material.GetColor(
+                                EmissionColorId)
                             : Color.black;
 
                     materialStates.Add(
@@ -195,72 +229,6 @@ namespace Riftborn.Characters.Visual
                     $"{materialStates.Count} material(is) preparado(s).",
                     this);
             }
-        }
-
-        private void SubscribeToHealth()
-        {
-            if (health == null)
-            {
-                Debug.LogWarning(
-                    $"[HIT FEEDBACK] {name} não encontrou " +
-                    "HealthController.",
-                    this);
-
-                return;
-            }
-
-            if (isSubscribed)
-            {
-                return;
-            }
-
-            health.DamageTaken +=
-                HandleDamageTaken;
-
-            isSubscribed = true;
-
-            if (showDebugLogs)
-            {
-                Debug.Log(
-                    $"[HIT FEEDBACK] {name} conectado ao dano.",
-                    this);
-            }
-        }
-
-        private void UnsubscribeFromHealth()
-        {
-            if (health == null ||
-                !isSubscribed)
-            {
-                return;
-            }
-
-            health.DamageTaken -=
-                HandleDamageTaken;
-
-            isSubscribed = false;
-        }
-
-        private void HandleDamageTaken(
-            DamageResult damageResult)
-        {
-            if (showDebugLogs)
-            {
-                Debug.Log(
-                    $"[HIT FEEDBACK] {name} recebeu dano.",
-                    this);
-            }
-
-            if (playHurtAnimation)
-            {
-                character?.AnimationController?.
-                    PlayHurt();
-            }
-
-            StopCurrentFeedback();
-
-            feedbackCoroutine =
-                StartCoroutine(PlayFeedback());
         }
 
         private IEnumerator PlayFeedback()
@@ -306,7 +274,8 @@ namespace Riftborn.Characters.Visual
                     originalScale;
             }
 
-            feedbackCoroutine = null;
+            feedbackCoroutine =
+                null;
         }
 
         private IEnumerator AnimateScale(
@@ -394,15 +363,19 @@ namespace Riftborn.Characters.Visual
                 return;
             }
 
-            StopCoroutine(feedbackCoroutine);
-            feedbackCoroutine = null;
+            StopCoroutine(
+                feedbackCoroutine);
+
+            feedbackCoroutine =
+                null;
         }
 
         private void RestoreVisual()
         {
             RestoreMaterials();
 
-            if (visualTransform != null)
+            if (visualTransform != null &&
+                visualStateCached)
             {
                 visualTransform.localScale =
                     originalScale;
@@ -411,7 +384,6 @@ namespace Riftborn.Characters.Visual
 
         private void OnDestroy()
         {
-            UnsubscribeFromHealth();
             RestoreVisual();
         }
 

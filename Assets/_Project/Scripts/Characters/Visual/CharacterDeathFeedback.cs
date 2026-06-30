@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using Riftborn.Characters.Core;
-using Riftborn.Characters.Health;
 using UnityEngine;
 
 namespace Riftborn.Characters.Visual
@@ -26,9 +25,6 @@ namespace Riftborn.Characters.Visual
         [SerializeField]
         private bool disableColliders = true;
 
-        [SerializeField]
-        private bool disableGameplayControllers = true;
-
         [SerializeField, Min(0f)]
         private float delayBeforeShrink = 0.15f;
 
@@ -37,7 +33,7 @@ namespace Riftborn.Characters.Visual
 
         [Header("Optional Destruction")]
         [Tooltip(
-            "Deixe desmarcado durante o protótipo para permitir revive.")]
+            "Deixe desmarcado para inimigos que possuem respawn.")]
         [SerializeField]
         private bool destroyAfterDeath;
 
@@ -47,102 +43,48 @@ namespace Riftborn.Characters.Visual
         private readonly List<ColliderState>
             colliderStates = new();
 
-        private readonly List<BehaviourState>
-            controllerStates = new();
-
-        private HealthController health;
         private Coroutine deathCoroutine;
         private Vector3 originalVisualScale;
-        private bool isSubscribed;
+        private bool visualStateCached;
         private bool deathProcessed;
+
+        public bool DeathProcessed =>
+            deathProcessed;
 
         private void Awake()
         {
             CacheReferences();
         }
 
-        private void OnEnable()
+        private void OnValidate()
+        {
+            delayBeforeShrink =
+                Mathf.Max(
+                    0f,
+                    delayBeforeShrink);
+
+            shrinkDuration =
+                Mathf.Max(
+                    0f,
+                    shrinkDuration);
+
+            destroyDelay =
+                Mathf.Max(
+                    0f,
+                    destroyDelay);
+        }
+
+        public void PlayDeath()
         {
             CacheReferences();
-            SubscribeToHealth();
 
-            if (health != null &&
-                health.IsDead)
-            {
-                HandleDied();
-            }
-        }
-
-        private void OnDisable()
-        {
-            UnsubscribeFromHealth();
-        }
-
-        private void CacheReferences()
-        {
-            character ??=
-                GetComponent<CharacterContext>();
-
-            health =
-                character != null
-                    ? character.Health
-                    : GetComponent<HealthController>();
-
-            if (visualRoot == null)
-            {
-                visualRoot =
-                    transform.Find("Visual");
-            }
-
-            if (visualRoot != null)
-            {
-                originalVisualScale =
-                    visualRoot.localScale;
-            }
-        }
-
-        private void SubscribeToHealth()
-        {
-            if (health == null ||
-                isSubscribed)
-            {
-                return;
-            }
-
-            health.Died +=
-                HandleDied;
-
-            health.Revived +=
-                HandleRevived;
-
-            isSubscribed = true;
-        }
-
-        private void UnsubscribeFromHealth()
-        {
-            if (health == null ||
-                !isSubscribed)
-            {
-                return;
-            }
-
-            health.Died -=
-                HandleDied;
-
-            health.Revived -=
-                HandleRevived;
-
-            isSubscribed = false;
-        }
-
-        private void HandleDied()
-        {
             if (deathProcessed)
             {
                 return;
             }
 
-            deathProcessed = true;
+            deathProcessed =
+                true;
 
             if (playDeathAnimation)
             {
@@ -150,41 +92,60 @@ namespace Riftborn.Characters.Visual
                     PlayDeath();
             }
 
-            character?.Targeting?.
-                ClearTarget();
-
             if (disableColliders)
             {
                 DisableCharacterColliders();
             }
 
-            if (disableGameplayControllers)
-            {
-                DisableControllers();
-            }
-
             if (deathCoroutine != null)
             {
-                StopCoroutine(deathCoroutine);
+                StopCoroutine(
+                    deathCoroutine);
             }
 
             deathCoroutine =
-                StartCoroutine(PlayDeathReaction());
+                StartCoroutine(
+                    PlayDeathReaction());
         }
 
-        private void HandleRevived()
+        public void RestoreAfterRevive()
         {
-            deathProcessed = false;
+            deathProcessed =
+                false;
 
             if (deathCoroutine != null)
             {
-                StopCoroutine(deathCoroutine);
-                deathCoroutine = null;
+                StopCoroutine(
+                    deathCoroutine);
+
+                deathCoroutine =
+                    null;
             }
 
             RestoreVisual();
             RestoreColliders();
-            RestoreControllers();
+        }
+
+        private void CacheReferences()
+        {
+            character ??=
+                GetComponent<CharacterContext>();
+
+            if (visualRoot == null)
+            {
+                visualRoot =
+                    transform.Find("Visual");
+            }
+
+            if (visualRoot != null &&
+                !visualStateCached)
+            {
+                originalVisualScale =
+                    visualRoot.localScale;
+
+                visualStateCached =
+                    true;
+            }
         }
 
         private IEnumerator PlayDeathReaction()
@@ -234,7 +195,8 @@ namespace Riftborn.Characters.Visual
                     false);
             }
 
-            deathCoroutine = null;
+            deathCoroutine =
+                null;
 
             if (!destroyAfterDeath)
             {
@@ -291,56 +253,6 @@ namespace Riftborn.Characters.Visual
             colliderStates.Clear();
         }
 
-        private void DisableControllers()
-        {
-            controllerStates.Clear();
-
-            RememberAndDisable(
-                character?.Movement);
-
-            RememberAndDisable(
-                character?.Combat);
-
-            RememberAndDisable(
-                character?.Abilities);
-
-            RememberAndDisable(
-                character?.Targeting);
-        }
-
-        private void RememberAndDisable(
-            Behaviour controller)
-        {
-            if (controller == null)
-            {
-                return;
-            }
-
-            controllerStates.Add(
-                new BehaviourState(
-                    controller,
-                    controller.enabled));
-
-            controller.enabled =
-                false;
-        }
-
-        private void RestoreControllers()
-        {
-            foreach (BehaviourState state in controllerStates)
-            {
-                if (state.Controller == null)
-                {
-                    continue;
-                }
-
-                state.Controller.enabled =
-                    state.WasEnabled;
-            }
-
-            controllerStates.Clear();
-        }
-
         private void RestoreVisual()
         {
             if (visualRoot == null)
@@ -351,13 +263,11 @@ namespace Riftborn.Characters.Visual
             visualRoot.gameObject.SetActive(
                 true);
 
-            visualRoot.localScale =
-                originalVisualScale;
-        }
-
-        private void OnDestroy()
-        {
-            UnsubscribeFromHealth();
+            if (visualStateCached)
+            {
+                visualRoot.localScale =
+                    originalVisualScale;
+            }
         }
 
         private sealed class ColliderState
@@ -374,24 +284,6 @@ namespace Riftborn.Characters.Visual
             }
 
             public Collider Collider { get; }
-
-            public bool WasEnabled { get; }
-        }
-
-        private sealed class BehaviourState
-        {
-            public BehaviourState(
-                Behaviour controller,
-                bool wasEnabled)
-            {
-                Controller =
-                    controller;
-
-                WasEnabled =
-                    wasEnabled;
-            }
-
-            public Behaviour Controller { get; }
 
             public bool WasEnabled { get; }
         }
