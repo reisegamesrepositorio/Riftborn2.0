@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Riftborn.Characters.Stats;
 using Riftborn.Characters.StatusEffects;
@@ -36,15 +36,9 @@ namespace Riftborn.Characters.Health
             Max - OldMax;
     }
 
-    public sealed class HealthController : MonoBehaviour
+    [Serializable]
+    public sealed class HealthController
     {
-        [Header("References")]
-        [SerializeField]
-        private CharacterStatsController stats;
-
-        [SerializeField]
-        private StatusEffectController statusEffects;
-
         [Header("Health Calculation")]
         [SerializeField, Min(1f)]
         private float baseMaxHealth = 100f;
@@ -59,14 +53,25 @@ namespace Riftborn.Characters.Health
         [SerializeField]
         private bool startFullHealth = true;
 
-        private readonly List<HealthModifier>
+        private List<HealthModifier>
             modifiers = new();
 
-        private readonly Dictionary<string, HealthModifier>
+        private Dictionary<string, HealthModifier>
             modifiersById =
                 new(StringComparer.Ordinal);
 
+        [NonSerialized]
+        private CharacterStatsController stats;
+
+        [NonSerialized]
+        private StatusEffectController statusEffects;
+
+        [NonSerialized]
+        private UnityEngine.Object owner;
+
         private float maxHealth;
+        private bool initialized;
+        private bool enabled;
 
         public event Action<HealthChangedEventArgs>
             HealthChanged;
@@ -77,7 +82,8 @@ namespace Riftborn.Characters.Health
         public event Action<DamageResult>
             DamageTaken;
 
-        public event Action<float> Healed;
+        public event Action<float>
+            Healed;
 
         public event Action Died;
 
@@ -105,33 +111,72 @@ namespace Riftborn.Characters.Health
         public DamageApplicationResult
             LastDamageApplication { get; private set; }
 
-        private void Awake()
+        public void Initialize(
+            UnityEngine.Object ownerContext,
+            CharacterStatsController statsController,
+            StatusEffectController statusEffectController)
         {
-            CacheReferences();
-            InitializeHealth();
+            owner = ownerContext;
+            stats = statsController;
+            statusEffects = statusEffectController;
+
+            EnsureCollections();
+
+            if (!initialized)
+            {
+                Validate();
+                InitializeHealth();
+                initialized = true;
+            }
         }
 
-        private void OnEnable()
+        public void SetStatusEffects(
+            StatusEffectController controller)
         {
-            CacheReferences();
+            statusEffects = controller;
+        }
+
+        public void Enable()
+        {
+            if (enabled)
+            {
+                return;
+            }
+
+            if (!initialized)
+            {
+                Initialize(
+                    owner,
+                    stats,
+                    statusEffects);
+            }
 
             if (stats != null)
             {
                 stats.StatChanged +=
                     HandleStatChanged;
             }
+
+            enabled = true;
         }
 
-        private void OnDisable()
+        public void Disable()
         {
+            if (!enabled)
+            {
+                return;
+            }
+
             if (stats != null)
             {
                 stats.StatChanged -=
                     HandleStatChanged;
             }
+
+            enabled = false;
         }
 
-        private void OnValidate()
+        public void Validate()
         {
             baseMaxHealth =
                 Mathf.Max(
@@ -230,7 +275,8 @@ namespace Riftborn.Characters.Health
             return LastDamageApplication;
         }
 
-        public void Heal(float amount)
+        public void Heal(
+            float amount)
         {
             if (IsDead)
             {
@@ -268,7 +314,8 @@ namespace Riftborn.Characters.Health
                 effectiveHealing);
         }
 
-        public void Revive(float healthAmount)
+        public void Revive(
+            float healthAmount)
         {
             if (!IsDead)
             {
@@ -328,6 +375,7 @@ namespace Riftborn.Characters.Health
         public bool AddModifier(
             HealthModifier modifier)
         {
+            EnsureCollections();
             if (modifier == null)
             {
                 return false;
@@ -339,7 +387,7 @@ namespace Riftborn.Characters.Health
                 Debug.LogWarning(
                     $"[HEALTH] Já existe um modificador " +
                     $"com o ID '{modifier.Id}'.",
-                    this);
+                    owner);
 
                 return false;
             }
@@ -359,6 +407,7 @@ namespace Riftborn.Characters.Health
         public bool RemoveModifier(
             string modifierId)
         {
+            EnsureCollections();
             if (string.IsNullOrWhiteSpace(
                     modifierId))
             {
@@ -391,6 +440,7 @@ namespace Riftborn.Characters.Health
         public int RemoveModifiersFromSource(
             object source)
         {
+            EnsureCollections();
             if (source == null)
             {
                 return 0;
@@ -414,10 +464,7 @@ namespace Riftborn.Characters.Health
                 }
 
                 modifiers.RemoveAt(index);
-
-                modifiersById.Remove(
-                    modifier.Id);
-
+                modifiersById.Remove(modifier.Id);
                 totalRemoved++;
             }
 
@@ -433,6 +480,7 @@ namespace Riftborn.Characters.Health
         public bool HasModifier(
             string modifierId)
         {
+            EnsureCollections();
             if (string.IsNullOrWhiteSpace(
                     modifierId))
             {
@@ -443,7 +491,6 @@ namespace Riftborn.Characters.Health
                 modifierId);
         }
 
-        [ContextMenu("Log Current Health Values")]
         public void LogCurrentHealthValues()
         {
             float finalFort =
@@ -469,24 +516,17 @@ namespace Riftborn.Characters.Health
                 $"{additivePercent * 100f:0.##}% | " +
                 $"Multiplicador: " +
                 $"{multiplicativeFactor:0.##}x",
-                this);
+                owner);
         }
 
-        private void CacheReferences()
+        private void EnsureCollections()
         {
-            stats ??=
-                GetComponent<CharacterStatsController>();
+            modifiers ??=
+                new List<HealthModifier>();
 
-            statusEffects ??=
-                GetComponent<StatusEffectController>();
-
-            if (stats == null)
-            {
-                Debug.LogError(
-                    $"{nameof(HealthController)} requires a " +
-                    $"{nameof(CharacterStatsController)}.",
-                    this);
-            }
+            modifiersById ??=
+                new Dictionary<string, HealthModifier>(
+                    StringComparer.Ordinal);
         }
 
         private void InitializeHealth()
@@ -545,6 +585,8 @@ namespace Riftborn.Characters.Health
             out float additivePercent,
             out float multiplicativeFactor)
         {
+            EnsureCollections();
+
             flatValue = 0f;
             additivePercent = 0f;
             multiplicativeFactor = 1f;
@@ -602,16 +644,6 @@ namespace Riftborn.Characters.Health
             }
             else
             {
-                /*
-                 * Preserva a quantidade de vida faltante.
-                 *
-                 * Exemplo:
-                 * 150/150 recebe +50 de vida máxima
-                 * → 200/200.
-                 *
-                 * 100/150 recebe +50 de vida máxima
-                 * → 150/200.
-                 */
                 float missingHealth =
                     Mathf.Max(
                         0f,

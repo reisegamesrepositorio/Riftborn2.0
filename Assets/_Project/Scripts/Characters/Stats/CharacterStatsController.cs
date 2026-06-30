@@ -23,7 +23,8 @@ namespace Riftborn.Characters.Stats
         public float NewValue { get; }
     }
 
-    public sealed class CharacterStatsController : MonoBehaviour
+    [Serializable]
+    public sealed class CharacterStatsController
     {
         [Header("Base Attributes")]
         [SerializeField]
@@ -41,26 +42,40 @@ namespace Riftborn.Characters.Stats
         [SerializeField]
         private float baseFORT = 10f;
 
-        private readonly Dictionary<
+        private Dictionary<
             CharacterStat,
             List<StatModifier>>
             modifiersByStat = new();
 
-        private readonly Dictionary<string, StatModifier>
+        private Dictionary<string, StatModifier>
             modifiersById =
                 new(StringComparer.Ordinal);
 
-        private readonly Dictionary<CharacterStat, float>
+        private Dictionary<CharacterStat, float>
             cachedFinalValues = new();
+
+        [NonSerialized]
+        private UnityEngine.Object owner;
 
         private bool initialized;
 
         public event Action<StatChangedEventArgs>
             StatChanged;
 
-        private void Awake()
+        public void Initialize(
+            UnityEngine.Object ownerContext)
         {
+            owner = ownerContext;
             EnsureInitialized();
+        }
+
+        public void Validate()
+        {
+            baseSTR = Sanitize(baseSTR);
+            baseDEX = Sanitize(baseDEX);
+            baseWIS = Sanitize(baseWIS);
+            baseISP = Sanitize(baseISP);
+            baseFORT = Sanitize(baseFORT);
         }
 
         public float GetBaseValue(
@@ -95,26 +110,29 @@ namespace Riftborn.Characters.Stats
         {
             EnsureInitialized();
 
+            float safeValue =
+                Sanitize(value);
+
             switch (stat)
             {
                 case CharacterStat.STR:
-                    baseSTR = value;
+                    baseSTR = safeValue;
                     break;
 
                 case CharacterStat.DEX:
-                    baseDEX = value;
+                    baseDEX = safeValue;
                     break;
 
                 case CharacterStat.WIS:
-                    baseWIS = value;
+                    baseWIS = safeValue;
                     break;
 
                 case CharacterStat.ISP:
-                    baseISP = value;
+                    baseISP = safeValue;
                     break;
 
                 case CharacterStat.FORT:
-                    baseFORT = value;
+                    baseFORT = safeValue;
                     break;
 
                 default:
@@ -167,15 +185,14 @@ namespace Riftborn.Characters.Stats
                 Debug.LogWarning(
                     $"A stat modifier with ID '{modifier.Id}' " +
                     "is already active.",
-                    this);
+                    owner);
 
                 return false;
             }
 
             modifiersByStat[
                     modifier.Stat]
-                .Add(
-                    modifier);
+                .Add(modifier);
 
             modifiersById.Add(
                 modifier.Id,
@@ -211,8 +228,7 @@ namespace Riftborn.Characters.Stats
             bool removed =
                 modifiersByStat[
                         modifier.Stat]
-                    .Remove(
-                        modifier);
+                    .Remove(modifier);
 
             if (removed)
             {
@@ -262,16 +278,10 @@ namespace Riftborn.Characters.Stats
                         continue;
                     }
 
-                    statModifiers.RemoveAt(
-                        index);
-
-                    modifiersById.Remove(
-                        modifier.Id);
-
+                    statModifiers.RemoveAt(index);
+                    modifiersById.Remove(modifier.Id);
                     totalRemoved++;
-
-                    changedStats.Add(
-                        pair.Key);
+                    changedStats.Add(pair.Key);
                 }
             }
 
@@ -307,6 +317,22 @@ namespace Riftborn.Characters.Stats
                 return;
             }
 
+            Validate();
+
+            modifiersByStat ??=
+                new Dictionary<CharacterStat, List<StatModifier>>();
+
+            modifiersById ??=
+                new Dictionary<string, StatModifier>(
+                    StringComparer.Ordinal);
+
+            cachedFinalValues ??=
+                new Dictionary<CharacterStat, float>();
+
+            modifiersByStat.Clear();
+            modifiersById.Clear();
+            cachedFinalValues.Clear();
+
             foreach (
                 CharacterStat stat
                 in Enum.GetValues(
@@ -331,8 +357,7 @@ namespace Riftborn.Characters.Stats
                 cachedFinalValues[stat];
 
             float newValue =
-                CalculateFinalValue(
-                    stat);
+                CalculateFinalValue(stat);
 
             cachedFinalValues[stat] =
                 newValue;
@@ -390,6 +415,15 @@ namespace Riftborn.Characters.Stats
                 multiplicativeFactor;
 
             return finalValue;
+        }
+
+        private static float Sanitize(
+            float value)
+        {
+            return float.IsNaN(value) ||
+                   float.IsInfinity(value)
+                ? 0f
+                : value;
         }
     }
 }

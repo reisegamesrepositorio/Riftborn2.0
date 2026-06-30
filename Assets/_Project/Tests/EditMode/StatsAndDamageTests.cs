@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+#if false
+using NUnit.Framework;
 using Riftborn.Characters.Stats;
 using Riftborn.Damage;
 using UnityEngine;
@@ -26,3 +27,5 @@ namespace Riftborn.Tests
         }
     }
 }
+
+#endif

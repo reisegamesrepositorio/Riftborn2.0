@@ -1,8 +1,5 @@
 #if UNITY_EDITOR
-using Riftborn.Characters.ActionStates;
-using Riftborn.Characters.Input;
-using Riftborn.Characters.Movement;
-using Riftborn.Characters.Stats;
+using Riftborn.Characters.Controllers;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -67,20 +64,11 @@ namespace Riftborn.Editor.Bootstrap
             characterController.skinWidth = 0.08f;
             characterController.minMoveDistance = 0f;
 
-            MovementController movement = player.GetComponent<MovementController>() ?? player.AddComponent<MovementController>();
-            PlayerInputReader inputReader = player.GetComponent<PlayerInputReader>() ?? player.AddComponent<PlayerInputReader>();
-
-            SerializedObject movementObject = new SerializedObject(movement);
-            movementObject.FindProperty("actionState").objectReferenceValue = player.GetComponent<ActionStateController>();
-            movementObject.FindProperty("stats").objectReferenceValue = player.GetComponent<CharacterStatsController>();
-            movementObject.FindProperty("characterController").objectReferenceValue = characterController;
-            movementObject.FindProperty("cameraTransform").objectReferenceValue = cameraTransform;
-            movementObject.ApplyModifiedPropertiesWithoutUndo();
-
-            SerializedObject inputObject = new SerializedObject(inputReader);
-            inputObject.FindProperty("inputActions").objectReferenceValue = inputActions;
-            inputObject.FindProperty("movementController").objectReferenceValue = movement;
-            inputObject.ApplyModifiedPropertiesWithoutUndo();
+            PlayerController controller = player.GetComponent<PlayerController>();
+            if (controller == null)
+            {
+                controller = player.AddComponent<PlayerController>();
+            }
 
             EditorUtility.SetDirty(player);
         }

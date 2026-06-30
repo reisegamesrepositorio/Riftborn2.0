@@ -1,3 +1,4 @@
+using System;
 using Riftborn.Characters.Controllers;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -5,9 +6,8 @@ using UnityEngine.InputSystem;
 
 namespace Riftborn.Characters.Input
 {
-    [DisallowMultipleComponent]
-    [RequireComponent(typeof(PlayerController))]
-    public sealed class ClickMovePlayerInput : MonoBehaviour
+    [Serializable]
+    public sealed class ClickMovePlayerInput
     {
         [Header("References")]
         [SerializeField]
@@ -42,23 +42,23 @@ namespace Riftborn.Characters.Input
         [SerializeField]
         private Key basicAttackKey = Key.A;
 
-        private void Awake()
+        public void Initialize(PlayerController controller)
         {
+            playerController = controller;
             ResolveReferences();
         }
 
-        private void OnEnable()
+        public void Enable()
         {
-            ResolveReferences();
             playerController?.ActivateClickMoveMode();
         }
 
-        private void OnDisable()
+        public void Disable()
         {
             playerController?.CancelClickDestination();
         }
 
-        private void Update()
+        public void Tick()
         {
             HandleClickDestination();
 
@@ -129,8 +129,7 @@ namespace Riftborn.Characters.Input
             {
                 Debug.LogWarning(
                     "[INPUT] Nenhuma câmera foi encontrada " +
-                    "para o click-to-move.",
-                    this);
+                    "para o click-to-move.", playerController);
 
                 return;
             }
@@ -179,9 +178,6 @@ namespace Riftborn.Characters.Input
 
         private void ResolveReferences()
         {
-            playerController ??=
-                GetComponent<PlayerController>();
-
             if (worldCamera == null &&
                 Camera.main != null)
             {
@@ -190,7 +186,7 @@ namespace Riftborn.Characters.Input
             }
         }
 
-        private void OnValidate()
+        public void Validate()
         {
             maximumRaycastDistance =
                 Mathf.Max(

@@ -5,6 +5,7 @@ using Riftborn.Characters.Combat;
 using Riftborn.Characters.Defense;
 using Riftborn.Characters.Equipment;
 using Riftborn.Characters.Health;
+using Riftborn.Characters.Input;
 using Riftborn.Characters.Inventory;
 using Riftborn.Characters.Movement;
 using Riftborn.Characters.Progression;
@@ -17,55 +18,67 @@ using UnityEngine;
 
 namespace Riftborn.Characters.Core
 {
-    public sealed class CharacterContext : MonoBehaviour
+    /// <summary>
+    /// Base comum dos controllers centrais.
+    ///
+    /// PlayerController e EnemyController são o próprio CharacterContext;
+    /// portanto não existe mais um componente CharacterContext separado no
+    /// GameObject. Os sistemas externos continuam trabalhando com
+    /// CharacterContext sem precisar conhecer o tipo concreto da entidade.
+    /// </summary>
+    public abstract class CharacterContext : MonoBehaviour
     {
+        [Header("Core Character Modules")]
         [SerializeField]
-        private CharacterStatsController stats;
+        protected CharacterStatsController stats = new();
 
         [SerializeField]
-        private HealthController health;
+        protected HealthController health = new();
 
         [SerializeField]
-        private DefenseController defense;
+        protected DefenseController defense = new();
 
         [SerializeField]
-        private ResourceController resources;
+        protected ActionStateController actionState = new();
 
         [SerializeField]
-        private MovementController movement;
+        protected CharacterEvents characterEvents = new();
+
+        [Header("Attached Character Systems")]
+        [SerializeField]
+        protected ResourceController resources = new();
 
         [SerializeField]
-        private ActionStateController actionState;
+        protected MovementController movement = new();
 
         [SerializeField]
-        private CombatController combat;
+        protected CombatController combat = new();
 
         [SerializeField]
-        private TargetingController targeting;
+        protected TargetingController targeting = new();
 
         [SerializeField]
-        private AbilityController abilities;
+        protected AbilityController abilities = new();
 
         [SerializeField]
-        private StatusEffectController statusEffects;
+        protected StatusEffectController statusEffects = new();
 
         [SerializeField]
-        private InventoryController inventory;
+        protected InventoryController inventory = new();
 
         [SerializeField]
-        private EquipmentController equipment;
+        protected EquipmentController equipment = new();
 
         [SerializeField]
-        private RuneController runes;
+        protected RuneController runes = new();
 
         [SerializeField]
-        private CharacterProgressionController progression;
+        protected CharacterProgressionController progression = new();
 
         [SerializeField]
-        private CharacterAnimationController animationController;
+        protected CharacterAnimationController animationController;
 
-        [SerializeField]
-        private CharacterEvents characterEvents;
+        private bool coreInitialized;
 
         public CharacterStatsController Stats =>
             stats;
@@ -115,97 +128,118 @@ namespace Riftborn.Characters.Core
         public CharacterEvents Events =>
             characterEvents;
 
-        private void Awake()
+        /// <summary>
+        /// Deve ser chamado pelo controller concreto no Awake.
+        /// </summary>
+        protected void InitializeCharacterContext()
         {
-            CacheMissingReferences();
-            ValidateReferences();
+            EnsureCoreModules();
+            CacheAttachedSystems();
+
+            stats.Initialize(this);
+            defense.Initialize(this);
+            actionState.Initialize();
+            characterEvents.Initialize();
+
+            health.Initialize(
+                this,
+                stats,
+                statusEffects);
+
+            resources.Initialize();
+            targeting.Initialize(this);
+            movement.Initialize(
+                this,
+                GetComponent<CharacterController>(),
+                Camera.main != null ? Camera.main.transform : null);
+            combat.Initialize(
+                this,
+                targeting,
+                equipment);
+            abilities.Initialize(this);
+            statusEffects.Initialize(this);
+            inventory.Initialize();
+            equipment.Initialize(
+                this,
+                combat,
+                resources,
+                abilities,
+                movement);
+            progression.Initialize(this);
+
+            coreInitialized = true;
         }
 
-        private void Reset()
+        /// <summary>
+        /// Deve ser chamado pelo controller concreto no OnEnable.
+        /// </summary>
+        protected void EnableCharacterContext()
         {
-            CacheMissingReferences();
+            if (!coreInitialized)
+            {
+                InitializeCharacterContext();
+            }
+
+            CacheAttachedSystems();
+
+            health.SetStatusEffects(
+                statusEffects);
+
+            health.Enable();
         }
 
-        private void CacheMissingReferences()
+        /// <summary>
+        /// Deve ser chamado pelo controller concreto no OnDisable.
+        /// </summary>
+        protected void DisableCharacterContext()
+        {
+            health?.Disable();
+        }
+
+        /// <summary>
+        /// Atualiza referências dos sistemas que ainda são componentes.
+        /// Conforme a migração avançar, esses campos também serão convertidos
+        /// em módulos internos e deixarão de usar GetComponent.
+        /// </summary>
+        protected void CacheAttachedSystems()
+        {
+            resources ??= new ResourceController();
+            movement ??= new MovementController();
+            combat ??= new CombatController();
+            targeting ??= new TargetingController();
+            abilities ??= new AbilityController();
+            statusEffects ??= new StatusEffectController();
+            inventory ??= new InventoryController();
+            equipment ??= new EquipmentController();
+            runes ??= new RuneController();
+            progression ??= new CharacterProgressionController();
+        }
+
+        protected void ValidateCharacterContext()
+        {
+            EnsureCoreModules();
+
+            stats.Validate();
+            health.Validate();
+            defense.Validate();
+        }
+
+        private void EnsureCoreModules()
         {
             stats ??=
-                GetComponent<CharacterStatsController>();
+                new CharacterStatsController();
 
             health ??=
-                GetComponent<HealthController>();
+                new HealthController();
 
             defense ??=
-                GetComponent<DefenseController>();
-
-            resources ??=
-                GetComponent<ResourceController>();
-
-            movement ??=
-                GetComponent<MovementController>();
+                new DefenseController();
 
             actionState ??=
-                GetComponent<ActionStateController>();
-
-            combat ??=
-                GetComponent<CombatController>();
-
-            targeting ??=
-                GetComponent<TargetingController>();
-
-            abilities ??=
-                GetComponent<AbilityController>();
-
-            statusEffects ??=
-                GetComponent<StatusEffectController>();
-
-            inventory ??=
-                GetComponent<InventoryController>();
-
-            equipment ??=
-                GetComponent<EquipmentController>();
-
-            runes ??=
-                GetComponent<RuneController>();
-
-            progression ??=
-                GetComponent<CharacterProgressionController>();
-
-            animationController ??=
-                GetComponent<CharacterAnimationController>();
+                new ActionStateController();
 
             characterEvents ??=
-                GetComponent<CharacterEvents>();
-        }
-
-        private void ValidateReferences()
-        {
-            if (health == null)
-            {
-                Debug.LogWarning(
-                    $"{name} has no HealthController.",
-                    this);
-            }
-
-            if (defense == null)
-            {
-                Debug.LogWarning(
-                    $"{name} has no DefenseController.",
-                    this);
-            }
-
-            if (actionState == null)
-            {
-                Debug.LogWarning(
-                    $"{name} has no ActionStateController.",
-                    this);
-            }
-
-            if (characterEvents == null)
-            {
-                Debug.LogWarning(
-                    $"{name} has no CharacterEvents.",
-                    this);
-            }
+                new CharacterEvents();
         }
     }
 }

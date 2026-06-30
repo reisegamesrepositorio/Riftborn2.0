@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
+using Riftborn.Characters.Core;
 using Riftborn.Characters.Defense;
+using Riftborn.Characters.Controllers;
 using Riftborn.Characters.Equipment;
 using Riftborn.Characters.Inventory;
 using Riftborn.Characters.Stats;
@@ -31,10 +34,10 @@ namespace Riftborn.Items
         [SerializeField]
         private EquipmentController equipment;
 
-        [SerializeField]
+        [NonSerialized]
         private CharacterStatsController stats;
 
-        [SerializeField]
+        [NonSerialized]
         private DefenseController defense;
 
         [Header("Defense To Observe")]
@@ -660,35 +663,18 @@ namespace Riftborn.Items
 
         private bool ResolveReferences()
         {
-            if (inventory == null)
+            PlayerController player =
+                FindAnyObjectByType<PlayerController>();
+
+            if (player == null)
             {
-                inventory =
-                    FindAnyObjectByType<
-                        InventoryController>();
+                return false;
             }
 
-            if (equipment == null)
-            {
-                equipment =
-                    FindAnyObjectByType<
-                        EquipmentController>();
-            }
-
-            if (stats == null &&
-                equipment != null)
-            {
-                stats =
-                    equipment.GetComponent<
-                        CharacterStatsController>();
-            }
-
-            if (defense == null &&
-                equipment != null)
-            {
-                defense =
-                    equipment.GetComponent<
-                        DefenseController>();
-            }
+            inventory ??= player.Inventory;
+            equipment ??= player.Equipment;
+            stats ??= player.Stats;
+            defense ??= player.Defense;
 
             return inventory != null &&
                    equipment != null &&

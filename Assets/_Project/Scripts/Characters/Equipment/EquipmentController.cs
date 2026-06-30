@@ -1,7 +1,8 @@
-Ôªøusing System;
+using System;
 using System.Collections.Generic;
 using Riftborn.Characters.Abilities;
 using Riftborn.Characters.Combat;
+using Riftborn.Characters.Core;
 using Riftborn.Characters.Defense;
 using Riftborn.Characters.Health;
 using Riftborn.Characters.Movement;
@@ -12,19 +13,23 @@ using UnityEngine;
 
 namespace Riftborn.Characters.Equipment
 {
-    public sealed class EquipmentController : MonoBehaviour
+    [Serializable]
+    public sealed class EquipmentController
     {
         [Header("References")]
-        [SerializeField]
+        [NonSerialized]
+        private CharacterContext context;
+
+        [NonSerialized]
         private CharacterStatsController stats;
 
-        [SerializeField]
+        [NonSerialized]
         private DefenseController defense;
 
         [SerializeField]
         private CombatController combat;
 
-        [SerializeField]
+        [NonSerialized]
         private HealthController health;
 
         [SerializeField]
@@ -45,15 +50,17 @@ namespace Riftborn.Characters.Equipment
         public event Action<EquipmentSlot, EquipmentItemData>
             EquipmentChanged;
 
-        private void Awake()
+        public void Initialize(CharacterContext owner, CombatController combatModule, ResourceController resourceModule, AbilityController abilityModule, MovementController movementModule)
         {
-            CacheReferences();
+            context = owner;
+            stats = owner?.Stats;
+            defense = owner?.Defense;
+            health = owner?.Health;
+            combat = combatModule ?? combat;
+            resources = resourceModule ?? resources;
+            abilities = abilityModule ?? abilities;
+            movement = movementModule ?? movement;
             ValidateReferences();
-        }
-
-        private void Reset()
-        {
-            CacheReferences();
         }
 
         public bool Equip(
@@ -76,8 +83,7 @@ namespace Riftborn.Characters.Equipment
                 Debug.LogWarning(
                     $"[EQUIPMENT] O item " +
                     $"'{itemInstance.DisplayName}' " +
-                    "n√£o √© equip√°vel.",
-                    this);
+                    "n„o È equip·vel.", context);
 
                 return false;
             }
@@ -121,14 +127,12 @@ namespace Riftborn.Characters.Equipment
                 {
                     Debug.LogError(
                         $"[EQUIPMENT] Falha ao restaurar " +
-                        $"o item anterior do slot {slot}.",
-                        this);
+                        $"o item anterior do slot {slot}.", context);
                 }
 
                 Debug.LogError(
-                    $"[EQUIPMENT] N√£o foi poss√≠vel equipar " +
-                    $"'{itemInstance.DisplayName}'.",
-                    this);
+                    $"[EQUIPMENT] N„o foi possÌvel equipar " +
+                    $"'{itemInstance.DisplayName}'.", context);
 
                 return false;
             }
@@ -144,8 +148,7 @@ namespace Riftborn.Characters.Equipment
                 $"[EQUIPMENT] Equipado: " +
                 $"{itemInstance.DisplayName} | " +
                 $"Slot: {slot} | " +
-                $"ID: {itemInstance.InstanceId}",
-                this);
+                $"ID: {itemInstance.InstanceId}", context);
 
             return true;
         }
@@ -189,8 +192,7 @@ namespace Riftborn.Characters.Equipment
                 null);
 
             Debug.Log(
-                $"[EQUIPMENT] Slot {slot} desequipado.",
-                this);
+                $"[EQUIPMENT] Slot {slot} desequipado.", context);
 
             return true;
         }
@@ -396,9 +398,8 @@ namespace Riftborn.Characters.Equipment
                     roll.Affix == null)
                 {
                     Debug.LogError(
-                        $"[EQUIPMENT] Afixo inv√°lido encontrado em " +
-                        $"'{itemInstance.DisplayName}'.",
-                        this);
+                        $"[EQUIPMENT] Afixo inv·lido encontrado em " +
+                        $"'{itemInstance.DisplayName}'.", context);
 
                     return false;
                 }
@@ -531,9 +532,8 @@ namespace Riftborn.Characters.Equipment
                     Debug.LogWarning(
                         $"[EQUIPMENT] O efeito " +
                         $"'{affix.EffectType}' do afixo " +
-                        $"'{affix.DisplayName}' ainda n√£o possui " +
-                        "um sistema de aplica√ß√£o conectado.",
-                        this);
+                        $"'{affix.DisplayName}' ainda n„o possui " +
+                        "um sistema de aplicaÁ„o conectado.", context);
 
                     return true;
             }
@@ -888,26 +888,9 @@ namespace Riftborn.Characters.Equipment
 
         private void CacheReferences()
         {
-            stats ??=
-                GetComponent<CharacterStatsController>();
-
-            defense ??=
-                GetComponent<DefenseController>();
-
-            combat ??=
-                GetComponent<CombatController>();
-
-            health ??=
-                GetComponent<HealthController>();
-
-            resources ??=
-                GetComponent<ResourceController>();
-
-            abilities ??=
-                GetComponent<AbilityController>();
-
-            movement ??=
-                GetComponent<MovementController>();
+            stats ??= context?.Stats;
+            defense ??= context?.Defense;
+            health ??= context?.Health;
         }
 
         private void ValidateReferences()
@@ -916,56 +899,49 @@ namespace Riftborn.Characters.Equipment
             {
                 Debug.LogError(
                     $"{nameof(EquipmentController)} requires a " +
-                    $"{nameof(CharacterStatsController)}.",
-                    this);
+                    $"{nameof(CharacterStatsController)}.", context);
             }
 
             if (defense == null)
             {
                 Debug.LogError(
                     $"{nameof(EquipmentController)} requires a " +
-                    $"{nameof(DefenseController)}.",
-                    this);
+                    $"{nameof(DefenseController)}.", context);
             }
 
             if (combat == null)
             {
                 Debug.LogError(
                     $"{nameof(EquipmentController)} requires a " +
-                    $"{nameof(CombatController)}.",
-                    this);
+                    $"{nameof(CombatController)}.", context);
             }
 
             if (health == null)
             {
                 Debug.LogError(
                     $"{nameof(EquipmentController)} requires a " +
-                    $"{nameof(HealthController)}.",
-                    this);
+                    $"{nameof(HealthController)}.", context);
             }
 
             if (resources == null)
             {
                 Debug.LogError(
                     $"{nameof(EquipmentController)} requires a " +
-                    $"{nameof(ResourceController)}.",
-                    this);
+                    $"{nameof(ResourceController)}.", context);
             }
 
             if (abilities == null)
             {
                 Debug.LogError(
                     $"{nameof(EquipmentController)} requires an " +
-                    $"{nameof(AbilityController)}.",
-                    this);
+                    $"{nameof(AbilityController)}.", context);
             }
 
             if (movement == null)
             {
                 Debug.LogError(
                     $"{nameof(EquipmentController)} requires a " +
-                    $"{nameof(MovementController)}.",
-                    this);
+                    $"{nameof(MovementController)}.", context);
             }
         }
     }

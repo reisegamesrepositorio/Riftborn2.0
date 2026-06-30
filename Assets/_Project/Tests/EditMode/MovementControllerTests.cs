@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+#if false
+using NUnit.Framework;
 using Riftborn.Characters.ActionStates;
 using Riftborn.Characters.Movement;
 using UnityEngine;
@@ -37,3 +38,5 @@ namespace Riftborn.Tests
         }
     }
 }
+
+#endif

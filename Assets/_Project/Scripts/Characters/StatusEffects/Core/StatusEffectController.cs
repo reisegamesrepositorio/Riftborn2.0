@@ -1,13 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Riftborn.Characters.Core;
-using Riftborn.Characters.Health;
+using Riftborn.Characters.Controllers;
 using Riftborn.Damage;
 using UnityEngine;
 
 namespace Riftborn.Characters.StatusEffects
 {
-    public sealed class StatusEffectController : MonoBehaviour
+    [Serializable]
+    public sealed class StatusEffectController
     {
         private readonly List<StatusEffectBase>
             activeEffects = new();
@@ -19,8 +20,6 @@ namespace Riftborn.Characters.StatusEffects
             damageAbsorberBuffer = new();
 
         private CharacterContext context;
-        private HealthController health;
-        private bool subscribedToHealth;
 
         public event Action<StatusEffectBase> StatusApplied;
         public event Action<StatusEffectBase> StatusRemoved;
@@ -38,25 +37,15 @@ namespace Riftborn.Characters.StatusEffects
             }
         }
 
-        private void Awake()
+        public void Initialize(CharacterContext owner)
         {
+            context = owner;
             EnsureReferences();
         }
 
-        private void OnEnable()
+        public void Tick(float deltaTime)
         {
-            EnsureReferences();
-            SubscribeToHealth();
-        }
-
-        private void OnDisable()
-        {
-            UnsubscribeFromHealth();
-        }
-
-        private void Update()
-        {
-            UpdateEffects(Time.deltaTime);
+            UpdateEffects(deltaTime);
         }
 
         public bool Apply(StatusEffectBase effect)
@@ -72,8 +61,7 @@ namespace Riftborn.Characters.StatusEffects
             {
                 Debug.LogError(
                     $"{nameof(StatusEffectController)} requires a " +
-                    $"{nameof(CharacterContext)}.",
-                    this);
+                    $"{nameof(CharacterContext)}.", context);
 
                 return false;
             }
@@ -82,8 +70,7 @@ namespace Riftborn.Characters.StatusEffects
             {
                 Debug.LogWarning(
                     $"Status effect '{effect.GetType().Name}' was created " +
-                    $"for another target and cannot be applied to '{name}'.",
-                    this);
+                    $"for another target and cannot be applied to '{context?.name}'.", context);
 
                 return false;
             }
@@ -377,53 +364,39 @@ namespace Riftborn.Characters.StatusEffects
         public DamageResult ApplyDamage(
             DamageRequest request)
         {
-            if (request == null)
-            {
-                return DamageCalculator.Calculate(null);
-            }
-
             DamageResult result =
-                DamageCalculator.Calculate(request);
+                DamageCalculator.Calculate(
+                    request);
 
-            DamageApplicationResult applicationResult =
-                request.Target?.Health?.ApplyDamage(result);
-
-            /*
-             * Dano absorvido por Shield ainda conta como dano
-             * processado pelo atacante.
-             */
-            if (applicationResult != null)
-            {
-                request.Source?.Events?.
-                    RaiseDamageDealt(result);
-            }
-
-            /*
-             * O alvo só recebe o evento de dano quando houve
-             * perda real de vida depois dos escudos.
-             *
-             * Portanto, um dano totalmente absorvido não
-             * remove SleepEffect.
-             */
-            if (applicationResult != null &&
-                applicationResult.DamagedHealth)
-            {
-                request.Target?.Events?.
-                    RaiseDamageTaken(result);
-            }
-
-            /*
-             * Um acerto continua sendo crítico mesmo quando
-             * o dano é absorvido por um escudo.
-             */
-            if (applicationResult != null &&
-                result.WasCritical)
-            {
-                request.Source?.Events?.
-                    RaiseCriticalHit(result);
-            }
+            CharacterControllerResolver.RouteDamage(
+                result);
 
             return result;
+        }
+
+        public void NotifyDamageTaken(
+            DamageResult result)
+        {
+            for (int index = activeEffects.Count - 1;
+                 index >= 0;
+                 index--)
+            {
+                StatusEffectBase effect =
+                    activeEffects[index];
+
+                if (effect is not
+                    IRemoveOnDamage removable)
+                {
+                    continue;
+                }
+
+                if (removable.ShouldRemoveOnDamage(
+                        result))
+                {
+                    Remove(
+                        effect);
+                }
+            }
         }
 
         private StatusEffectBase FindCompatibleEffect(
@@ -453,54 +426,6 @@ namespace Riftborn.Characters.StatusEffects
 
         private void EnsureReferences()
         {
-            context ??=
-                GetComponent<CharacterContext>();
-
-            health ??=
-                GetComponent<HealthController>();
-        }
-
-        private void SubscribeToHealth()
-        {
-            if (subscribedToHealth || health == null)
-            {
-                return;
-            }
-
-            health.DamageTaken += HandleDamageTaken;
-            subscribedToHealth = true;
-        }
-
-        private void UnsubscribeFromHealth()
-        {
-            if (!subscribedToHealth || health == null)
-            {
-                return;
-            }
-
-            health.DamageTaken -= HandleDamageTaken;
-            subscribedToHealth = false;
-        }
-
-        private void HandleDamageTaken(DamageResult result)
-        {
-            for (int index = activeEffects.Count - 1;
-                 index >= 0;
-                 index--)
-            {
-                StatusEffectBase effect =
-                    activeEffects[index];
-
-                if (effect is not IRemoveOnDamage removable)
-                {
-                    continue;
-                }
-
-                if (removable.ShouldRemoveOnDamage(result))
-                {
-                    Remove(effect);
-                }
-            }
         }
     }
 }

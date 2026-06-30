@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Riftborn.Characters.ActionStates
 {
@@ -23,15 +22,17 @@ namespace Riftborn.Characters.ActionStates
             Interact
     }
 
-    public sealed class ActionStateController : MonoBehaviour
+    [Serializable]
+    public sealed class ActionStateController
     {
-        private readonly Dictionary<object, ActionPermission>
+        private Dictionary<object, ActionPermission>
             blockersBySource = new();
 
         private ActionPermission blockedPermissions =
             ActionPermission.None;
 
-        public event Action<ActionPermission> PermissionsChanged;
+        public event Action<ActionPermission>
+            PermissionsChanged;
 
         public bool CanMove =>
             !IsBlocked(ActionPermission.Move);
@@ -51,6 +52,14 @@ namespace Riftborn.Characters.ActionStates
         public ActionPermission BlockedPermissions =>
             blockedPermissions;
 
+        public void Initialize()
+        {
+            blockersBySource ??=
+                new Dictionary<object, ActionPermission>();
+
+            RecalculateBlockedPermissions();
+        }
+
         public bool AddBlock(
             object source,
             ActionPermission permissions)
@@ -60,9 +69,11 @@ namespace Riftborn.Characters.ActionStates
                 return false;
             }
 
-            permissions &= ActionPermission.All;
+            permissions &=
+                ActionPermission.All;
 
-            if (permissions == ActionPermission.None)
+            if (permissions ==
+                ActionPermission.None)
             {
                 return false;
             }
@@ -75,21 +86,19 @@ namespace Riftborn.Characters.ActionStates
                 return false;
             }
 
-            blockersBySource[source] = permissions;
+            blockersBySource[source] =
+                permissions;
 
             RecalculateBlockedPermissions();
 
             return true;
         }
 
-        public bool RemoveBlock(object source)
+        public bool RemoveBlock(
+            object source)
         {
-            if (source == null)
-            {
-                return false;
-            }
-
-            if (!blockersBySource.Remove(source))
+            if (source == null ||
+                !blockersBySource.Remove(source))
             {
                 return false;
             }
@@ -99,9 +108,11 @@ namespace Riftborn.Characters.ActionStates
             return true;
         }
 
-        public bool IsBlocked(ActionPermission permissions)
+        public bool IsBlocked(
+            ActionPermission permissions)
         {
-            if (permissions == ActionPermission.None)
+            if (permissions ==
+                ActionPermission.None)
             {
                 return false;
             }
@@ -110,9 +121,11 @@ namespace Riftborn.Characters.ActionStates
                    ActionPermission.None;
         }
 
-        public bool AreAllBlocked(ActionPermission permissions)
+        public bool AreAllBlocked(
+            ActionPermission permissions)
         {
-            if (permissions == ActionPermission.None)
+            if (permissions ==
+                ActionPermission.None)
             {
                 return false;
             }
@@ -121,18 +134,22 @@ namespace Riftborn.Characters.ActionStates
                    permissions;
         }
 
-        public ActionPermission GetBlockedPermissions()
+        public ActionPermission
+            GetBlockedPermissions()
         {
             return blockedPermissions;
         }
 
-        public bool HasBlockFromSource(object source)
+        public bool HasBlockFromSource(
+            object source)
         {
             return source != null &&
-                   blockersBySource.ContainsKey(source);
+                   blockersBySource.ContainsKey(
+                       source);
         }
 
-        public ActionPermission GetBlockFromSource(object source)
+        public ActionPermission GetBlockFromSource(
+            object source)
         {
             if (source == null)
             {
@@ -154,7 +171,6 @@ namespace Riftborn.Characters.ActionStates
             }
 
             blockersBySource.Clear();
-
             RecalculateBlockedPermissions();
 
             return true;
@@ -162,6 +178,9 @@ namespace Riftborn.Characters.ActionStates
 
         private void RecalculateBlockedPermissions()
         {
+            blockersBySource ??=
+                new Dictionary<object, ActionPermission>();
+
             ActionPermission previousPermissions =
                 blockedPermissions;
 
@@ -172,17 +191,21 @@ namespace Riftborn.Characters.ActionStates
                 ActionPermission permissions
                 in blockersBySource.Values)
             {
-                newPermissions |= permissions;
+                newPermissions |=
+                    permissions;
             }
 
-            blockedPermissions = newPermissions;
+            blockedPermissions =
+                newPermissions;
 
-            if (previousPermissions == blockedPermissions)
+            if (previousPermissions ==
+                blockedPermissions)
             {
                 return;
             }
 
-            PermissionsChanged?.Invoke(blockedPermissions);
+            PermissionsChanged?.Invoke(
+                blockedPermissions);
         }
     }
 }

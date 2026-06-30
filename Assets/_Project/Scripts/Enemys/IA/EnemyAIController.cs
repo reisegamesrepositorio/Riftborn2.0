@@ -1,5 +1,8 @@
+using System;
 using Riftborn.Characters.Combat;
+using System;
 using Riftborn.Characters.Core;
+using System;
 using Riftborn.Damage;
 using UnityEngine;
 
@@ -13,10 +16,8 @@ namespace Riftborn.Enemies.AI
         Return = 3,
         Dead = 4
     }
-
-    [DisallowMultipleComponent]
-    [RequireComponent(typeof(CharacterContext))]
-    public sealed class EnemyAIController : MonoBehaviour
+    [Serializable]
+    public sealed class EnemyAIController
     {
         [Header("Target")]
         [SerializeField]
@@ -50,6 +51,9 @@ namespace Riftborn.Enemies.AI
         [SerializeField]
         private CombatController combatForGizmos;
 
+        [NonSerialized]
+        private Transform ownerTransform;
+
         [Header("Runtime Debug")]
         [SerializeField]
         private EnemyAIState currentState = EnemyAIState.Idle;
@@ -75,20 +79,19 @@ namespace Riftborn.Enemies.AI
         public float LeashRange =>
             leashRange;
 
-        private void Awake()
+        public void Initialize(CharacterContext owner, CombatController combat)
         {
-            CacheReferences();
-
-            spawnPosition =
-                transform.position;
+            context = owner;
+            ownerTransform = owner != null ? owner.transform : null;
+            combatForGizmos = combat ?? combatForGizmos;
+            if (ownerTransform != null)
+            {
+                spawnPosition =
+                    ownerTransform.position;
+            }
         }
 
-        private void Reset()
-        {
-            CacheReferences();
-        }
-
-        private void OnValidate()
+        public void Validate()
         {
             detectionRange =
                 Mathf.Max(
@@ -190,9 +193,8 @@ namespace Riftborn.Enemies.AI
             if (showDebugLogs)
             {
                 Debug.Log(
-                    $"[ENEMY AI] {name} foi reiniciado " +
-                    "e está pronto para receber ordens do EnemyController.",
-                    this);
+                    $"[ENEMY AI] {context?.name} foi reiniciado " +
+                    "e está pronto para receber ordens do EnemyController.", context);
             }
         }
 
@@ -256,7 +258,7 @@ namespace Riftborn.Enemies.AI
 
             float distanceToTarget =
                 HorizontalDistance(
-                    transform.position,
+                    ownerTransform.position,
                     target.transform.position);
 
             if (distanceToTarget <=
@@ -306,7 +308,7 @@ namespace Riftborn.Enemies.AI
 
             float distanceToTarget =
                 HorizontalDistance(
-                    transform.position,
+                    ownerTransform.position,
                     target.transform.position);
 
             float maximumAttackDistance =
@@ -327,7 +329,7 @@ namespace Riftborn.Enemies.AI
         {
             float distanceToSpawn =
                 HorizontalDistance(
-                    transform.position,
+                    ownerTransform.position,
                     spawnPosition);
 
             if (distanceToSpawn <=
@@ -344,7 +346,7 @@ namespace Riftborn.Enemies.AI
         {
             float distanceFromSpawn =
                 HorizontalDistance(
-                    transform.position,
+                    ownerTransform.position,
                     spawnPosition);
 
             return distanceFromSpawn >
@@ -381,8 +383,7 @@ namespace Riftborn.Enemies.AI
                 {
                     Debug.LogError(
                         $"[ENEMY AI] A tag " +
-                        $"'{playerTag}' não existe.",
-                        this);
+                        $"'{playerTag}' não existe.", context);
 
                     warnedAboutMissingPlayerTag =
                         true;
@@ -472,18 +473,12 @@ namespace Riftborn.Enemies.AI
             }
 
             Debug.Log(
-                $"[ENEMY AI] {name}: " +
-                $"{previousState} → {newState}",
-                this);
+                $"[ENEMY AI] {context?.name}: " +
+                $"{previousState} → {newState}", context);
         }
 
         private void CacheReferences()
         {
-            context ??=
-                GetComponent<CharacterContext>();
-
-            combatForGizmos ??=
-                GetComponent<CombatController>();
         }
 
         private static float HorizontalDistance(
@@ -498,43 +493,5 @@ namespace Riftborn.Enemies.AI
                 second);
         }
 
-        private void OnDrawGizmosSelected()
-        {
-            Vector3 leashOrigin =
-                Application.isPlaying
-                    ? spawnPosition
-                    : transform.position;
-
-            Gizmos.color =
-                Color.yellow;
-
-            Gizmos.DrawWireSphere(
-                transform.position,
-                detectionRange);
-
-            Gizmos.color =
-                Color.red;
-
-            Gizmos.DrawWireSphere(
-                leashOrigin,
-                leashRange);
-
-            CombatController combatReference =
-                combatForGizmos != null
-                    ? combatForGizmos
-                    : GetComponent<CombatController>();
-
-            if (combatReference == null)
-            {
-                return;
-            }
-
-            Gizmos.color =
-                Color.green;
-
-            Gizmos.DrawWireSphere(
-                transform.position,
-                combatReference.AttackRange);
-        }
     }
 }

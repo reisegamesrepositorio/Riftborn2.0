@@ -1,4 +1,4 @@
-using Riftborn.Characters.Input;
+using Riftborn.Characters.Controllers;
 using Riftborn.Characters.Inventory;
 using UnityEngine;
 
@@ -89,30 +89,24 @@ namespace Riftborn.Items
 
         private void TryCollect(Collider collectorCollider)
         {
-            InventoryController inventory =
+            PlayerController playerController =
                 collectorCollider
-                    .GetComponentInParent<InventoryController>();
+                    .GetComponentInParent<PlayerController>();
 
-            if (inventory == null)
+            if (playerController == null)
             {
                 return;
             }
 
-            if (requireActivePlayerInput)
+            if (requireActivePlayerInput &&
+                !playerController.IsAlive)
             {
-                PlayerInputReader playerInput =
-                    collectorCollider
-                        .GetComponentInParent<PlayerInputReader>();
-
-                if (playerInput == null ||
-                    !playerInput.enabled)
-                {
-                    return;
-                }
+                return;
             }
 
             bool added =
-                inventory.Add(itemInstance);
+                playerController.RequestAddToInventory(
+                    itemInstance);
 
             if (!added)
             {
@@ -121,7 +115,7 @@ namespace Riftborn.Items
                     Debug.LogWarning(
                         $"[WORLD ITEM] O inventário não possui " +
                         $"espaço para '{itemInstance.DisplayName}'.",
-                        inventory);
+                        playerController);
                 }
 
                 return;
@@ -131,16 +125,14 @@ namespace Riftborn.Items
 
             if (showDebugLogs)
             {
-                int inventorySlot =
-                    inventory.FindSlotByInstanceId(
-                        itemInstance.InstanceId);
+                int inventorySlot = -1;
 
                 Debug.Log(
                     $"[WORLD ITEM] Coletado: " +
                     $"{itemInstance.DisplayName} | " +
                     $"Slot: {inventorySlot} | " +
                     $"ID: {itemInstance.InstanceId}",
-                    inventory);
+                    playerController);
             }
 
             if (destroyAfterPickup)

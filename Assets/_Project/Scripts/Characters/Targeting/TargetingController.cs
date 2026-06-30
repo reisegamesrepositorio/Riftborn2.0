@@ -4,7 +4,8 @@ using UnityEngine;
 
 namespace Riftborn.Characters.Targeting
 {
-    public sealed class TargetingController : MonoBehaviour
+    [Serializable]
+    public sealed class TargetingController
     {
         private CharacterContext ownerCharacter;
         private TargetHighlight currentHighlight;
@@ -23,10 +24,9 @@ namespace Riftborn.Characters.Targeting
                 ? CurrentTarget.transform
                 : null;
 
-        private void Awake()
+        public void Initialize(CharacterContext owner)
         {
-            ownerCharacter =
-                GetComponent<CharacterContext>();
+            ownerCharacter = owner;
         }
 
         public bool SetTarget(
@@ -201,12 +201,7 @@ namespace Riftborn.Characters.Targeting
                 TargetHighlight>();
         }
 
-        private void OnDisable()
-        {
-            ClearTarget();
-        }
-
-        private void OnDestroy()
+        public void Disable()
         {
             ClearTarget();
         }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -15,7 +15,8 @@ namespace Riftborn.Characters.Runes
         public RunePageType PageType => pageType;
         public IReadOnlyList<RuneSelection> Selections => selections;
     }
-    public sealed class RuneController : MonoBehaviour
+    [Serializable]
+    public sealed class RuneController
     {
         public const int PageCount = 5, LevelsPerPage = 5, NodesPerLevel = 3;
         [SerializeField] private RunePageData equippedPage;

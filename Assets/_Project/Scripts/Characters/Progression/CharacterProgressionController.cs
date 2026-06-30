@@ -1,4 +1,5 @@
 using System;
+using Riftborn.Characters.Core;
 using Riftborn.Characters.Stats;
 using UnityEngine;
 
@@ -122,8 +123,8 @@ namespace Riftborn.Characters.Progression
         public int RemainingStatPoints { get; }
     }
 
-    public sealed class CharacterProgressionController :
-        MonoBehaviour
+    [Serializable]
+    public sealed class CharacterProgressionController
     {
         private const int StatPointsPerLevel = 1;
         private const int RunePointLevelInterval = 5;
@@ -134,7 +135,10 @@ namespace Riftborn.Characters.Progression
         private ExperienceCurveData experienceCurve;
 
         [Header("References")]
-        [SerializeField]
+        [NonSerialized]
+        private CharacterContext context;
+
+        [NonSerialized]
         private CharacterStatsController stats;
 
         [Header("Starting State")]
@@ -314,18 +318,14 @@ namespace Riftborn.Characters.Progression
             }
         }
 
-        private void Awake()
+        public void Initialize(CharacterContext owner)
         {
-            CacheReferences();
+            context = owner;
+            stats = owner?.Stats;
             InitializeFromStartingState();
         }
 
-        private void Reset()
-        {
-            CacheReferences();
-        }
-
-        private void OnValidate()
+        public void Validate()
         {
             startingLevel =
                 Mathf.Max(
@@ -372,8 +372,7 @@ namespace Riftborn.Characters.Progression
             {
                 Debug.LogError(
                     $"[{nameof(CharacterProgressionController)}] " +
-                    "No ExperienceCurveData is assigned.",
-                    this);
+                    "No ExperienceCurveData is assigned.", context);
 
                 return false;
             }
@@ -467,8 +466,7 @@ namespace Riftborn.Characters.Progression
                     $"XP: {currentExperience}/" +
                     $"{ExperienceRequiredForNextLevel} | " +
                     $"Stat Points: {availableStatPoints} | " +
-                    $"Rune Points: {availableRunePoints}",
-                    this);
+                    $"Rune Points: {availableRunePoints}", context);
             }
 
             return appliedExperience > 0;
@@ -485,8 +483,7 @@ namespace Riftborn.Characters.Progression
                 if (showDebugLogs)
                 {
                     Debug.LogWarning(
-                        "[PROGRESSION] No stat points are available.",
-                        this);
+                        "[PROGRESSION] No stat points are available.", context);
                 }
 
                 return false;
@@ -497,8 +494,7 @@ namespace Riftborn.Characters.Progression
                 Debug.LogError(
                     $"[{nameof(CharacterProgressionController)}] " +
                     $"No {nameof(CharacterStatsController)} " +
-                    "is assigned.",
-                    this);
+                    "is assigned.", context);
 
                 return false;
             }
@@ -550,8 +546,7 @@ namespace Riftborn.Characters.Progression
                     $"Base: {oldBaseValue:0.##} -> " +
                     $"{newBaseValue:0.##} | " +
                     $"Remaining stat points: " +
-                    $"{availableStatPoints}",
-                    this);
+                    $"{availableStatPoints}", context);
             }
 
             return true;
@@ -734,8 +729,7 @@ namespace Riftborn.Characters.Progression
                 $"{totalStatPointsEarned} earned | " +
                 $"Rune Points: " +
                 $"{availableRunePoints} available / " +
-                $"{totalRunePointsEarned} earned",
-                this);
+                $"{totalRunePointsEarned} earned", context);
         }
 
         private void InitializeFromStartingState()
@@ -785,8 +779,7 @@ namespace Riftborn.Characters.Progression
             {
                 Debug.LogWarning(
                     $"[{nameof(CharacterProgressionController)}] " +
-                    "Assign an ExperienceCurveData asset.",
-                    this);
+                    "Assign an ExperienceCurveData asset.", context);
             }
         }
 
@@ -940,8 +933,7 @@ namespace Riftborn.Characters.Progression
                     $"{(awardedStatPoints == 1 ? string.Empty : "s")}" +
                     (awardedRunePoints > 0
                         ? $" | +{awardedRunePoints} Rune Point"
-                        : string.Empty),
-                    this);
+                        : string.Empty), context);
             }
         }
 
@@ -956,8 +948,7 @@ namespace Riftborn.Characters.Progression
 
         private void CacheReferences()
         {
-            stats ??=
-                GetComponent<CharacterStatsController>();
+            stats ??= context?.Stats;
         }
     }
 }

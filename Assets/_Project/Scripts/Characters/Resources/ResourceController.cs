@@ -1,4 +1,4 @@
-Ôªøusing System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -50,7 +50,8 @@ namespace Riftborn.Characters.Resources
             Max - OldMax;
     }
 
-    public sealed class ResourceController : MonoBehaviour
+    [Serializable]
+    public sealed class ResourceController
     {
         [Header("Resource")]
         [SerializeField]
@@ -132,13 +133,13 @@ namespace Riftborn.Characters.Resources
         public bool IsFull =>
             currentValue >= maxValue;
 
-        private void Awake()
+        public void Initialize()
         {
             EnsureModifiersInitialized();
             InitializeResource();
         }
 
-        private void Update()
+        public void Tick(float deltaTime)
         {
             if (regenerationPerSecond <= 0f ||
                 currentValue >= maxValue)
@@ -148,10 +149,10 @@ namespace Riftborn.Characters.Resources
 
             Restore(
                 regenerationPerSecond *
-                Time.deltaTime);
+                deltaTime);
         }
 
-        private void OnValidate()
+        public void Validate()
         {
             baseMaxValue =
                 Mathf.Max(
@@ -331,9 +332,8 @@ namespace Riftborn.Characters.Resources
                     modifier.Id))
             {
                 Debug.LogWarning(
-                    $"[RESOURCE] J√° existe um modificador " +
-                    $"com o ID '{modifier.Id}'.",
-                    this);
+                    $"[RESOURCE] J· existe um modificador " +
+                    $"com o ID '{modifier.Id}'.", null);
 
                 return false;
             }
@@ -476,23 +476,22 @@ namespace Riftborn.Characters.Resources
                 $"Tipo: {resourceType} | " +
                 $"Recurso: {currentValue:0.##}/" +
                 $"{maxValue:0.##} | " +
-                $"M√°ximo-base: {baseMaxValue:0.##} | " +
-                $"B√¥nus m√°ximo fixo: {maximumFlat:0.##} | " +
-                $"B√¥nus m√°ximo aditivo: " +
+                $"M·ximo-base: {baseMaxValue:0.##} | " +
+                $"BÙnus m·ximo fixo: {maximumFlat:0.##} | " +
+                $"BÙnus m·ximo aditivo: " +
                 $"{maximumAdditive * 100f:0.##}% | " +
-                $"Multiplicador m√°ximo: " +
+                $"Multiplicador m·ximo: " +
                 $"{maximumMultiplicative:0.##}x | " +
-                $"Regenera√ß√£o: " +
+                $"RegeneraÁ„o: " +
                 $"{regenerationPerSecond:0.##}/s | " +
-                $"Regenera√ß√£o-base: " +
+                $"RegeneraÁ„o-base: " +
                 $"{baseRegenerationPerSecond:0.##}/s | " +
-                $"B√¥nus regenera√ß√£o fixo: " +
+                $"BÙnus regeneraÁ„o fixo: " +
                 $"{regenerationFlat:0.##}/s | " +
-                $"B√¥nus regenera√ß√£o aditivo: " +
+                $"BÙnus regeneraÁ„o aditivo: " +
                 $"{regenerationAdditive * 100f:0.##}% | " +
-                $"Multiplicador regenera√ß√£o: " +
-                $"{regenerationMultiplicative:0.##}x",
-                this);
+                $"Multiplicador regeneraÁ„o: " +
+                $"{regenerationMultiplicative:0.##}x", null);
         }
 
         private void InitializeResource()
@@ -540,7 +539,7 @@ namespace Riftborn.Characters.Resources
 
             /*
              * Preserva a quantidade atual para impedir
-             * recupera√ß√£o gratuita ao trocar equipamentos.
+             * recuperaÁ„o gratuita ao trocar equipamentos.
              */
             float newCurrent =
                 fillToMax

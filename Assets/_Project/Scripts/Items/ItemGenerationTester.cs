@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using Riftborn.Characters.Controllers;
 using Riftborn.Characters.Inventory;
 using UnityEngine;
 
@@ -325,7 +326,7 @@ namespace Riftborn.Items
             }
 
             inventory =
-                FindAnyObjectByType<InventoryController>();
+                FindAnyObjectByType<PlayerController>()?.Inventory;
 
             return inventory != null;
         }

@@ -1,6 +1,7 @@
 using System;
 using Riftborn.Characters.ActionStates;
 using Riftborn.Characters.Combat;
+using Riftborn.Characters.Controllers;
 using Riftborn.Characters.Core;
 using Riftborn.Characters.Health;
 using Riftborn.Characters.Progression;
@@ -23,39 +24,17 @@ namespace Riftborn.Enemies.Core
     }
 
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(CharacterContext))]
-    [RequireComponent(typeof(HealthController))]
-    [RequireComponent(typeof(EnemyAIController))]
-    [RequireComponent(typeof(EnemyMovementController))]
-    [RequireComponent(typeof(CombatController))]
-    [RequireComponent(typeof(EnemyRespawnController))]
-    public sealed class EnemyController : MonoBehaviour
+    public sealed class EnemyController : CharacterContext, ICharacterController
     {
-        [Header("Core")]
-        [SerializeField]
-        private CharacterContext context;
-
-        [SerializeField]
-        private HealthController health;
-
-        [SerializeField]
-        private ActionStateController actionState;
-
-        [SerializeField]
-        private StatusEffectController statusEffects;
-
         [Header("Enemy Systems")]
         [SerializeField]
-        private EnemyAIController ai;
+        private EnemyAIController ai = new();
 
         [SerializeField]
-        private EnemyMovementController movement;
+        private EnemyMovementController enemyMovement = new();
 
         [SerializeField]
-        private CombatController combat;
-
-        [SerializeField]
-        private EnemyRespawnController respawn;
+        private EnemyRespawnController respawn = new();
 
         [Header("Feedback and Rewards")]
         [SerializeField]
@@ -82,8 +61,14 @@ namespace Riftborn.Enemies.Core
         private bool respawnEventSubscribed;
         private bool initialized;
 
+        private CharacterContext context =>
+            this;
+
         public event Action<DamageResult>
             DamageReceived;
+
+        public event Action<DamageResult, DamageApplicationResult>
+            DamageDealt;
 
         public event Action
             Died;
@@ -94,16 +79,21 @@ namespace Riftborn.Enemies.Core
         public EnemyLifeState LifeState =>
             lifeState;
 
+        public CharacterContext ControlledCharacter =>
+            this;
+
+        public bool IsAlive =>
+            lifeState == EnemyLifeState.Alive &&
+            health != null &&
+            !health.IsDead;
+
         public EnemyAIState AIState =>
             ai != null
                 ? ai.CurrentState
                 : EnemyAIState.Dead;
 
         public CharacterContext Context =>
-            context;
-
-        public HealthController Health =>
-            health;
+            this;
 
         public CharacterContext CurrentTarget =>
             ai != null
@@ -112,12 +102,14 @@ namespace Riftborn.Enemies.Core
 
         private void Awake()
         {
+            InitializeCharacterContext();
             CacheReferences();
             InitializeSystems();
         }
 
         private void OnEnable()
         {
+            EnableCharacterContext();
             CacheReferences();
             SubscribeToEvents();
         }
@@ -143,11 +135,14 @@ namespace Riftborn.Enemies.Core
         private void OnDisable()
         {
             UnsubscribeFromEvents();
+            DisableCharacterContext();
         }
 
         private void Reset()
         {
+            CacheAttachedSystems();
             CacheReferences();
+            ValidateCharacterContext();
         }
 
         private void Update()
@@ -165,7 +160,7 @@ namespace Riftborn.Enemies.Core
                 health == null ||
                 health.IsDead)
             {
-                movement?.Stop(
+                enemyMovement?.Stop(
                     deltaTime);
 
                 return;
@@ -188,6 +183,100 @@ namespace Riftborn.Enemies.Core
 
             ExecuteCurrentAIState(
                 deltaTime);
+        }
+
+        public DamageApplicationResult ReceiveDamage(
+            DamageResult result)
+        {
+            CacheReferences();
+
+            DamageRequest request =
+                result?.Request;
+
+            if (request == null ||
+                !IsAlive ||
+                health == null)
+            {
+                return null;
+            }
+
+            if (request.Target != null &&
+                !ReferenceEquals(
+                    request.Target,
+                    context))
+            {
+                return null;
+            }
+
+            DamageApplicationResult application =
+                health.ApplyDamage(
+                    result);
+
+            if (application != null &&
+                application.DamagedHealth)
+            {
+                context?.Events?.
+                    RaiseDamageTaken(
+                        result);
+            }
+
+            return application;
+        }
+
+        public DamageApplicationResult ProcessOutgoingDamage(
+            DamageResult result)
+        {
+            CacheReferences();
+
+            DamageRequest request =
+                result?.Request;
+
+            if (request == null)
+            {
+                return null;
+            }
+
+            if (request.Source != null &&
+                !ReferenceEquals(
+                    request.Source,
+                    context))
+            {
+                return null;
+            }
+
+            DamageApplicationResult application =
+                CharacterControllerResolver.DeliverToTarget(
+                    result);
+
+            if (application == null)
+            {
+                return null;
+            }
+
+            context?.Events?.
+                RaiseDamageDealt(
+                    result);
+
+            if (result.WasCritical)
+            {
+                context?.Events?.
+                    RaiseCriticalHit(
+                        result);
+            }
+
+            if (request.Origin ==
+                DamageOrigin.BasicAttack)
+            {
+                combat?.NotifyBasicAttackResolved(
+                    result,
+                    application);
+            }
+
+            DamageDealt?.Invoke(
+                result,
+                application);
+
+            return application;
         }
 
         public bool SetTarget(
@@ -241,7 +330,7 @@ namespace Riftborn.Enemies.Core
         {
             if (ai == null)
             {
-                movement?.Stop(
+                enemyMovement?.Stop(
                     deltaTime);
 
                 return;
@@ -250,7 +339,7 @@ namespace Riftborn.Enemies.Core
             switch (ai.CurrentState)
             {
                 case EnemyAIState.Idle:
-                    movement?.Stop(
+                    enemyMovement?.Stop(
                         deltaTime);
                     break;
 
@@ -265,13 +354,13 @@ namespace Riftborn.Enemies.Core
                     break;
 
                 case EnemyAIState.Return:
-                    movement?.MoveTo(
+                    enemyMovement?.MoveTo(
                         ai.SpawnPosition,
                         deltaTime);
                     break;
 
                 case EnemyAIState.Dead:
-                    movement?.Stop(
+                    enemyMovement?.Stop(
                         deltaTime);
                     break;
             }
@@ -285,13 +374,13 @@ namespace Riftborn.Enemies.Core
 
             if (target == null)
             {
-                movement?.Stop(
+                enemyMovement?.Stop(
                     deltaTime);
 
                 return;
             }
 
-            movement?.MoveTo(
+            enemyMovement?.MoveTo(
                 target.transform.position,
                 deltaTime);
         }
@@ -304,25 +393,33 @@ namespace Riftborn.Enemies.Core
 
             if (target == null)
             {
-                movement?.Stop(
+                enemyMovement?.Stop(
                     deltaTime);
 
                 return;
             }
 
-            movement?.Stop(
+            enemyMovement?.Stop(
                 deltaTime);
 
             Vector3 targetDirection =
                 target.transform.position -
                 transform.position;
 
-            movement?.FaceDirection(
+            enemyMovement?.FaceDirection(
                 targetDirection,
                 deltaTime);
 
-            combat?.TryBasicAttack(
-                target);
+            if (combat == null ||
+                !combat.TryCreateBasicAttack(
+                    target,
+                    out DamageResult result))
+            {
+                return;
+            }
+
+            ProcessOutgoingDamage(
+                result);
         }
 
         private void HandleDamageTaken(
@@ -333,6 +430,9 @@ namespace Riftborn.Enemies.Core
             {
                 return;
             }
+
+            statusEffects?.NotifyDamageTaken(
+                damageResult);
 
             ai?.NotifyDamageTaken(
                 damageResult);
@@ -356,7 +456,7 @@ namespace Riftborn.Enemies.Core
                 EnemyLifeState.Dead);
 
             ai?.NotifyDeath();
-            movement?.Stop(0f);
+            enemyMovement?.Stop(0f);
             hitFeedback?.ResetFeedback();
             deathFeedback?.PlayDeath();
 
@@ -409,7 +509,7 @@ namespace Riftborn.Enemies.Core
             deathFeedback?.RestoreAfterRevive();
             hitFeedback?.ResetFeedback();
 
-            movement?.Teleport(
+            enemyMovement?.Teleport(
                 result.Position);
 
             transform.rotation =
@@ -483,7 +583,7 @@ namespace Riftborn.Enemies.Core
             if (context == null ||
                 health == null ||
                 ai == null ||
-                movement == null ||
+                enemyMovement == null ||
                 combat == null ||
                 respawn == null)
             {
@@ -515,29 +615,13 @@ namespace Riftborn.Enemies.Core
 
         private void CacheReferences()
         {
-            context ??=
-                GetComponent<CharacterContext>();
+            CacheAttachedSystems();
 
-            health ??=
-                GetComponent<HealthController>();
+            ai ??= new EnemyAIController();
 
-            actionState ??=
-                GetComponent<ActionStateController>();
+            enemyMovement ??= new EnemyMovementController();
 
-            statusEffects ??=
-                GetComponent<StatusEffectController>();
-
-            ai ??=
-                GetComponent<EnemyAIController>();
-
-            movement ??=
-                GetComponent<EnemyMovementController>();
-
-            combat ??=
-                GetComponent<CombatController>();
-
-            respawn ??=
-                GetComponent<EnemyRespawnController>();
+            respawn ??= new EnemyRespawnController();
 
             hitFeedback ??=
                 GetComponent<CharacterHitFeedback>();
@@ -550,6 +634,11 @@ namespace Riftborn.Enemies.Core
 
             experienceReward ??=
                 GetComponent<ExperienceReward>();
+        }
+
+        private void OnValidate()
+        {
+            ValidateCharacterContext();
         }
 
         private void SubscribeToEvents()
@@ -659,7 +748,7 @@ namespace Riftborn.Enemies.Core
                     this);
             }
 
-            if (movement == null)
+            if (enemyMovement == null)
             {
                 Debug.LogError(
                     $"{nameof(EnemyController)} requires an " +

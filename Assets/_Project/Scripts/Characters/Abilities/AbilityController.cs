@@ -1,4 +1,4 @@
-ï»¿using System;
+using System;
 using System.Collections.Generic;
 using Riftborn.Characters.ActionStates;
 using Riftborn.Characters.Core;
@@ -7,7 +7,8 @@ using UnityEngine;
 
 namespace Riftborn.Characters.Abilities
 {
-    public sealed class AbilityController : MonoBehaviour
+    [Serializable]
+    public sealed class AbilityController
     {
         private const float MaximumAdditiveCooldownReduction =
             0.90f;
@@ -21,7 +22,7 @@ namespace Riftborn.Characters.Abilities
             new AbilityBase[8];
 
         [Header("References")]
-        [SerializeField]
+        [NonSerialized]
         private ActionStateController actionState;
 
         private readonly Dictionary<AbilityBase, float>
@@ -46,9 +47,10 @@ namespace Riftborn.Characters.Abilities
         public int SlotCount =>
             equippedAbilities?.Length ?? 0;
 
-        private void Awake()
+        public void Initialize(CharacterContext owner)
         {
-            CacheReferences();
+            context = owner;
+            actionState = owner?.ActionState;
             EnsureModifiersInitialized();
         }
 
@@ -120,8 +122,7 @@ namespace Riftborn.Characters.Abilities
                 }
 
                 Debug.LogException(
-                    exception,
-                    this);
+                    exception, context);
 
                 return false;
             }
@@ -148,8 +149,7 @@ namespace Riftborn.Characters.Abilities
                     $"Custo-base: " +
                     $"{baseResourceCost:0.##} | " +
                     $"Custo final: " +
-                    $"{finalResourceCost:0.##}",
-                    this);
+                    $"{finalResourceCost:0.##}", context);
             }
 
             AbilityUsed?.Invoke(
@@ -428,9 +428,8 @@ namespace Riftborn.Characters.Abilities
                     modifier.Id))
             {
                 Debug.LogWarning(
-                    $"[ABILITY] JÃ¡ existe um modificador " +
-                    $"com o ID '{modifier.Id}'.",
-                    this);
+                    $"[ABILITY] Já existe um modificador " +
+                    $"com o ID '{modifier.Id}'.", context);
 
                 return false;
             }
@@ -581,23 +580,22 @@ namespace Riftborn.Characters.Abilities
                 $"{damageMultiplicative:0.##}x | " +
                 $"Dano de exemplo sobre 25: " +
                 $"{ApplyDamageModifiers(25f):0.##} | " +
-                $"ReduÃ§Ã£o fixa de cooldown: " +
+                $"Redução fixa de cooldown: " +
                 $"{cooldownFlat:0.##}s | " +
-                $"ReduÃ§Ã£o aditiva de cooldown: " +
+                $"Redução aditiva de cooldown: " +
                 $"{cooldownAdditive * 100f:0.##}% | " +
                 $"Multiplicador restante de cooldown: " +
                 $"{cooldownMultiplicative:0.##}x | " +
                 $"Cooldown de exemplo sobre 3s: " +
                 $"{GetModifiedCooldown(3f):0.##}s | " +
-                $"ReduÃ§Ã£o fixa de custo: " +
+                $"Redução fixa de custo: " +
                 $"{costFlat:0.##} | " +
-                $"ReduÃ§Ã£o aditiva de custo: " +
+                $"Redução aditiva de custo: " +
                 $"{costAdditive * 100f:0.##}% | " +
                 $"Multiplicador restante de custo: " +
                 $"{costMultiplicative:0.##}x | " +
                 $"Custo de exemplo sobre 50: " +
-                $"{GetModifiedResourceCost(50f):0.##}",
-                this);
+                $"{GetModifiedResourceCost(50f):0.##}", context);
         }
 
         private bool IsOnCooldown(
@@ -682,8 +680,7 @@ namespace Riftborn.Characters.Abilities
                     $"[ABILITY COOLDOWN] " +
                     $"{ability.AbilityId} | " +
                     $"Base: {baseCooldown:0.##}s | " +
-                    "Final: 0s",
-                    this);
+                    "Final: 0s", context);
 
                 return;
             }
@@ -696,8 +693,7 @@ namespace Riftborn.Characters.Abilities
                 $"[ABILITY COOLDOWN] " +
                 $"{ability.AbilityId} | " +
                 $"Base: {baseCooldown:0.##}s | " +
-                $"Final: {modifiedCooldown:0.##}s",
-                this);
+                $"Final: {modifiedCooldown:0.##}s", context);
         }
 
         private bool TryGetAbility(
@@ -894,11 +890,7 @@ namespace Riftborn.Characters.Abilities
 
         private void CacheReferences()
         {
-            context ??=
-                GetComponent<CharacterContext>();
-
-            actionState ??=
-                GetComponent<ActionStateController>();
+            actionState ??= context?.ActionState;
         }
     }
 }

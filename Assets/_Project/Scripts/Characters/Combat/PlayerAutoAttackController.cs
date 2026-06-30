@@ -14,10 +14,8 @@ namespace Riftborn.Characters.Combat
         OutOfRange = 5,
         ReadyToAttack = 6
     }
-
-    [DisallowMultipleComponent]
-    public sealed class PlayerAutoAttackController :
-        MonoBehaviour
+    [Serializable]
+    public sealed class PlayerAutoAttackController
     {
         [Header("Auto Attack")]
         [SerializeField]
@@ -62,12 +60,12 @@ namespace Riftborn.Characters.Combat
         public AutoAttackDecision CurrentDecision =>
             currentDecision;
 
-        private void OnEnable()
+        public void Initialize()
         {
             ResetRuntimeState();
         }
 
-        private void OnDisable()
+        public void Disable()
         {
             ResetRuntimeState();
         }
@@ -106,8 +104,7 @@ namespace Riftborn.Characters.Combat
                     Debug.Log(
                         $"[AUTO ATTACK] O alvo " +
                         $"'{selectedTarget.name}' " +
-                        "não é mais válido.",
-                        this);
+                        "não é mais válido.", null);
                 }
 
                 currentAutoAttackTarget = null;
@@ -126,8 +123,7 @@ namespace Riftborn.Characters.Combat
                 {
                     Debug.LogWarning(
                         "[AUTO ATTACK] O sistema de combate " +
-                        "do player não está disponível.",
-                        this);
+                        "do player não está disponível.", null);
 
                     warnedAboutUnavailableCombat = true;
                 }
@@ -151,8 +147,7 @@ namespace Riftborn.Characters.Combat
                             $"{selectedTarget.name} está fora " +
                             $"do alcance. Distância: " +
                             $"{distance:0.##} | Alcance: " +
-                            $"{attackRange:0.##}.",
-                            this);
+                            $"{attackRange:0.##}.", null);
                     }
                 }
 
@@ -165,8 +160,7 @@ namespace Riftborn.Characters.Combat
             {
                 Debug.Log(
                     $"[AUTO ATTACK] " +
-                    $"{selectedTarget.name} entrou no alcance.",
-                    this);
+                    $"{selectedTarget.name} entrou no alcance.", null);
             }
 
             waitingForRange = false;
@@ -211,8 +205,7 @@ namespace Riftborn.Characters.Combat
             {
                 Debug.Log(
                     $"[AUTO ATTACK] Auto ataque: " +
-                    $"{(autoAttackEnabled ? "ATIVO" : "INATIVO")}.",
-                    this);
+                    $"{(autoAttackEnabled ? "ATIVO" : "INATIVO")}.", null);
             }
         }
 
@@ -227,8 +220,7 @@ namespace Riftborn.Characters.Combat
             if (showDebugLogs)
             {
                 Debug.Log(
-                    "[AUTO ATTACK] Ataque automático interrompido.",
-                    this);
+                    "[AUTO ATTACK] Ataque automático interrompido.", null);
             }
         }
 
@@ -267,16 +259,14 @@ namespace Riftborn.Characters.Combat
             if (selectedTarget == null)
             {
                 Debug.Log(
-                    "[AUTO ATTACK] Nenhum alvo selecionado.",
-                    this);
+                    "[AUTO ATTACK] Nenhum alvo selecionado.", null);
 
                 return;
             }
 
             Debug.Log(
                 $"[AUTO ATTACK] Novo alvo: " +
-                $"{selectedTarget.name}.",
-                this);
+                $"{selectedTarget.name}.", null);
         }
 
         private AutoAttackDecision SetDecision(

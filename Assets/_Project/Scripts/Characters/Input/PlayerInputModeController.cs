@@ -1,3 +1,4 @@
+using System;
 using Riftborn.Characters.Controllers;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -9,10 +10,8 @@ namespace Riftborn.Characters.Input
         Wasd = 0,
         ClickMove = 1
     }
-
-    [DisallowMultipleComponent]
-    [RequireComponent(typeof(PlayerController))]
-    public sealed class PlayerInputModeController : MonoBehaviour
+    [Serializable]
+    public sealed class PlayerInputModeController
     {
         [Header("References")]
         [SerializeField]
@@ -39,19 +38,17 @@ namespace Riftborn.Characters.Input
         public PlayerInputMode CurrentMode =>
             currentMode;
 
-        private void Awake()
+        public void Initialize(PlayerController controller, WasdPlayerInput wasdModule, ClickMovePlayerInput clickMoveModule)
         {
-            ResolveReferences();
+            playerController = controller;
+            wasdInput = wasdModule;
+            clickMoveInput = clickMoveModule;
             DisableBothInputs();
-        }
-
-        private void Start()
-        {
             SetMode(
                 startingMode);
         }
 
-        private void Update()
+        public void Tick()
         {
             Keyboard keyboard =
                 Keyboard.current;
@@ -90,8 +87,7 @@ namespace Riftborn.Characters.Input
             {
                 Debug.LogWarning(
                     "[INPUT] PlayerController, WasdPlayerInput " +
-                    "ou ClickMovePlayerInput não foi encontrado.",
-                    this);
+                    "ou ClickMovePlayerInput não foi encontrado.", playerController);
 
                 return;
             }
@@ -105,19 +101,18 @@ namespace Riftborn.Characters.Input
             {
                 case PlayerInputMode.Wasd:
                     playerController.ActivateWasdMode();
-                    wasdInput.enabled = true;
+                    wasdInput.Enable();
                     break;
 
                 case PlayerInputMode.ClickMove:
                     playerController.ActivateClickMoveMode();
-                    clickMoveInput.enabled = true;
+                    clickMoveInput.Enable();
                     break;
 
                 default:
                     Debug.LogWarning(
                         $"[INPUT] Modo de input desconhecido: " +
-                        $"{currentMode}.",
-                        this);
+                        $"{currentMode}.", playerController);
                     break;
             }
         }
@@ -142,25 +137,17 @@ namespace Riftborn.Characters.Input
 
             if (wasdInput != null)
             {
-                wasdInput.enabled = false;
+                wasdInput.Disable();
             }
 
             if (clickMoveInput != null)
             {
-                clickMoveInput.enabled = false;
+                clickMoveInput.Disable();
             }
         }
 
         private void ResolveReferences()
         {
-            playerController ??=
-                GetComponent<PlayerController>();
-
-            wasdInput ??=
-                GetComponent<WasdPlayerInput>();
-
-            clickMoveInput ??=
-                GetComponent<ClickMovePlayerInput>();
         }
     }
 }

@@ -1,4 +1,4 @@
-Ôªøusing System;
+using System;
 using Riftborn.Items;
 using UnityEngine;
 
@@ -6,9 +6,9 @@ namespace Riftborn.Characters.Inventory
 {
     /// <summary>
     /// Mantido como camada de compatibilidade para sistemas
-    /// que j√° trabalham com slots e quantidades.
+    /// que j· trabalham com slots e quantidades.
     ///
-    /// O conte√∫do real do slot agora √© uma ItemInstance.
+    /// O conte˙do real do slot agora È uma ItemInstance.
     /// </summary>
     [Serializable]
     public sealed class ItemStack
@@ -69,7 +69,8 @@ namespace Riftborn.Characters.Inventory
         }
     }
 
-    public sealed class InventoryController : MonoBehaviour
+    [Serializable]
+    public sealed class InventoryController
     {
         [Header("Inventory")]
         [SerializeField, Min(1)]
@@ -111,12 +112,12 @@ namespace Riftborn.Characters.Inventory
         public int EmptySlotCount =>
             SlotCount - OccupiedSlotCount;
 
-        private void Awake()
+        public void Initialize()
         {
             EnsureSlots();
         }
 
-        private void OnValidate()
+        public void Validate()
         {
             slotCount =
                 Mathf.Max(
@@ -156,9 +157,9 @@ namespace Riftborn.Characters.Inventory
         }
 
         /// <summary>
-        /// Adiciona uma inst√¢ncia j√° gerada ao invent√°rio.
+        /// Adiciona uma inst‚ncia j· gerada ao invent·rio.
         ///
-        /// Equipamentos preservam exatamente a mesma inst√¢ncia,
+        /// Equipamentos preservam exatamente a mesma inst‚ncia,
         /// incluindo ID, raridade e afixos.
         /// </summary>
         public bool Add(

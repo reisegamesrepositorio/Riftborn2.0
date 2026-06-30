@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Riftborn.Characters.ActionStates;
 using Riftborn.Characters.Core;
+using Riftborn.Characters.Controllers;
 using Riftborn.Characters.Equipment;
 using Riftborn.Characters.Stats;
 using Riftborn.Characters.Targeting;
@@ -11,7 +12,8 @@ using UnityEngine;
 
 namespace Riftborn.Characters.Combat
 {
-    public sealed class CombatController : MonoBehaviour
+    [Serializable]
+    public sealed class CombatController
     {
         [Header("Unarmed / Fallback Damage")]
         [SerializeField, Min(0f)]
@@ -40,13 +42,13 @@ namespace Riftborn.Characters.Combat
         private float criticalMultiplier = 1.5f;
 
         [Header("References")]
-        [SerializeField]
+        [NonSerialized]
         private ActionStateController actionState;
 
         [SerializeField]
         private TargetingController targeting;
 
-        [SerializeField]
+        [NonSerialized]
         private CharacterStatsController stats;
 
         [SerializeField]
@@ -146,15 +148,36 @@ namespace Riftborn.Characters.Combat
                     EquipmentSlot.Weapon)
                 : null;
 
-        private void Awake()
+        public void Initialize(CharacterContext owner, TargetingController targetingModule, EquipmentController equipmentModule)
         {
-            CacheReferences();
+            context = owner;
+            actionState = owner?.ActionState;
+            stats = owner?.Stats;
+            targeting = targetingModule ?? targeting;
+            equipment = equipmentModule ?? equipment;
             EnsureModifiersInitialized();
         }
 
         public bool TryBasicAttack(
             CharacterContext target = null)
         {
+            if (!TryCreateBasicAttack(
+                    target,
+                    out DamageResult result))
+            {
+                return false;
+            }
+
+            return CharacterControllerResolver.RouteDamage(
+                       result) != null;
+        }
+
+        public bool TryCreateBasicAttack(
+            CharacterContext target,
+            out DamageResult damageResult)
+        {
+            damageResult = null;
+
             CacheReferences();
 
             target ??=
@@ -168,11 +191,6 @@ namespace Riftborn.Characters.Combat
             float currentAttackInterval =
                 CalculateAttackInterval();
 
-            float currentAttacksPerSecond =
-                currentAttackInterval > 0f
-                    ? 1f / currentAttackInterval
-                    : 0f;
-
             nextAttackTime =
                 Time.time +
                 currentAttackInterval;
@@ -183,14 +201,34 @@ namespace Riftborn.Characters.Combat
                 RaiseBasicAttackStarted();
 
             DamageRequest request =
-                CreateBasicAttackRequest(target);
+                CreateBasicAttackRequest(
+                    target);
 
-            DamageResult damageResult =
-                DamageCalculator.Calculate(request);
+            damageResult =
+                DamageCalculator.Calculate(
+                    request);
 
-            DamageApplicationResult applicationResult =
-                target.Health.ApplyDamage(
-                    damageResult);
+            return damageResult != null;
+        }
+
+        public void NotifyBasicAttackResolved(
+            DamageResult damageResult,
+            DamageApplicationResult applicationResult)
+        {
+            CacheReferences();
+
+            DamageRequest request =
+                damageResult?.Request;
+
+            if (request == null ||
+                applicationResult == null ||
+                request.Origin != DamageOrigin.BasicAttack ||
+                !ReferenceEquals(
+                    request.Source,
+                    context))
+            {
+                return;
+            }
 
             BasicAttackHit?.Invoke(
                 damageResult);
@@ -199,43 +237,24 @@ namespace Riftborn.Characters.Combat
                 RaiseBasicAttackHit(
                     damageResult);
 
-            if (applicationResult != null)
-            {
-                context?.Events?.
-                    RaiseDamageDealt(
-                        damageResult);
-            }
+            float interval =
+                CalculateAttackInterval();
 
-            if (applicationResult != null &&
-                applicationResult.DamagedHealth)
-            {
-                target.Events?.
-                    RaiseDamageTaken(
-                        damageResult);
-            }
-
-            if (damageResult.WasCritical)
-            {
-                context?.Events?.
-                    RaiseCriticalHit(
-                        damageResult);
-            }
+            float attacksPerSecond =
+                interval > 0f
+                    ? 1f / interval
+                    : 0f;
 
             Debug.Log(
-                $"[COMBAT] Ataque básico causou " +
-                $"{damageResult.FinalAmount:0.##} de dano. " +
-                $"Faixa: " +
-                $"{MinimumBasicAttackDamage:0.##}–" +
+                $"[COMBAT] Ataque básico processado | " +
+                $"Dano calculado: {damageResult.FinalAmount:0.##} | " +
+                $"Dano na vida: {applicationResult.HealthDamage:0.##} | " +
+                $"Faixa: {MinimumBasicAttackDamage:0.##}–" +
                 $"{MaximumBasicAttackDamage:0.##} | " +
-                $"Intervalo: " +
-                $"{currentAttackInterval:0.###}s | " +
-                $"Ataques/s: " +
-                $"{currentAttacksPerSecond:0.##} | " +
+                $"Intervalo: {interval:0.###}s | " +
+                $"Ataques/s: {attacksPerSecond:0.##} | " +
                 $"Crítico: " +
-                $"{(damageResult.WasCritical ? "SIM" : "NÃO")}.",
-                this);
-
-            return true;
+                $"{(damageResult.WasCritical ? "SIM" : "NÃO")}.", context);
         }
 
         [ContextMenu("Log Current Combat Values")]
@@ -269,8 +288,7 @@ namespace Riftborn.Characters.Combat
                 $"Crítico: " +
                 $"{CurrentCriticalChance * 100f:0.##}% | " +
                 $"Multiplicador crítico: " +
-                $"{CurrentCriticalMultiplier:0.##}x",
-                this);
+                $"{CurrentCriticalMultiplier:0.##}x", context);
         }
 
         public bool CanAttack(
@@ -327,7 +345,7 @@ namespace Riftborn.Characters.Combat
 
             float distance =
                 Vector3.Distance(
-                    transform.position,
+                    context.transform.position,
                     target.transform.position);
 
             return distance <= attackRange;
@@ -348,8 +366,7 @@ namespace Riftborn.Characters.Combat
             {
                 Debug.LogWarning(
                     $"[COMBAT] Já existe um modificador " +
-                    $"com o ID '{modifier.Id}'.",
-                    this);
+                    $"com o ID '{modifier.Id}'.", context);
 
                 return false;
             }
@@ -751,23 +768,11 @@ namespace Riftborn.Characters.Combat
 
         private void CacheReferences()
         {
-            context ??=
-                GetComponent<CharacterContext>();
-
-            actionState ??=
-                GetComponent<ActionStateController>();
-
-            targeting ??=
-                GetComponent<TargetingController>();
-
-            stats ??=
-                GetComponent<CharacterStatsController>();
-
-            equipment ??=
-                GetComponent<EquipmentController>();
+            actionState ??= context?.ActionState;
+            stats ??= context?.Stats;
         }
 
-        private void OnValidate()
+        public void Validate()
         {
             basicAttackBaseDamage =
                 Mathf.Max(

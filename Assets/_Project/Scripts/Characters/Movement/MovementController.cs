@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using Riftborn.Characters.ActionStates;
+using Riftborn.Characters.Core;
 using UnityEngine;
 
 namespace Riftborn.Characters.Movement
 {
-    public sealed class MovementController : MonoBehaviour
+    [Serializable]
+    public sealed class MovementController
     {
         [Header("Movement")]
         [SerializeField] private MovementMode movementMode = MovementMode.WASD;
@@ -20,8 +22,9 @@ namespace Riftborn.Characters.Movement
         [SerializeField] private float groundedStickForce = -2f;
 
         [Header("References")]
-        [SerializeField] private ActionStateController actionState;
+        [NonSerialized] private ActionStateController actionState;
         [SerializeField] private CharacterController characterController;
+        [NonSerialized] private Transform ownerTransform;
         [SerializeField] private Transform cameraTransform;
 
         private readonly Dictionary<object, float> slowsBySource = new();
@@ -50,8 +53,12 @@ namespace Riftborn.Characters.Movement
         public bool CanMove => actionState == null || actionState.CanMove;
         public Vector2 MoveInput => moveInput;
 
-        private void Awake()
+        public void Initialize(CharacterContext owner, CharacterController controller, Transform camera)
         {
+            ownerTransform = owner != null ? owner.transform : null;
+            actionState = owner?.ActionState;
+            characterController = controller != null ? controller : characterController;
+            cameraTransform = camera != null ? camera : cameraTransform;
             CacheReferences();
 
             clickToMoveActive =
@@ -61,12 +68,12 @@ namespace Riftborn.Characters.Movement
                     StringComparison.OrdinalIgnoreCase);
         }
 
-        private void Update()
+        public void Tick(float deltaTime)
         {
-            TickMovement(Time.deltaTime);
+            TickMovement(deltaTime);
         }
 
-        private void OnValidate()
+        public void Validate()
         {
             moveSpeed = Mathf.Max(0f, moveSpeed);
             rotationSpeed = Mathf.Max(0f, rotationSpeed);
@@ -128,13 +135,13 @@ namespace Riftborn.Characters.Movement
             if (characterController != null)
             {
                 characterController.enabled = false;
-                transform.position = position;
+                ownerTransform.position = position;
                 characterController.enabled = true;
                 verticalVelocity = 0f;
                 return;
             }
 
-            transform.position = position;
+            ownerTransform.position = position;
             verticalVelocity = 0f;
         }
 
@@ -207,8 +214,7 @@ namespace Riftborn.Characters.Movement
             if (modifiersById.ContainsKey(modifier.Id))
             {
                 Debug.LogWarning(
-                    $"[MOVEMENT] Já existe um modificador com o ID '{modifier.Id}'.",
-                    this);
+                    $"[MOVEMENT] Já existe um modificador com o ID '{modifier.Id}'.", ownerTransform);
 
                 return false;
             }
@@ -366,8 +372,7 @@ namespace Riftborn.Characters.Movement
                 $"Multiplicador: {multiplicativeFactor:0.##}x | " +
                 $"Velocidade modificada: {GetModifiedMoveSpeed():0.##} | " +
                 $"Slow mais forte: {strongestSlow * 100f:0.##}% | " +
-                $"Velocidade atual: {GetCurrentMoveSpeed():0.##}",
-                this);
+                $"Velocidade atual: {GetCurrentMoveSpeed():0.##}", ownerTransform);
         }
 
         private Vector3 GetClickToMoveDirection(float deltaTime)
@@ -377,7 +382,7 @@ namespace Riftborn.Characters.Movement
                 return Vector3.zero;
             }
 
-            Vector3 offset = clickDestination - transform.position;
+            Vector3 offset = clickDestination - ownerTransform.position;
             offset.y = 0f;
 
             float distance = offset.magnitude;
@@ -421,7 +426,7 @@ namespace Riftborn.Characters.Movement
             }
             else
             {
-                transform.position += motion;
+                ownerTransform.position += motion;
             }
 
             if (CanMove && direction.sqrMagnitude > 0.0001f)
@@ -509,17 +514,14 @@ namespace Riftborn.Characters.Movement
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
 
-            transform.rotation = Quaternion.Slerp(
-                transform.rotation,
+            ownerTransform.rotation = Quaternion.Slerp(
+                ownerTransform.rotation,
                 targetRotation,
                 Mathf.Clamp01(rotationSpeed * deltaTime));
         }
 
         private void CacheReferences()
         {
-            actionState ??= GetComponent<ActionStateController>();
-            characterController ??= GetComponent<CharacterController>();
-
             if (cameraTransform == null && Camera.main != null)
             {
                 cameraTransform = Camera.main.transform;

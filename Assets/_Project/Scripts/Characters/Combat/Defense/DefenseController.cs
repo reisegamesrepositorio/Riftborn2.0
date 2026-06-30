@@ -22,10 +22,12 @@ namespace Riftborn.Characters.Defense
 
         public float NewValue { get; }
 
-        public float Delta => NewValue - OldValue;
+        public float Delta =>
+            NewValue - OldValue;
     }
 
-    public sealed class DefenseController : MonoBehaviour
+    [Serializable]
+    public sealed class DefenseController
     {
         [Header("Base Defenses")]
         [SerializeField, Min(0f)]
@@ -34,34 +36,48 @@ namespace Riftborn.Characters.Defense
         [SerializeField, Min(0f)]
         private float baseMagicalDefense;
 
-        private readonly Dictionary<DefenseType, List<DefenseModifier>>
+        private Dictionary<
+            DefenseType,
+            List<DefenseModifier>>
             modifiersByType = new();
 
-        private readonly Dictionary<string, DefenseModifier>
-            modifiersById = new(StringComparer.Ordinal);
+        private Dictionary<string, DefenseModifier>
+            modifiersById =
+                new(StringComparer.Ordinal);
 
-        private readonly Dictionary<DefenseType, float>
+        private Dictionary<DefenseType, float>
             cachedFinalValues = new();
+
+        [NonSerialized]
+        private UnityEngine.Object owner;
 
         private bool initialized;
 
-        public event Action<DefenseChangedEventArgs> DefenseChanged;
+        public event Action<DefenseChangedEventArgs>
+            DefenseChanged;
 
-        private void Awake()
+        public void Initialize(
+            UnityEngine.Object ownerContext)
         {
+            owner = ownerContext;
             EnsureInitialized();
         }
 
-        private void OnValidate()
+        public void Validate()
         {
             basePhysicalDefense =
-                Mathf.Max(0f, basePhysicalDefense);
+                Mathf.Max(
+                    0f,
+                    basePhysicalDefense);
 
             baseMagicalDefense =
-                Mathf.Max(0f, baseMagicalDefense);
+                Mathf.Max(
+                    0f,
+                    baseMagicalDefense);
         }
 
-        public float GetBaseValue(DefenseType defenseType)
+        public float GetBaseValue(
+            DefenseType defenseType)
         {
             return defenseType switch
             {
@@ -78,11 +94,13 @@ namespace Riftborn.Characters.Defense
             };
         }
 
-        public float GetFinalValue(DefenseType defenseType)
+        public float GetFinalValue(
+            DefenseType defenseType)
         {
             EnsureInitialized();
 
-            return cachedFinalValues[defenseType];
+            return cachedFinalValues[
+                defenseType];
         }
 
         public void SetBaseValue(
@@ -91,16 +109,21 @@ namespace Riftborn.Characters.Defense
         {
             EnsureInitialized();
 
-            float safeValue = Mathf.Max(0f, value);
+            float safeValue =
+                Mathf.Max(
+                    0f,
+                    value);
 
             switch (defenseType)
             {
                 case DefenseType.Physical:
-                    basePhysicalDefense = safeValue;
+                    basePhysicalDefense =
+                        safeValue;
                     break;
 
                 case DefenseType.Magical:
-                    baseMagicalDefense = safeValue;
+                    baseMagicalDefense =
+                        safeValue;
                     break;
 
                 default:
@@ -113,7 +136,8 @@ namespace Riftborn.Characters.Defense
             Recalculate(defenseType);
         }
 
-        public bool AddModifier(DefenseModifier modifier)
+        public bool AddModifier(
+            DefenseModifier modifier)
         {
             if (modifier == null)
             {
@@ -122,31 +146,36 @@ namespace Riftborn.Characters.Defense
 
             EnsureInitialized();
 
-            if (modifiersById.ContainsKey(modifier.Id))
+            if (modifiersById.ContainsKey(
+                    modifier.Id))
             {
                 Debug.LogWarning(
                     $"A defense modifier with ID " +
                     $"'{modifier.Id}' is already active.",
-                    this);
+                    owner);
 
                 return false;
             }
 
-            modifiersByType[modifier.DefenseType]
+            modifiersByType[
+                    modifier.DefenseType]
                 .Add(modifier);
 
             modifiersById.Add(
                 modifier.Id,
                 modifier);
 
-            Recalculate(modifier.DefenseType);
+            Recalculate(
+                modifier.DefenseType);
 
             return true;
         }
 
-        public bool RemoveModifier(string modifierId)
+        public bool RemoveModifier(
+            string modifierId)
         {
-            if (string.IsNullOrWhiteSpace(modifierId))
+            if (string.IsNullOrWhiteSpace(
+                    modifierId))
             {
                 return false;
             }
@@ -160,21 +189,25 @@ namespace Riftborn.Characters.Defense
                 return false;
             }
 
-            modifiersById.Remove(modifierId);
+            modifiersById.Remove(
+                modifierId);
 
             bool removed =
-                modifiersByType[modifier.DefenseType]
+                modifiersByType[
+                        modifier.DefenseType]
                     .Remove(modifier);
 
             if (removed)
             {
-                Recalculate(modifier.DefenseType);
+                Recalculate(
+                    modifier.DefenseType);
             }
 
             return removed;
         }
 
-        public int RemoveModifiersFromSource(object source)
+        public int RemoveModifiersFromSource(
+            object source)
         {
             if (source == null)
             {
@@ -185,35 +218,43 @@ namespace Riftborn.Characters.Defense
 
             int totalRemoved = 0;
 
-            HashSet<DefenseType> changedTypes = new();
+            HashSet<DefenseType> changedTypes =
+                new();
 
             foreach (
-                KeyValuePair<DefenseType, List<DefenseModifier>> pair
+                KeyValuePair<
+                    DefenseType,
+                    List<DefenseModifier>> pair
                 in modifiersByType)
             {
-                List<DefenseModifier> modifiers = pair.Value;
+                List<DefenseModifier> modifiers =
+                    pair.Value;
 
-                for (int index = modifiers.Count - 1;
+                for (int index =
+                         modifiers.Count - 1;
                      index >= 0;
                      index--)
                 {
                     DefenseModifier modifier =
                         modifiers[index];
 
-                    if (!Equals(modifier.Source, source))
+                    if (!Equals(
+                            modifier.Source,
+                            source))
                     {
                         continue;
                     }
 
                     modifiers.RemoveAt(index);
                     modifiersById.Remove(modifier.Id);
-
                     totalRemoved++;
                     changedTypes.Add(pair.Key);
                 }
             }
 
-            foreach (DefenseType defenseType in changedTypes)
+            foreach (
+                DefenseType defenseType
+                in changedTypes)
             {
                 Recalculate(defenseType);
             }
@@ -221,16 +262,19 @@ namespace Riftborn.Characters.Defense
             return totalRemoved;
         }
 
-        public bool HasModifier(string modifierId)
+        public bool HasModifier(
+            string modifierId)
         {
-            if (string.IsNullOrWhiteSpace(modifierId))
+            if (string.IsNullOrWhiteSpace(
+                    modifierId))
             {
                 return false;
             }
 
             EnsureInitialized();
 
-            return modifiersById.ContainsKey(modifierId);
+            return modifiersById.ContainsKey(
+                modifierId);
         }
 
         private void EnsureInitialized()
@@ -240,9 +284,26 @@ namespace Riftborn.Characters.Defense
                 return;
             }
 
+            Validate();
+
+            modifiersByType ??=
+                new Dictionary<DefenseType, List<DefenseModifier>>();
+
+            modifiersById ??=
+                new Dictionary<string, DefenseModifier>(
+                    StringComparer.Ordinal);
+
+            cachedFinalValues ??=
+                new Dictionary<DefenseType, float>();
+
+            modifiersByType.Clear();
+            modifiersById.Clear();
+            cachedFinalValues.Clear();
+
             foreach (
                 DefenseType defenseType
-                in Enum.GetValues(typeof(DefenseType)))
+                in Enum.GetValues(
+                    typeof(DefenseType)))
             {
                 modifiersByType[defenseType] =
                     new List<DefenseModifier>();
@@ -254,15 +315,18 @@ namespace Riftborn.Characters.Defense
             initialized = true;
         }
 
-        private void Recalculate(DefenseType defenseType)
+        private void Recalculate(
+            DefenseType defenseType)
         {
             EnsureInitialized();
 
             float oldValue =
-                cachedFinalValues[defenseType];
+                cachedFinalValues[
+                    defenseType];
 
             float newValue =
-                CalculateFinalValue(defenseType);
+                CalculateFinalValue(
+                    defenseType);
 
             cachedFinalValues[defenseType] =
                 newValue;
@@ -289,30 +353,38 @@ namespace Riftborn.Characters.Defense
             float multiplicativeFactor = 1f;
 
             List<DefenseModifier> modifiers =
-                modifiersByType[defenseType];
+                modifiersByType[
+                    defenseType];
 
-            foreach (DefenseModifier modifier in modifiers)
+            foreach (
+                DefenseModifier modifier
+                in modifiers)
             {
-                flatTotal += modifier.FlatValue;
+                flatTotal +=
+                    modifier.FlatValue;
 
                 additivePercentTotal +=
                     modifier.AdditivePercent;
 
                 multiplicativeFactor *=
-                    1f + modifier.MultiplicativePercent;
+                    1f +
+                    modifier.MultiplicativePercent;
             }
 
             float finalValue =
-                GetBaseValue(defenseType);
+                GetBaseValue(
+                    defenseType);
 
-            finalValue += flatTotal;
+            finalValue +=
+                flatTotal;
 
             finalValue *=
-                1f + additivePercentTotal;
+                1f +
+                additivePercentTotal;
 
-            finalValue *= multiplicativeFactor;
+            finalValue *=
+                multiplicativeFactor;
 
-            // Permitimos defesa negativa por causa de debuffs.
             return finalValue;
         }
     }

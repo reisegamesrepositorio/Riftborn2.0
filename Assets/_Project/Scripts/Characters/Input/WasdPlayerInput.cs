@@ -1,12 +1,12 @@
+using System;
 using Riftborn.Characters.Controllers;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Riftborn.Characters.Input
 {
-    [DisallowMultipleComponent]
-    [RequireComponent(typeof(PlayerController))]
-    public sealed class WasdPlayerInput : MonoBehaviour
+    [Serializable]
+    public sealed class WasdPlayerInput
     {
         [Header("References")]
         [SerializeField]
@@ -31,24 +31,23 @@ namespace Riftborn.Characters.Input
         [SerializeField]
         private Key basicAttackKey = Key.Space;
 
-        private void Awake()
+        public void Initialize(PlayerController controller)
         {
-            ResolveReferences();
+            playerController = controller;
         }
 
-        private void OnEnable()
+        public void Enable()
         {
-            ResolveReferences();
             playerController?.ActivateWasdMode();
         }
 
-        private void OnDisable()
+        public void Disable()
         {
             playerController?.SetMoveInput(
                 Vector2.zero);
         }
 
-        private void Update()
+        public void Tick()
         {
             Keyboard keyboard =
                 Keyboard.current;
@@ -156,8 +155,6 @@ namespace Riftborn.Characters.Input
 
         private void ResolveReferences()
         {
-            playerController ??=
-                GetComponent<PlayerController>();
         }
     }
 }

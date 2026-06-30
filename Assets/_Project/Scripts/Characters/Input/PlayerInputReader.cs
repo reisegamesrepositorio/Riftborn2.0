@@ -7,9 +7,8 @@ using UnityEngine.InputSystem;
 
 namespace Riftborn.Characters.Input
 {
-    [DisallowMultipleComponent]
-    [RequireComponent(typeof(PlayerController))]
-    public sealed class PlayerInputReader : MonoBehaviour
+    [Serializable]
+    public sealed class PlayerInputReader
     {
         [Header("Input Action")]
         [SerializeField]
@@ -45,6 +44,9 @@ namespace Riftborn.Characters.Input
         [SerializeField]
         private CharacterContext selfContext;
 
+        [NonSerialized]
+        private Transform selfTransform;
+
         [Header("Debug")]
         [SerializeField]
         private bool showDebugLogs = true;
@@ -52,26 +54,22 @@ namespace Riftborn.Characters.Input
         private InputAction selectTargetAction;
         private bool ownsSelectTargetAction;
 
-        private void Awake()
+        public void Initialize(PlayerController controller, CharacterContext self)
         {
+            playerController = controller;
+            selfContext = self;
+            selfTransform = self != null ? self.transform : null;
             CacheReferences();
             ResolveAction();
-        }
-
-        private void OnEnable()
-        {
-            CacheReferences();
-            ResolveAction();
-
             selectTargetAction?.Enable();
         }
 
-        private void OnDisable()
+        public void Disable()
         {
             selectTargetAction?.Disable();
         }
 
-        private void OnDestroy()
+        public void Dispose()
         {
             if (ownsSelectTargetAction)
             {
@@ -79,7 +77,7 @@ namespace Riftborn.Characters.Input
             }
         }
 
-        private void OnValidate()
+        public void Validate()
         {
             selectionDistance =
                 Mathf.Max(
@@ -87,7 +85,7 @@ namespace Riftborn.Characters.Input
                     selectionDistance);
         }
 
-        private void Update()
+        public void Tick()
         {
             ReadTargetSelection();
         }
@@ -129,8 +127,7 @@ namespace Riftborn.Characters.Input
                 Debug.LogWarning(
                     "[TARGETING INPUT] Não foi possível processar " +
                     "a seleção. Verifique a câmera e o " +
-                    "PlayerController.",
-                    this);
+                    "PlayerController.", playerController);
 
                 return;
             }
@@ -218,8 +215,7 @@ namespace Riftborn.Characters.Input
                 {
                     Debug.Log(
                         "[TARGETING INPUT] Nenhum alvo válido " +
-                        "encontrado. Seleção removida.",
-                        this);
+                        "encontrado. Seleção removida.", playerController);
                 }
 
                 return;
@@ -240,8 +236,7 @@ namespace Riftborn.Characters.Input
             Debug.Log(
                 $"[TARGETING INPUT] Nenhum novo alvo válido " +
                 $"encontrado{hitName}. Alvo atual mantido: " +
-                $"{(currentTarget != null ? currentTarget.name : "Nenhum")}.",
-                this);
+                $"{(currentTarget != null ? currentTarget.name : "Nenhum")}.", playerController);
         }
 
         private bool IsSelf(
@@ -260,9 +255,9 @@ namespace Riftborn.Characters.Input
                 return true;
             }
 
-            return candidate.transform == transform ||
-                   candidate.transform.IsChildOf(transform) ||
-                   transform.IsChildOf(candidate.transform);
+            return candidate.transform == selfTransform ||
+                   candidate.transform.IsChildOf(selfTransform) ||
+                   selfTransform != null && selfTransform.IsChildOf(candidate.transform);
         }
 
         private static int CompareHitsByDistance(
@@ -320,12 +315,6 @@ namespace Riftborn.Characters.Input
 
         private void CacheReferences()
         {
-            playerController ??=
-                GetComponent<PlayerController>();
-
-            selfContext ??=
-                GetComponent<CharacterContext>();
-
             if (selectionCamera == null)
             {
                 selectionCamera =

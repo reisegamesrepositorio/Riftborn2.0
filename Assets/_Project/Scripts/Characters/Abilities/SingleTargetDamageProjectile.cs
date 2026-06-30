@@ -1,4 +1,5 @@
 using Riftborn.Characters.Core;
+using Riftborn.Characters.Controllers;
 using Riftborn.Damage;
 using UnityEngine;
 
@@ -244,7 +245,8 @@ namespace Riftborn.Characters.Abilities
                     damageRequest);
 
             DamageApplicationResult application =
-                target.Health.ApplyDamage(result);
+                CharacterControllerResolver.RouteDamage(
+                    result);
 
             if (application != null)
             {

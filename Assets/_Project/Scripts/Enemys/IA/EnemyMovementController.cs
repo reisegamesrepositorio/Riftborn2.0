@@ -1,11 +1,12 @@
+using System;
 using Riftborn.Characters.ActionStates;
+using Riftborn.Characters.Core;
 using UnityEngine;
 
 namespace Riftborn.Enemies.Movement
 {
-    [DisallowMultipleComponent]
-    [RequireComponent(typeof(CharacterController))]
-    public sealed class EnemyMovementController : MonoBehaviour
+    [Serializable]
+    public sealed class EnemyMovementController
     {
         [Header("Movement")]
         [SerializeField, Min(0f)]
@@ -25,7 +26,10 @@ namespace Riftborn.Enemies.Movement
         [SerializeField]
         private CharacterController characterController;
 
-        [SerializeField]
+        [NonSerialized]
+        private Transform ownerTransform;
+
+        [NonSerialized]
         private ActionStateController actionState;
 
         private float verticalVelocity;
@@ -37,17 +41,14 @@ namespace Riftborn.Enemies.Movement
             actionState == null ||
             actionState.CanMove;
 
-        private void Awake()
+        public void Initialize(CharacterContext owner, CharacterController controller)
         {
-            CacheReferences();
+            ownerTransform = owner != null ? owner.transform : null;
+            actionState = owner?.ActionState;
+            characterController = controller != null ? controller : characterController;
         }
 
-        private void Reset()
-        {
-            CacheReferences();
-        }
-
-        private void OnValidate()
+        public void Validate()
         {
             moveSpeed =
                 Mathf.Max(
@@ -84,7 +85,7 @@ namespace Riftborn.Enemies.Movement
 
             Vector3 direction =
                 destination -
-                transform.position;
+                ownerTransform.position;
 
             direction.y = 0f;
 
@@ -139,9 +140,9 @@ namespace Riftborn.Enemies.Movement
                     direction.normalized,
                     Vector3.up);
 
-            transform.rotation =
+            ownerTransform.rotation =
                 Quaternion.RotateTowards(
-                    transform.rotation,
+                    ownerTransform.rotation,
                     targetRotation,
                     rotationSpeed *
                     deltaTime);
@@ -153,7 +154,7 @@ namespace Riftborn.Enemies.Movement
 
             if (characterController == null)
             {
-                transform.position =
+                ownerTransform.position =
                     position;
 
                 verticalVelocity = 0f;
@@ -166,7 +167,7 @@ namespace Riftborn.Enemies.Movement
             characterController.enabled =
                 false;
 
-            transform.position =
+            ownerTransform.position =
                 position;
 
             characterController.enabled =
@@ -225,11 +226,6 @@ namespace Riftborn.Enemies.Movement
 
         private void CacheReferences()
         {
-            characterController ??=
-                GetComponent<CharacterController>();
-
-            actionState ??=
-                GetComponent<ActionStateController>();
         }
     }
 }

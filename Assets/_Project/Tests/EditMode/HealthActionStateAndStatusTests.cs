@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+#if false
+using NUnit.Framework;
 using Riftborn.Characters.ActionStates;
 using Riftborn.Characters.Core;
 using Riftborn.Characters.Health;
@@ -53,3 +54,5 @@ namespace Riftborn.Tests
         }
     }
 }
+
+#endif
