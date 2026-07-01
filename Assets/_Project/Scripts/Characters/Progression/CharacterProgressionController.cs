@@ -129,6 +129,8 @@ namespace Riftborn.Characters.Progression
         private const int StatPointsPerLevel = 1;
         private const int RunePointLevelInterval = 5;
         private const float BaseStatIncreasePerPoint = 1f;
+        private const string DefaultExperienceCurveAssetPath =
+            "Assets/_Project/Scripts/Characters/Progression/ExperienceCurve_Default.asset";
 
         [Header("Progression Data")]
         [SerializeField]
@@ -322,11 +324,14 @@ namespace Riftborn.Characters.Progression
         {
             context = owner;
             stats = owner?.Stats;
+            AssignDefaultExperienceCurveIfMissing();
             InitializeFromStartingState();
         }
 
         public void Validate()
         {
+            AssignDefaultExperienceCurveIfMissing();
+
             startingLevel =
                 Mathf.Max(
                     1,
@@ -732,6 +737,20 @@ namespace Riftborn.Characters.Progression
                 $"{totalRunePointsEarned} earned", context);
         }
 
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        private void AssignDefaultExperienceCurveIfMissing()
+        {
+#if UNITY_EDITOR
+            if (experienceCurve != null)
+            {
+                return;
+            }
+
+            experienceCurve =
+                UnityEditor.AssetDatabase.LoadAssetAtPath<ExperienceCurveData>(
+                    DefaultExperienceCurveAssetPath);
+#endif
+        }
         private void InitializeFromStartingState()
         {
             if (initialized)

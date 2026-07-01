@@ -505,7 +505,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aebeb96c44fe25248b0564702ab80572, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Cameras.IsometricCameraFollow
-  target: {fileID: 0}
+  target: {fileID: 730023796}
   lockFocusHeight: 1
   fixedFocusHeight: 0
   focusOffset: {x: 0, y: 0, z: 0}
@@ -900,7 +900,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3303734996823894403, guid: 140a83c3e165b56408f5f14655e2a89d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5
+      value: -11.48
       objectReference: {fileID: 0}
     - target: {fileID: 3303734996823894403, guid: 140a83c3e165b56408f5f14655e2a89d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -908,7 +908,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3303734996823894403, guid: 140a83c3e165b56408f5f14655e2a89d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.93242
+      value: -5.65
       objectReference: {fileID: 0}
     - target: {fileID: 3303734996823894403, guid: 140a83c3e165b56408f5f14655e2a89d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -938,6 +938,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5045558392870760210, guid: 140a83c3e165b56408f5f14655e2a89d, type: 3}
+      propertyPath: respawnPoint
+      value: 
+      objectReference: {fileID: 1118752615}
     - target: {fileID: 5045558392870760210, guid: 140a83c3e165b56408f5f14655e2a89d, type: 3}
       propertyPath: showDebugLogs
       value: 0
@@ -1109,7 +1113,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1118752615}
-  - component: {fileID: 1118752616}
   m_Layer: 0
   m_Name: PlayerSpawnPoint
   m_TagString: Untagged
@@ -1132,36 +1135,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 295326647}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1118752616
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1118752614}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c5f3cb7ac16a4844d89ba18f884cde27, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Enemies.Respawn.EnemyRespawnController
-  respawnDelay: 5
-  respawnHealthPercent: 1
-  respawnPoint: {fileID: 1118752615}
-  restoreSpawnRotation: 1
-  clearStatusEffectsOnRespawn: 1
-  clearActionBlocksOnRespawn: 1
-  snapRespawnToGround: 1
-  groundMask:
-    serializedVersion: 2
-    m_Bits: 8
-  groundProbeHeight: 5
-  groundProbeDepth: 20
-  groundClearance: 0.05
-  requireGroundForRespawn: 1
-  groundRetryInterval: 1
-  characterController: {fileID: 0}
-  isWaitingForRespawn: 0
-  showDebugLogs: 1
 --- !u!1 &1413264101
 GameObject:
   m_ObjectHideFlags: 0
@@ -1834,176 +1807,6 @@ MonoBehaviour:
   inventory:
     slotCount: 30
     slots: []
-  equipment:
-    combat:
-      basicAttackBaseDamage: 10
-      damagePerSTR: 1
-      baseAttackInterval: 1.5
-      attackSpeedPerDEX: 0.02
-      attackRange: 2
-      criticalChance: 0.05
-      criticalMultiplier: 1.5
-      equipment:
-        combat:
-          basicAttackBaseDamage: 10
-          damagePerSTR: 1
-          baseAttackInterval: 1.5
-          attackSpeedPerDEX: 0.02
-          attackRange: 2
-          criticalChance: 0.05
-          criticalMultiplier: 1.5
-          equipment:
-            combat:
-              basicAttackBaseDamage: 10
-              damagePerSTR: 1
-              baseAttackInterval: 1.5
-              attackSpeedPerDEX: 0.02
-              attackRange: 2
-              criticalChance: 0.05
-              criticalMultiplier: 1.5
-              equipment:
-                combat:
-                  basicAttackBaseDamage: 10
-                  damagePerSTR: 1
-                  baseAttackInterval: 1.5
-                  attackSpeedPerDEX: 0.02
-                  attackRange: 2
-                  criticalChance: 0.05
-                  criticalMultiplier: 1.5
-                  equipment:
-                    combat:
-                      basicAttackBaseDamage: 10
-                      damagePerSTR: 1
-                      baseAttackInterval: 1.5
-                      attackSpeedPerDEX: 0.02
-                      attackRange: 2
-                      criticalChance: 0.05
-                      criticalMultiplier: 1.5
-                    resources:
-                      resourceType: 0
-                      initialState: 0
-                      baseMaxValue: 100
-                      currentValue: 100
-                      baseRegenerationPerSecond: 0
-                    abilities:
-                      equippedAbilities:
-                      - {fileID: 0}
-                      - {fileID: 0}
-                      - {fileID: 0}
-                      - {fileID: 0}
-                      - {fileID: 0}
-                      - {fileID: 0}
-                      - {fileID: 0}
-                      - {fileID: 0}
-                    movement:
-                      movementMode: 0
-                      moveSpeed: 5
-                      rotationSpeed: 14
-                      clickStoppingDistance: 0.15
-                      gravity: -25
-                      groundedStickForce: -2
-                      characterController: {fileID: 0}
-                      cameraTransform: {fileID: 0}
-                resources:
-                  resourceType: 0
-                  initialState: 0
-                  baseMaxValue: 100
-                  currentValue: 100
-                  baseRegenerationPerSecond: 0
-                abilities:
-                  equippedAbilities:
-                  - {fileID: 0}
-                  - {fileID: 0}
-                  - {fileID: 0}
-                  - {fileID: 0}
-                  - {fileID: 0}
-                  - {fileID: 0}
-                  - {fileID: 0}
-                  - {fileID: 0}
-                movement:
-                  movementMode: 0
-                  moveSpeed: 5
-                  rotationSpeed: 14
-                  clickStoppingDistance: 0.15
-                  gravity: -25
-                  groundedStickForce: -2
-                  characterController: {fileID: 0}
-                  cameraTransform: {fileID: 0}
-            resources:
-              resourceType: 0
-              initialState: 0
-              baseMaxValue: 100
-              currentValue: 100
-              baseRegenerationPerSecond: 0
-            abilities:
-              equippedAbilities:
-              - {fileID: 0}
-              - {fileID: 0}
-              - {fileID: 0}
-              - {fileID: 0}
-              - {fileID: 0}
-              - {fileID: 0}
-              - {fileID: 0}
-              - {fileID: 0}
-            movement:
-              movementMode: 0
-              moveSpeed: 5
-              rotationSpeed: 14
-              clickStoppingDistance: 0.15
-              gravity: -25
-              groundedStickForce: -2
-              characterController: {fileID: 0}
-              cameraTransform: {fileID: 0}
-        resources:
-          resourceType: 0
-          initialState: 0
-          baseMaxValue: 100
-          currentValue: 100
-          baseRegenerationPerSecond: 0
-        abilities:
-          equippedAbilities:
-          - {fileID: 0}
-          - {fileID: 0}
-          - {fileID: 0}
-          - {fileID: 0}
-          - {fileID: 0}
-          - {fileID: 0}
-          - {fileID: 0}
-          - {fileID: 0}
-        movement:
-          movementMode: 0
-          moveSpeed: 5
-          rotationSpeed: 14
-          clickStoppingDistance: 0.15
-          gravity: -25
-          groundedStickForce: -2
-          characterController: {fileID: 0}
-          cameraTransform: {fileID: 0}
-    resources:
-      resourceType: 0
-      initialState: 0
-      baseMaxValue: 100
-      currentValue: 100
-      baseRegenerationPerSecond: 0
-    abilities:
-      equippedAbilities:
-      - {fileID: 0}
-      - {fileID: 0}
-      - {fileID: 0}
-      - {fileID: 0}
-      - {fileID: 0}
-      - {fileID: 0}
-      - {fileID: 0}
-      - {fileID: 0}
-    movement:
-      movementMode: 0
-      moveSpeed: 5
-      rotationSpeed: 14
-      clickStoppingDistance: 0.15
-      gravity: -25
-      groundedStickForce: -2
-      characterController: {fileID: 0}
-      cameraTransform: {fileID: 0}
   observedDefense: 0
   slotToUnequip: 3
 --- !u!4 &2136943418
@@ -2096,7 +1899,7 @@ PrefabInstance:
     - target: {fileID: 5525512305595288392, guid: 29c09d519217b9b4683308c2076a9185, type: 3}
       propertyPath: experienceReward
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 4883202587899952294}
     m_RemovedComponents:
     - {fileID: 3248274383005462879, guid: 29c09d519217b9b4683308c2076a9185, type: 3}
     - {fileID: 3370889802612219816, guid: 29c09d519217b9b4683308c2076a9185, type: 3}
@@ -2107,6 +1910,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 29c09d519217b9b4683308c2076a9185, type: 3}
+--- !u!114 &4883202587899952294 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2179866876384075502, guid: 29c09d519217b9b4683308c2076a9185, type: 3}
+  m_PrefabInstance: {fileID: 4883202587899952293}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0532f7b27223844e891425c00b27491, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Progression.ExperienceReward
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

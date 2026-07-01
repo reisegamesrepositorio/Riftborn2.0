@@ -26,19 +26,19 @@ namespace Riftborn.Characters.Equipment
         [NonSerialized]
         private DefenseController defense;
 
-        [SerializeField]
+        [NonSerialized]
         private CombatController combat;
 
         [NonSerialized]
         private HealthController health;
 
-        [SerializeField]
+        [NonSerialized]
         private ResourceController resources;
 
-        [SerializeField]
+        [NonSerialized]
         private AbilityController abilities;
 
-        [SerializeField]
+        [NonSerialized]
         private MovementController movement;
 
         private readonly Dictionary<EquipmentSlot, ItemInstance>

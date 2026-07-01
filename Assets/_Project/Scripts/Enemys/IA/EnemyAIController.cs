@@ -1,8 +1,6 @@
 using System;
 using Riftborn.Characters.Combat;
-using System;
 using Riftborn.Characters.Core;
-using System;
 using Riftborn.Damage;
 using UnityEngine;
 
@@ -20,7 +18,7 @@ namespace Riftborn.Enemies.AI
     public sealed class EnemyAIController
     {
         [Header("Target")]
-        [SerializeField]
+        [NonSerialized]
         private CharacterContext target;
 
         [SerializeField]
@@ -45,10 +43,10 @@ namespace Riftborn.Enemies.AI
         private float returnStoppingDistance = 0.2f;
 
         [Header("References")]
-        [SerializeField]
+        [NonSerialized]
         private CharacterContext context;
 
-        [SerializeField]
+        [NonSerialized]
         private CombatController combatForGizmos;
 
         [NonSerialized]
@@ -125,6 +123,17 @@ namespace Riftborn.Enemies.AI
             if (currentState ==
                 EnemyAIState.Dead)
             {
+                return;
+            }
+
+            if (context == null ||
+                ownerTransform == null)
+            {
+                Debug.LogError(
+                    "[ENEMY AI] Tick chamado antes de Initialize. " +
+                    "EnemyController deve inicializar a AI antes do Update.",
+                    context);
+
                 return;
             }
 

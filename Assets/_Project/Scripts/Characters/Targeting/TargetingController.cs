@@ -7,14 +7,20 @@ namespace Riftborn.Characters.Targeting
     [Serializable]
     public sealed class TargetingController
     {
+        [NonSerialized]
         private CharacterContext ownerCharacter;
+        [NonSerialized]
         private TargetHighlight currentHighlight;
 
         public event Action<
             CharacterContext,
             CharacterContext> TargetChanged;
 
-        public CharacterContext CurrentTarget { get; private set; }
+        [NonSerialized]
+        private CharacterContext currentTarget;
+
+        public CharacterContext CurrentTarget =>
+            currentTarget;
 
         public bool HasTarget =>
             IsValidTarget(CurrentTarget);
@@ -49,11 +55,11 @@ namespace Riftborn.Characters.Targeting
 
             DisableCurrentHighlight();
 
-            CurrentTarget =
+            currentTarget =
                 newTarget;
 
             currentHighlight =
-                FindHighlight(CurrentTarget);
+                FindHighlight(currentTarget);
 
             if (currentHighlight != null)
             {
@@ -63,12 +69,12 @@ namespace Riftborn.Characters.Targeting
 
             Debug.Log(
                 $"[TARGETING] Alvo definido: " +
-                $"{CurrentTarget.name}",
-                CurrentTarget);
+                $"{currentTarget.name}",
+                currentTarget);
 
             TargetChanged?.Invoke(
                 previousTarget,
-                CurrentTarget);
+                currentTarget);
 
             return true;
         }
@@ -138,12 +144,12 @@ namespace Riftborn.Characters.Targeting
         public bool IsValidTarget()
         {
             return IsValidTarget(
-                CurrentTarget);
+                currentTarget);
         }
 
         public void ClearTarget()
         {
-            if (CurrentTarget == null &&
+            if (currentTarget == null &&
                 currentHighlight == null)
             {
                 return;
@@ -154,7 +160,7 @@ namespace Riftborn.Characters.Targeting
 
             DisableCurrentHighlight();
 
-            CurrentTarget = null;
+            currentTarget = null;
             currentHighlight = null;
 
             TargetChanged?.Invoke(

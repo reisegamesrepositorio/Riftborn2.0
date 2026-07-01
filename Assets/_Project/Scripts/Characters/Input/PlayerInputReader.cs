@@ -38,10 +38,10 @@ namespace Riftborn.Characters.Input
         private bool clearTargetWhenClickingEmptySpace;
 
         [Header("References")]
-        [SerializeField]
+        [NonSerialized]
         private PlayerController playerController;
 
-        [SerializeField]
+        [NonSerialized]
         private CharacterContext selfContext;
 
         [NonSerialized]

@@ -45,13 +45,13 @@ namespace Riftborn.Characters.Combat
         [NonSerialized]
         private ActionStateController actionState;
 
-        [SerializeField]
+        [NonSerialized]
         private TargetingController targeting;
 
         [NonSerialized]
         private CharacterStatsController stats;
 
-        [SerializeField]
+        [NonSerialized]
         private EquipmentController equipment;
 
         private readonly Dictionary<
@@ -63,6 +63,7 @@ namespace Riftborn.Characters.Combat
             modifiersById =
                 new(StringComparer.Ordinal);
 
+        [NonSerialized]
         private CharacterContext context;
         private float nextAttackTime;
         private bool modifiersInitialized;
@@ -153,8 +154,8 @@ namespace Riftborn.Characters.Combat
             context = owner;
             actionState = owner?.ActionState;
             stats = owner?.Stats;
-            targeting = targetingModule ?? targeting;
-            equipment = equipmentModule ?? equipment;
+            targeting = targetingModule;
+            equipment = equipmentModule;
             EnsureModifiersInitialized();
         }
 
@@ -770,6 +771,8 @@ namespace Riftborn.Characters.Combat
         {
             actionState ??= context?.ActionState;
             stats ??= context?.Stats;
+            targeting ??= context?.Targeting;
+            equipment ??= context?.Equipment;
         }
 
         public void Validate()

@@ -155,6 +155,18 @@ namespace Riftborn.Enemies.Core
             float deltaTime =
                 Time.deltaTime;
 
+            if (lifeState ==
+                EnemyLifeState.Respawning)
+            {
+                enemyMovement?.Stop(
+                    deltaTime);
+
+                respawn?.Tick(
+                    deltaTime);
+
+                return;
+            }
+
             if (lifeState !=
                     EnemyLifeState.Alive ||
                 health == null ||
@@ -590,6 +602,21 @@ namespace Riftborn.Enemies.Core
                 ValidateReferences();
                 return;
             }
+
+            CharacterController nativeCharacterController =
+                GetComponent<CharacterController>();
+
+            ai.Initialize(
+                this,
+                combat);
+
+            enemyMovement.Initialize(
+                this,
+                nativeCharacterController);
+
+            respawn.Initialize(
+                transform,
+                nativeCharacterController);
 
             ai.SetSpawnPosition(
                 transform.position);

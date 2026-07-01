@@ -22,7 +22,8 @@ namespace Riftborn.Characters.Controllers
     public enum PlayerLifeState
     {
         Alive = 0,
-        Dead = 1
+        Dead = 1,
+        Respawning = 2
     }
 
     [DisallowMultipleComponent]
@@ -51,6 +52,20 @@ namespace Riftborn.Characters.Controllers
 
         [SerializeField]
         private bool showDebugLogs = true;
+
+        [Header("Respawn")]
+        [SerializeField, Min(0f)]
+        private float respawnDelay = 5f;
+
+        [SerializeField, Range(0.01f, 1f)]
+        private float respawnHealthPercent = 1f;
+
+        [SerializeField]
+        private Transform respawnPoint;
+
+        private Vector3 initialSpawnPosition;
+        private Quaternion initialSpawnRotation;
+        private float respawnTimer;
 
         private bool eventsSubscribed;
         private CharacterContext subscribedTarget;
@@ -230,6 +245,7 @@ namespace Riftborn.Characters.Controllers
         {
             InitializeCharacterContext();
             CacheReferences();
+            CacheInitialRespawnTransform();
             InitializePlayerModules();
             SynchronizeLifeState();
         }
@@ -261,6 +277,17 @@ namespace Riftborn.Characters.Controllers
         private void Update()
         {
             float deltaTime = Time.deltaTime;
+
+            if (lifeState == PlayerLifeState.Respawning)
+            {
+                TickRespawn(deltaTime);
+                return;
+            }
+
+            if (lifeState != PlayerLifeState.Alive)
+            {
+                return;
+            }
 
             resources?.Tick(deltaTime);
             statusEffects?.Tick(deltaTime);
@@ -1355,6 +1382,8 @@ namespace Riftborn.Characters.Controllers
                     $"[PLAYER CONTROLLER] {name} morreu.",
                     this);
             }
+        
+            BeginRespawn();
         }
 
         private void HandleRevived()
@@ -1375,6 +1404,100 @@ namespace Riftborn.Characters.Controllers
             }
         }
 
+        private void BeginRespawn()
+        {
+            respawnTimer =
+                Mathf.Max(
+                    0f,
+                    respawnDelay);
+
+            SetLifeState(
+                PlayerLifeState.Respawning);
+
+            if (respawnTimer <= 0f)
+            {
+                CompleteRespawn();
+            }
+        }
+
+        private void TickRespawn(
+            float deltaTime)
+        {
+            respawnTimer -=
+                Mathf.Max(
+                    0f,
+                    deltaTime);
+
+            if (respawnTimer <= 0f)
+            {
+                CompleteRespawn();
+            }
+        }
+
+        private void CompleteRespawn()
+        {
+            CacheReferences();
+
+            StopMovement();
+            autoAttack?.ResetRuntimeState();
+            targeting?.ClearTarget();
+            statusEffects?.ClearAllEffects();
+            actionState?.ClearAllBlocks();
+
+            Vector3 spawnPosition =
+                ResolveRespawnPosition();
+
+            Quaternion spawnRotation =
+                ResolveRespawnRotation();
+
+            movement?.Teleport(
+                spawnPosition);
+
+            transform.rotation =
+                spawnRotation;
+
+            float restoredHealth =
+                health != null
+                    ? Mathf.Max(
+                        1f,
+                        health.MaxHealth *
+                        respawnHealthPercent)
+                    : 0f;
+
+            if (health != null &&
+                health.IsDead)
+            {
+                health.Revive(
+                    restoredHealth);
+            }
+            else
+            {
+                HandleRevived();
+            }
+        }
+
+        private Vector3 ResolveRespawnPosition()
+        {
+            return respawnPoint != null
+                ? respawnPoint.position
+                : initialSpawnPosition;
+        }
+
+        private Quaternion ResolveRespawnRotation()
+        {
+            return respawnPoint != null
+                ? respawnPoint.rotation
+                : initialSpawnRotation;
+        }
+
+        private void CacheInitialRespawnTransform()
+        {
+            initialSpawnPosition =
+                transform.position;
+
+            initialSpawnRotation =
+                transform.rotation;
+        }
         private void HandleTargetChanged(
             CharacterContext previousTarget,
             CharacterContext newTarget)
@@ -1605,7 +1728,9 @@ namespace Riftborn.Characters.Controllers
             PlayerLifeState correctState =
                 health != null &&
                 health.IsDead
-                    ? PlayerLifeState.Dead
+                    ? lifeState == PlayerLifeState.Respawning
+                        ? PlayerLifeState.Respawning
+                        : PlayerLifeState.Dead
                     : PlayerLifeState.Alive;
 
             SetLifeState(

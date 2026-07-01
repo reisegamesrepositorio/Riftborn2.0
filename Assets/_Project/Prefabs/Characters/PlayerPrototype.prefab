@@ -161,21 +161,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4b860d5f793109439022963fa255ce1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Controllers.PlayerController
+  abilities:
+    equippedAbilities:
+    - {fileID: 11400000, guid: 8551293aa3290af469e443bf6ee1afb6, type: 2}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
   lifeState: 0
   showDebugLogs: 1
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

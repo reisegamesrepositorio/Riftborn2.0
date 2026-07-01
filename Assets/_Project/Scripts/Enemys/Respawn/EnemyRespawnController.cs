@@ -123,7 +123,11 @@ namespace Riftborn.Enemies.Respawn
             ownerTransform = owner;
             ownerName = owner != null ? owner.name : "Enemy";
             characterController = controller != null ? controller : characterController;
-            CacheInitialSpawn();
+
+            if (ownerTransform != null)
+            {
+                CacheInitialSpawn();
+            }
         }
 
         public void Disable()
@@ -230,7 +234,14 @@ namespace Riftborn.Enemies.Respawn
 
         private void TryCompleteRespawn()
         {
+            if (ownerTransform == null)
+            {
+                Debug.LogError(
+                    $"[ENEMY RESPAWN] {ownerName} tentou respawn antes de Initialize.");
 
+                CancelRespawn();
+                return;
+            }
 
             Vector3 requestedPosition =
                 ResolveRequestedPosition();
@@ -248,21 +259,21 @@ namespace Riftborn.Enemies.Respawn
                         requestedPosition,
                         out safePosition);
 
-                while (!foundGround &&
-                       requireGroundForRespawn)
+                if (!foundGround &&
+                    requireGroundForRespawn)
                 {
+                    respawnTimer =
+                        Mathf.Max(
+                            0.01f,
+                            groundRetryInterval);
+
                     Debug.LogError(
-                        $"[ENEMY RESPAWN] {ownerName} n√£o encontrou ch√£o " +
+                        $"[ENEMY RESPAWN] {ownerName} n„o encontrou ch„o " +
                         $"abaixo do ponto {requestedPosition}. " +
-                        "Verifique Ground Mask e a posi√ß√£o do spawn. " +
-                        "Nova tentativa ser√° feita.", ownerTransform);
+                        "Verifique Ground Mask e a posiÁ„o do spawn. " +
+                        "Nova tentativa ser· feita.", ownerTransform);
 
                     return;
-
-                    foundGround =
-                        TryGetGroundedRespawnPosition(
-                            requestedPosition,
-                            out safePosition);
                 }
 
                 if (!foundGround)
@@ -271,21 +282,15 @@ namespace Riftborn.Enemies.Respawn
                         requestedPosition;
 
                     Debug.LogWarning(
-                        $"[ENEMY RESPAWN] {ownerName} n√£o encontrou ch√£o. " +
-                        "A posi√ß√£o configurada ser√° informada sem ajuste.", ownerTransform);
+                        $"[ENEMY RESPAWN] {ownerName} n„o encontrou ch„o. " +
+                        "A posiÁ„o configurada ser· informada sem ajuste.", ownerTransform);
                 }
             }
 
             isWaitingForRespawn =
                 false;
 
-            respawnTimer =
-                Mathf.Max(0f, respawnDelay);
-
-            if (respawnTimer <= 0f)
-            {
-                TryCompleteRespawn();
-            }
+            respawnTimer = 0f;
 
             EnemyRespawnResult result =
                 new EnemyRespawnResult(
@@ -296,8 +301,8 @@ namespace Riftborn.Enemies.Respawn
             if (showDebugLogs)
             {
                 Debug.Log(
-                    $"[ENEMY RESPAWN] {ownerName}: posi√ß√£o segura pronta | " +
-                    $"Posi√ß√£o: {result.Position} | " +
+                    $"[ENEMY RESPAWN] {ownerName}: posiÁ„o segura pronta | " +
+                    $"PosiÁ„o: {result.Position} | " +
                     $"Vida: {result.HealthPercent * 100f:0.##}%.", ownerTransform);
             }
 
@@ -454,6 +459,11 @@ namespace Riftborn.Enemies.Respawn
 
         private void CacheInitialSpawn()
         {
+            if (ownerTransform == null)
+            {
+                return;
+            }
+
             initialSpawnPosition =
                 ownerTransform.position;
 

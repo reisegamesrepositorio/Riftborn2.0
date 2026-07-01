@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 3374230554652341177}
   - component: {fileID: 7796487739564449023}
   - component: {fileID: 5525512305595288392}
+  - component: {fileID: 884000111222333444}
+  - component: {fileID: 2179866876384075502}
   m_Layer: 0
   m_Name: EnemyDummy
   m_TagString: Untagged
@@ -85,16 +87,6 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
-
-
-
-
-
-
-
-
-
-
 --- !u!114 &5525512305595288392
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -121,27 +113,123 @@ MonoBehaviour:
   defense:
     basePhysicalDefense: 0
     baseMagicalDefense: 0
-  actionState: {}
-  characterEvents: {}
-  resources: {fileID: 0}
-  movement: {fileID: 0}
-  combat: {fileID: 725950439280602037}
-  targeting: {fileID: 0}
-  abilities: {fileID: 0}
-  statusEffects: {fileID: 3935999188064512333}
-  inventory: {fileID: 0}
-  equipment: {fileID: 0}
-  runes: {fileID: 0}
-  progression: {fileID: 0}
+  resources:
+    resourceType: 0
+    initialState: 0
+    baseMaxValue: 100
+    currentValue: 100
+    baseRegenerationPerSecond: 0
+  movement:
+    movementMode: 0
+    moveSpeed: 5
+    rotationSpeed: 14
+    clickStoppingDistance: 0.15
+    gravity: -25
+    groundedStickForce: -2
+    characterController: {fileID: 0}
+    cameraTransform: {fileID: 0}
+  combat:
+    basicAttackBaseDamage: 10
+    damagePerSTR: 1
+    baseAttackInterval: 1.5
+    attackSpeedPerDEX: 0.02
+    attackRange: 2
+    criticalChance: 0.05
+    criticalMultiplier: 1.5
+  abilities:
+    equippedAbilities:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+  inventory:
+    slotCount: 30
+    slots: []
+  runes:
+    equippedPage: {fileID: 0}
+  progression:
+    experienceCurve: {fileID: 0}
+    startingLevel: 1
+    startingExperience: 0
+    currentLevel: 1
+    currentExperience: 0
+    availableStatPoints: 0
+    totalStatPointsEarned: 0
+    availableRunePoints: 0
+    totalRunePointsEarned: 0
+    showDebugLogs: 1
   animationController: {fileID: 0}
-  ai: {fileID: 2970975230536927120}
-  enemyMovement: {fileID: 3502379182543502574}
-  respawn: {fileID: 6036172330402451802}
-  hitFeedback: {fileID: 1537373623233577943}
-  deathFeedback: {fileID: 5621579347605532922}
-  lootDrop: {fileID: 3370889802612219816}
-  experienceReward: {fileID: 3248274383005462879}
+  ai:
+    findPlayerByTag: 1
+    playerTag: Player
+    detectionRange: 8
+    leashRange: 14
+    resumeChaseBuffer: 0.25
+    returnStoppingDistance: 0.2
+    currentState: 0
+    showDebugLogs: 1
+  enemyMovement:
+    moveSpeed: 3
+    rotationSpeed: 720
+    gravity: -25
+    groundedStickForce: -2
+    characterController: {fileID: 0}
+  respawn:
+    respawnDelay: 5
+    respawnHealthPercent: 1
+    respawnPoint: {fileID: 0}
+    restoreSpawnRotation: 1
+    clearStatusEffectsOnRespawn: 1
+    clearActionBlocksOnRespawn: 1
+    snapRespawnToGround: 1
+    groundMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    groundProbeHeight: 5
+    groundProbeDepth: 20
+    groundClearance: 0.05
+    requireGroundForRespawn: 1
+    groundRetryInterval: 1
+    characterController: {fileID: 0}
+    isWaitingForRespawn: 0
+    showDebugLogs: 1
+  hitFeedback: {fileID: 0}
+  deathFeedback: {fileID: 0}
+  lootDrop: {fileID: 0}
+  experienceReward: {fileID: 2179866876384075502}
   lifeState: 0
+  showDebugLogs: 1
+--- !u!114 &884000111222333444
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2412140367557316009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a482a24111451e4daa5dede1a88b927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Targeting.TargetHighlight
+  outlineObject: {fileID: 5422742403820953892}
+--- !u!114 &2179866876384075502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2412140367557316009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0532f7b27223844e891425c00b27491, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Riftborn.Runtime::Riftborn.Characters.Progression.ExperienceReward
+  experienceAmount: 20
+  ownerContext: {fileID: 0}
   showDebugLogs: 1
 --- !u!1 &3284392649697352978
 GameObject:
